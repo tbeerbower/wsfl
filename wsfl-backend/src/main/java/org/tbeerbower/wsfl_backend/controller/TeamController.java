@@ -13,11 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
@@ -30,12 +29,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Tag(name = "Team", description = "Team management APIs for managing teams and their rosters")
 @RestController
 @RequestMapping("/api/teams")
-public class TeamController extends BaseController {
+public class TeamController  {
 
     private final TeamService teamService;
     private final LeagueService leagueService;
@@ -58,11 +56,11 @@ public class TeamController extends BaseController {
         )
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<TeamSummaryDto>>> getAllTeams(
+    public ResponseEntity<Page<TeamSummaryDto>> getAllTeams(
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<Team> teams = teamService.findAll(pageable);
         Page<TeamSummaryDto> teamDtos = teams.map(team -> convertToTeamSummaryDto(team));
-        return ResponseEntity.ok(new WsflResponse<>(teamDtos));
+        return ResponseEntity.ok(teamDtos);
     }
 
     @Operation(
@@ -82,19 +80,19 @@ public class TeamController extends BaseController {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<TeamDetailsDto>> getTeamById(
+    public ResponseEntity<TeamDetailsDto> getTeamById(
             @Parameter(description = "ID of the team to retrieve", required = true)
             @PathVariable Long id) {
         Team team = teamService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Team", "id", id));
 
         TeamDetailsDto teamDto = convertToTeamDetailsDto(team);
-        List<Link> links = List.of(
-            linkTo(methodOn(TeamController.class).getTeamRunners(id)).withRel("runners"),
-            linkTo(methodOn(TeamController.class).getTeamById(id)).withSelfRel()
-        );
+//        List<Link> links = List.of(
+//            linkTo(methodOn(TeamController.class).getTeamRunners(id)).withRel("runners"),
+//            linkTo(methodOn(TeamController.class).getTeamById(id)).withSelfRel()
+//        );
 
-        return ok(teamDto, links);
+        return ResponseEntity.ok(teamDto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -125,7 +123,7 @@ public class TeamController extends BaseController {
         )
     })
     @PostMapping
-    public ResponseEntity<WsflResponse<TeamDetailsDto>> createTeam(
+    public ResponseEntity<TeamDetailsDto> createTeam(
             @Parameter(description = "Team creation details", required = true)
             @Valid @RequestBody TeamCreateDto createDto) {
         League league = leagueService.findById(createDto.getLeagueId())
@@ -136,7 +134,7 @@ public class TeamController extends BaseController {
         team.setLeague(league);
 
         Team savedTeam = teamService.save(team);
-        return ResponseEntity.ok(new WsflResponse<>(convertToTeamDetailsDto(savedTeam)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToTeamDetailsDto(savedTeam));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -162,7 +160,7 @@ public class TeamController extends BaseController {
         )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<WsflResponse<TeamDetailsDto>> updateTeam(
+    public ResponseEntity<TeamDetailsDto> updateTeam(
             @Parameter(description = "ID of the team to update", required = true)
             @PathVariable Long id,
             @Parameter(description = "Updated team details", required = true)
@@ -178,7 +176,7 @@ public class TeamController extends BaseController {
         }
 
         Team updatedTeam = teamService.save(team);
-        return ResponseEntity.ok(new WsflResponse<>(convertToTeamDetailsDto(updatedTeam)));
+        return ResponseEntity.ok(convertToTeamDetailsDto(updatedTeam));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -203,7 +201,7 @@ public class TeamController extends BaseController {
         )
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<WsflResponse<Void>> deleteTeam(
+    public ResponseEntity<Void> deleteTeam(
             @Parameter(description = "ID of the team to delete", required = true)
             @PathVariable Long id) {
         if (!teamService.existsById(id)) {
@@ -230,7 +228,7 @@ public class TeamController extends BaseController {
         )
     })
     @GetMapping("/{id}/runners")
-    public ResponseEntity<WsflResponse<List<RunnerSummaryDto>>> getTeamRunners(
+    public ResponseEntity<List<RunnerSummaryDto>> getTeamRunners(
             @Parameter(description = "ID of the team", required = true)
             @PathVariable Long id) {
         Team team = teamService.findById(id)
@@ -240,7 +238,7 @@ public class TeamController extends BaseController {
                 .map(this::convertToRunnerSummaryDto)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new WsflResponse<>(runners));
+        return ResponseEntity.ok(runners);
     }
 
     @Operation(
@@ -260,17 +258,17 @@ public class TeamController extends BaseController {
         )
     })
     @GetMapping("/league/{leagueId}")
-    public ResponseEntity<WsflResponse<List<TeamSummaryDto>>> getTeamsByLeague(
+    public ResponseEntity<Page<TeamSummaryDto>> getTeamsByLeague(
             @Parameter(description = "ID of the league", required = true)
-            @PathVariable Long leagueId) {
+            @PathVariable Long leagueId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         League league = leagueService.findById(leagueId)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", leagueId));
                 
-        List<TeamSummaryDto> teamDtos = league.getTeams().stream()
-                .map(this::convertToTeamSummaryDto)
-                .collect(Collectors.toList());
+        Page<TeamSummaryDto> teamDtos = teamService.findByLeague(league,pageable)
+                .map(this::convertToTeamSummaryDto);
                 
-        return ResponseEntity.ok(new WsflResponse<>(teamDtos));
+        return ResponseEntity.ok(teamDtos);
     }
 
     @Operation(
@@ -290,17 +288,17 @@ public class TeamController extends BaseController {
         )
     })
     @GetMapping("/standings/{leagueId}")
-    public ResponseEntity<WsflResponse<List<TeamDetailsDto>>> getLeagueStandings(
+    public ResponseEntity<Page<TeamDetailsDto>> getLeagueStandings(
             @Parameter(description = "ID of the league", required = true)
-            @PathVariable Long leagueId) {
+            @PathVariable Long leagueId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         League league = leagueService.findById(leagueId)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", leagueId));
 
-        List<TeamDetailsDto> standings = teamService.getLeagueStandings(league).stream()
-                .map(this::convertToTeamDetailsDto)
-                .collect(Collectors.toList());
+        Page<TeamDetailsDto> standings = teamService.getLeagueStandings(league, pageable)
+                .map(this::convertToTeamDetailsDto);
 
-        return ResponseEntity.ok(new WsflResponse<>(standings));
+        return ResponseEntity.ok(standings);
     }
 
     // Helper methods for DTO conversion

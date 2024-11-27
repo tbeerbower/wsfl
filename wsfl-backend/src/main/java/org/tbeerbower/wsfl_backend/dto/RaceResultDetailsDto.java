@@ -7,7 +7,7 @@ import java.time.LocalTime;
 
 @Schema(description = "Detailed representation of a race result")
 @Relation(collectionRelation = "raceResults", itemRelation = "raceResult")
-public class RaceResultDetailsDto extends RepresentationModel<RaceResultDetailsDto> {
+public class RaceResultDetailsDto {
     
     @Schema(description = "Race result's unique identifier", example = "1")
     private Long id;

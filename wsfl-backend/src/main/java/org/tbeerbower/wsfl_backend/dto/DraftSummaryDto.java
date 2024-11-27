@@ -8,7 +8,7 @@ import java.util.List;
 
 @Schema(description = "Summary information about a draft")
 @Relation(collectionRelation = "drafts", itemRelation = "draft")
-public class DraftSummaryDto extends RepresentationModel<DraftSummaryDto> {
+public class DraftSummaryDto {
     @Schema(description = "Unique identifier of the draft")
     private Long id;
 

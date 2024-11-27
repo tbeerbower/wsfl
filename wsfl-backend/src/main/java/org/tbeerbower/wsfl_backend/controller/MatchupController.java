@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.MatchupCreateDto;
 import org.tbeerbower.wsfl_backend.dto.MatchupDetailsDto;
@@ -26,7 +26,7 @@ import org.tbeerbower.wsfl_backend.service.TeamService;
 
 @RestController
 @RequestMapping("/api/matchups")
-public class MatchupController extends BaseController {
+public class MatchupController  {
 
     private final MatchupService matchupService;
     private final RaceService raceService;
@@ -50,7 +50,7 @@ public class MatchupController extends BaseController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<MatchupSummaryDto>>> getAllMatchups(
+    public ResponseEntity<Page<MatchupSummaryDto>> getAllMatchups(
             @Parameter(description = "Page number (0-based)")
             @PageableDefault(size = 20) Pageable pageable,
             @Parameter(description = "Filter by race ID")
@@ -61,7 +61,7 @@ public class MatchupController extends BaseController {
             matchupService.findAll(pageable);
             
         Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
-        return ok(matchupDtos);
+        return ResponseEntity.ok(matchupDtos);
     }
 
     @Operation(summary = "Get matchups by race", description = "Retrieves a paginated list of matchups for a specific race")
@@ -71,7 +71,7 @@ public class MatchupController extends BaseController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/race/{raceId}")
-    public ResponseEntity<WsflResponse<Page<MatchupSummaryDto>>> getMatchupsByRace(
+    public ResponseEntity<Page<MatchupSummaryDto>> getMatchupsByRace(
             @Parameter(description = "ID of the race")
             @PathVariable Long raceId,
             @Parameter(description = "Page number (0-based)")
@@ -84,7 +84,7 @@ public class MatchupController extends BaseController {
             matchupService.findByRace(raceId, pageable);
             
         Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
-        return ok(matchupDtos);
+        return ResponseEntity.ok(matchupDtos);
     }
 
     @Operation(summary = "Get a matchup by ID", description = "Retrieves a specific matchup by its ID")
@@ -94,14 +94,14 @@ public class MatchupController extends BaseController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<MatchupDetailsDto>> getMatchup(
+    public ResponseEntity<MatchupDetailsDto> getMatchup(
             @Parameter(description = "ID of the matchup")
             @PathVariable Long id) {
         
         Matchup matchup = matchupService.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
             
-        return ok(matchupDtoAssembler.toDetailedModel(matchup));
+        return ResponseEntity.ok(matchupDtoAssembler.toDetailedModel(matchup));
     }
 
     @Operation(summary = "Create a new matchup", description = "Creates a new matchup in the system")
@@ -112,12 +112,13 @@ public class MatchupController extends BaseController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<MatchupDetailsDto>> createMatchup(
+    public ResponseEntity<MatchupDetailsDto> createMatchup(
             @Parameter(description = "Matchup creation data")
             @Valid @RequestBody MatchupCreateDto createDto) {
         
         Matchup matchup = matchupService.create(createDto);
-        return created(matchupDtoAssembler.toDetailedModel(matchup));
+        return ResponseEntity.status(HttpStatus.CREATED).body(matchupDtoAssembler.toDetailedModel(matchup));
+
     }
 
     @Operation(summary = "Update matchup scores", description = "Updates the scores for both teams in a matchup")
@@ -128,19 +129,19 @@ public class MatchupController extends BaseController {
     })
     @PatchMapping("/{id}/scores")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<MatchupDetailsDto>> updateMatchupScores(
+    public ResponseEntity<MatchupDetailsDto> updateMatchupScores(
             @Parameter(description = "ID of the matchup")
             @PathVariable Long id,
             @Parameter(description = "Score for team 1")
             @RequestParam Integer team1Score,
             @Parameter(description = "Score for team 2")
             @RequestParam Integer team2Score) {
-        
-        Matchup matchup = matchupService.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
-            
-        matchup = matchupService.updateScores(id, team1Score, team2Score);
-        return ok(matchupDtoAssembler.toDetailedModel(matchup));
+
+        matchupService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
+
+        Matchup matchup = matchupService.updateScores(id, team1Score, team2Score);
+        return ResponseEntity.ok(matchupDtoAssembler.toDetailedModel(matchup));
     }
 
     @Operation(summary = "Delete a matchup", description = "Deletes a matchup from the system")
@@ -151,7 +152,7 @@ public class MatchupController extends BaseController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<Void>> deleteMatchup(
+    public ResponseEntity<Void> deleteMatchup(
             @Parameter(description = "ID of the matchup")
             @PathVariable Long id) {
         
@@ -160,6 +161,6 @@ public class MatchupController extends BaseController {
         }
         
         matchupService.deleteById(id);
-        return noContent();
+        return ResponseEntity.noContent().build();
     }
 }

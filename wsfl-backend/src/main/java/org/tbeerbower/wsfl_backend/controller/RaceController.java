@@ -13,16 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.RaceResult;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
+import org.tbeerbower.wsfl_backend.service.RaceResultService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
 
 import java.util.List;
@@ -31,14 +32,16 @@ import java.util.stream.Collectors;
 @Tag(name = "Race", description = "Race management APIs for scheduling and managing races")
 @RestController
 @RequestMapping("/api/races")
-public class RaceController extends BaseController {
+public class RaceController  {
 
     private final RaceService raceService;
+    private final RaceResultService raceResultService;
     private final LeagueService leagueService;
 
     @Autowired
-    public RaceController(RaceService raceService, LeagueService leagueService) {
+    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService) {
         this.raceService = raceService;
+        this.raceResultService = raceResultService;
         this.leagueService = leagueService;
     }
 
@@ -54,11 +57,11 @@ public class RaceController extends BaseController {
         )
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<RaceSummaryDto>>> getAllRaces(
+    public ResponseEntity<Page<RaceSummaryDto>> getAllRaces(
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<Race> races = raceService.findAll(pageable);
         Page<RaceSummaryDto> raceDtos = races.map(this::convertToRaceSummaryDto);
-        return ok(raceDtos);
+        return ResponseEntity.ok(raceDtos);
     }
 
     @Operation(
@@ -78,10 +81,10 @@ public class RaceController extends BaseController {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<RaceDetailsDto>> getRaceById(@PathVariable Long id) {
+    public ResponseEntity<RaceDetailsDto> getRaceById(@PathVariable Long id) {
         Race race = raceService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + id));
-        return ok(convertToRaceDetailsDto(race));
+        return ResponseEntity.ok(convertToRaceDetailsDto(race));
     }
 
     @Operation(
@@ -107,7 +110,7 @@ public class RaceController extends BaseController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<WsflResponse<RaceDetailsDto>> createRace(@Valid @RequestBody RaceCreateDto raceCreateDto) {
+    public ResponseEntity<RaceDetailsDto> createRace(@Valid @RequestBody RaceCreateDto raceCreateDto) {
         League league = leagueService.findById(raceCreateDto.getLeagueId())
                 .orElseThrow(() -> new ResourceNotFoundException("League not found with id: " + raceCreateDto.getLeagueId()));
         
@@ -118,7 +121,7 @@ public class RaceController extends BaseController {
         race.setLeague(league);
         
         Race savedRace = raceService.save(race);
-        return created(convertToRaceDetailsDto(savedRace));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceDetailsDto(savedRace));
     }
 
     @Operation(
@@ -144,7 +147,7 @@ public class RaceController extends BaseController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<WsflResponse<RaceDetailsDto>> updateRace(
+    public ResponseEntity<RaceDetailsDto> updateRace(
             @PathVariable Long id,
             @Valid @RequestBody RaceUpdateDto raceUpdateDto) {
         Race race = raceService.findById(id)
@@ -161,7 +164,7 @@ public class RaceController extends BaseController {
         }
         
         Race updatedRace = raceService.save(race);
-        return ok(convertToRaceDetailsDto(updatedRace));
+        return ResponseEntity.ok(convertToRaceDetailsDto(updatedRace));
     }
 
     @Operation(
@@ -181,12 +184,12 @@ public class RaceController extends BaseController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<WsflResponse<Void>> deleteRace(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRace(@PathVariable Long id) {
         if (!raceService.existsById(id)) {
             throw new ResourceNotFoundException("Race not found with id: " + id);
         }
         raceService.deleteById(id);
-        return noContent();
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -206,16 +209,16 @@ public class RaceController extends BaseController {
         )
     })
     @GetMapping("/{id}/results")
-    public ResponseEntity<WsflResponse<List<RaceResultSummaryDto>>> getRaceResults(
-            @PathVariable Long id) {
+    public ResponseEntity<Page<RaceResultSummaryDto>> getRaceResults(
+            @PathVariable Long id,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Race race = raceService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + id));
 
-        List<RaceResultSummaryDto> results = race.getResults().stream()
-                .map(this::convertToRaceResultSummaryDto)
-                .collect(Collectors.toList());
+        Page<RaceResultSummaryDto> results = raceResultService.findByRace(race, pageable)
+                .map(this::convertToRaceResultSummaryDto);
 
-        return ok(results);
+        return ResponseEntity.ok(results);
     }
 
     // Helper methods for DTO conversion

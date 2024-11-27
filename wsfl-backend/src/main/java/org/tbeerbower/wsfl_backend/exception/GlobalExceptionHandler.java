@@ -8,7 +8,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 
 import jakarta.validation.ValidationException;
 import java.util.List;
@@ -18,44 +17,38 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<WsflResponse<Void>> handleResourceNotFound(ResourceNotFoundException ex) {
-        WsflResponse<Void> response = new WsflResponse<>(null, List.of(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<WsflResponse<Void>> handleValidation(ValidationException ex) {
-        WsflResponse<Void> response = new WsflResponse<>(null, List.of(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<String> handleValidation(ValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<WsflResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<List<String>> handleValidation(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.toList());
-        
-        WsflResponse<Void> response = new WsflResponse<>(null, errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<WsflResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
-        WsflResponse<Void> response = new WsflResponse<>(null, List.of("Access denied"));
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: " + ex.getMessage());
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<WsflResponse<Void>> handleNoHandlerFound(NoHandlerFoundException ex) {
+    public ResponseEntity<String> handleNoHandlerFound(NoHandlerFoundException ex) {
         String message = String.format("Could not find the %s method for URL %s", 
             ex.getHttpMethod(), ex.getRequestURL());
-        WsflResponse<Void> response = new WsflResponse<>(null, List.of(message));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<WsflResponse<Void>> handleGeneral(Exception ex) {
-        WsflResponse<Void> response = new WsflResponse<>(null, List.of("An unexpected error occurred"));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    public ResponseEntity<String> handleGeneral(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + ex.getMessage());
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.hateoas.RepresentationModel;
 import java.util.List;
 
 @Schema(description = "Detailed representation of a league")
-public class LeagueDetailsDto extends RepresentationModel<LeagueDetailsDto> {
+public class LeagueDetailsDto {
     @Schema(description = "Unique identifier of the league", example = "1")
     private Long id;
 

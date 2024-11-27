@@ -6,7 +6,7 @@ import org.springframework.hateoas.server.core.Relation;
 
 @Schema(description = "Summary representation of a team")
 @Relation(collectionRelation = "teams", itemRelation = "team")
-public class TeamSummaryDto extends RepresentationModel<TeamSummaryDto> {
+public class TeamSummaryDto {
     
     @Schema(description = "Team's unique identifier", example = "1")
     private Long id;

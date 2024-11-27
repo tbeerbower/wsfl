@@ -13,7 +13,6 @@ public interface RaceResultService {
     List<RaceResult> findAll();
     Page<RaceResult> findAll(Pageable pageable);
     Optional<RaceResult> findById(Long id);
-    List<RaceResult> findByRace(Race race);
     Page<RaceResult> findByRace(Race race, Pageable pageable);
     Optional<RaceResult> findByRaceAndRunner(Race race, Runner runner);
     List<RaceResult> findByRunner(Runner runner);

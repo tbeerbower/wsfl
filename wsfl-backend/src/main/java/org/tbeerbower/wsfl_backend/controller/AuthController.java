@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.LoginRequest;
 import org.tbeerbower.wsfl_backend.dto.LoginResponse;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.UserDetailsDto;
+import org.tbeerbower.wsfl_backend.dto.UserSummaryDto;
+import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
+import org.tbeerbower.wsfl_backend.exception.ValidationException;
 import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.security.JwtUtil;
 import org.tbeerbower.wsfl_backend.service.UserService;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:8080")
-public class AuthController extends BaseController {
+public class AuthController  {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -61,17 +63,16 @@ public class AuthController extends BaseController {
         )
     })
     @PostMapping("/login")
-    public ResponseEntity<WsflResponse<LoginResponse>> login(
+    public ResponseEntity<LoginResponse> login(
             @Parameter(description = "Login credentials", required = true)
             @Valid @RequestBody LoginRequest loginRequest) {
         return userService.findByEmail(loginRequest.getEmail())
                 .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
                 .map(user -> {
                     String token = jwtUtil.generateToken(user);
-                    return ok(new LoginResponse(token, user));
+                    return ResponseEntity.ok(new LoginResponse(token, user));
                 })
-                .orElseGet(() -> ResponseEntity.badRequest()
-                    .body(new WsflResponse<LoginResponse>(null, List.of("Invalid email or password"))));
+                .orElseThrow(() -> new ValidationException("Invalid email or password"));
     }
 
     @Operation(
@@ -93,35 +94,23 @@ public class AuthController extends BaseController {
         )
     })
     @PostMapping("/register")
-    public ResponseEntity<WsflResponse<UserDetailsDto>> register(
+    public ResponseEntity<UserSummaryDto> register(
             @Parameter(description = "User registration details", required = true)
             @Valid @RequestBody User user) {
         if (userService.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest()
-                .body(new WsflResponse<UserDetailsDto>(null, List.of("Email already exists")));
+            throw new ValidationException("Email already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Collections.singleton("USER"));
         User savedUser = userService.save(user);
 
-        UserDetailsDto userDto = new UserDetailsDto(
+        UserSummaryDto userDto = new UserSummaryDto(
             savedUser.getId(),
             savedUser.getEmail(),
-            savedUser.getName(),
-            savedUser.getRoles(),
-            savedUser.getTeams().stream()
-                .map(team -> new TeamSummaryDto(
-                    team.getId(),
-                    team.getName(),
-                    team.getWins(),
-                    team.getLosses(),
-                    team.getTies(),
-                    team.getTotalScore()
-                ))
-                .collect(Collectors.toList())
+            savedUser.getName()
         );
 
-        return ok(userDto);
+        return ResponseEntity.ok(userDto);
     }
 }

@@ -59,11 +59,7 @@ public class RaceResultServiceImpl implements RaceResultService {
         return raceResultRepository.existsById(id);
     }
     
-    @Override
-    public List<RaceResult> findByRace(Race race) {
-        return raceResultRepository.findByRace(race);
-    }
-    
+
     @Override
     public Page<RaceResult> findByRace(Race race, Pageable pageable) {
         return raceResultRepository.findByRace(race, pageable);

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Schema(description = "Detailed representation of a runner")
 @Relation(collectionRelation = "runners", itemRelation = "runner")
-public class RunnerDetailsDto extends RepresentationModel<RunnerDetailsDto> {
+public class RunnerDetailsDto {
     
     @Schema(description = "Runner's unique identifier", example = "1")
     private Long id;

@@ -12,7 +12,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
-public class DraftDtoAssembler implements RepresentationModelAssembler<Draft, DraftSummaryDto> {
+public class DraftDtoAssembler {
 
     private final LeagueDtoAssembler leagueDtoAssembler;
 
@@ -20,17 +20,16 @@ public class DraftDtoAssembler implements RepresentationModelAssembler<Draft, Dr
         this.leagueDtoAssembler = leagueDtoAssembler;
     }
 
-    @Override
     public DraftSummaryDto toModel(Draft draft) {
         DraftSummaryDto dto = createDraftSummaryDto(draft);
         
-        dto.add(linkTo(methodOn(DraftController.class).getDraft(draft.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(null, null, Pageable.unpaged())).withRel("drafts"));
-        
-        if (draft.getLeague() != null) {
-            dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(draft.getLeague().getId(), null, Pageable.unpaged()))
-                    .withRel("leagueDrafts"));
-        }
+//        dto.add(linkTo(methodOn(DraftController.class).getDraft(draft.getId())).withSelfRel());
+//        dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(null, null, Pageable.unpaged())).withRel("drafts"));
+//
+//        if (draft.getLeague() != null) {
+//            dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(draft.getLeague().getId(), null, Pageable.unpaged()))
+//                    .withRel("leagueDrafts"));
+//        }
         
         return dto;
     }

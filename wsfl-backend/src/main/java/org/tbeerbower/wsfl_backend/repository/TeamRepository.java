@@ -1,5 +1,7 @@
 package org.tbeerbower.wsfl_backend.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.tbeerbower.wsfl_backend.model.Team;
@@ -10,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
-    List<Team> findByLeague(League league);
-    List<Team> findByOwner(User owner);
-    List<Team> findByLeagueOrderByWinsDescTotalScoreAsc(League league);
+    Page<Team> findByLeague(League league, Pageable pageable);
+    Page<Team> findByOwner(User owner, Pageable pageable);
+    Page<Team> findByLeagueOrderByWinsDescTotalScoreAsc(League league, Pageable pageable);
 } 

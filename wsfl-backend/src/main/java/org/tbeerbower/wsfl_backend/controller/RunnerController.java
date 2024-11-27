@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,23 +18,17 @@ import org.tbeerbower.wsfl_backend.dto.RunnerDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerPatchDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Runner;
-import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.service.RunnerService;
-import org.tbeerbower.wsfl_backend.controller.TeamController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 @Tag(name = "Runner", description = "Runner management APIs")
 @RestController
 @RequestMapping("/api/runners")
-public class RunnerController extends BaseController {
+public class RunnerController  {
     
     private final RunnerService runnerService;
     
@@ -56,18 +49,18 @@ public class RunnerController extends BaseController {
         )
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<RunnerSummaryDto>>> getAllRunners(
+    public ResponseEntity<Page<RunnerSummaryDto>> getAllRunners(
             @Parameter(description = "Pagination parameters") Pageable pageable) {
         Page<Runner> runners = runnerService.findAll(pageable);
         Page<RunnerSummaryDto> runnerDtos = runners.map(runner -> {
             RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
-            List<Link> links = List.of(
-                linkTo(methodOn(RunnerController.class).getRunnerById(runner.getId())).withSelfRel(),
-                linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
-            );
+//            List<Link> links = List.of(
+//                linkTo(methodOn(RunnerController.class).getRunnerById(runner.getId())).withSelfRel(),
+//                linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
+//            );
             return dto;
         });
-        return ok(runnerDtos);
+        return ResponseEntity.ok(runnerDtos);
     }
     
     @Operation(
@@ -93,10 +86,10 @@ public class RunnerController extends BaseController {
                 .orElseThrow(() -> new ResourceNotFoundException("Runner", "id", id));
         
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(runner);
-        runnerDto.add(
-            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-            linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
-        );
+//        runnerDto.add(
+//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
+//            linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
+//        );
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -114,7 +107,7 @@ public class RunnerController extends BaseController {
         )
     })
     @GetMapping("/gender/{gender}")
-    public ResponseEntity<WsflResponse<Page<RunnerSummaryDto>>> getRunnersByGender(
+    public ResponseEntity<Page<RunnerSummaryDto>> getRunnersByGender(
             @PathVariable String gender,
             @Parameter(description = "Pagination parameters") Pageable pageable) {
         Page<Runner> runners = runnerService.findByGender(gender, pageable);
@@ -123,11 +116,11 @@ public class RunnerController extends BaseController {
             return dto;
         });
         
-        List<Link> links = List.of(
-            linkTo(methodOn(RunnerController.class).getRunnersByGender(gender, null)).withRel("self")
-        );
+//        List<Link> links = List.of(
+//            linkTo(methodOn(RunnerController.class).getRunnersByGender(gender, null)).withRel("self")
+//        );
         
-        return ok(runnerDtos, links);
+        return ResponseEntity.ok(runnerDtos);
     }
     
     @PreAuthorize("hasRole('ADMIN')")
@@ -155,10 +148,10 @@ public class RunnerController extends BaseController {
         Runner savedRunner = runnerService.save(runner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(savedRunner);
         
-        runnerDto.add(
-            linkTo(methodOn(RunnerController.class).getRunnerById(savedRunner.getId())).withSelfRel(),
-            linkTo(methodOn(RunnerController.class).getRunnersByGender(savedRunner.getGender(), null)).withRel("runners-by-gender")
-        );
+//        runnerDto.add(
+//            linkTo(methodOn(RunnerController.class).getRunnerById(savedRunner.getId())).withSelfRel(),
+//            linkTo(methodOn(RunnerController.class).getRunnersByGender(savedRunner.getGender(), null)).withRel("runners-by-gender")
+//        );
         
         return ResponseEntity.status(201).body(runnerDto);
     }
@@ -198,10 +191,10 @@ public class RunnerController extends BaseController {
         Runner updatedRunner = runnerService.save(runner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
         
-        runnerDto.add(
-            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
-        );
+//        runnerDto.add(
+//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
+//            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
+//        );
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -240,10 +233,10 @@ public class RunnerController extends BaseController {
         Runner updatedRunner = runnerService.save(existingRunner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
         
-        runnerDto.add(
-            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
-        );
+//        runnerDto.add(
+//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
+//            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
+//        );
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -286,9 +279,9 @@ public class RunnerController extends BaseController {
                     team.getTies(),
                     team.getTotalScore()
                 );
-                dto.add(
-                    linkTo(methodOn(TeamController.class).getTeamById(team.getId())).withSelfRel()
-                );
+//                dto.add(
+//                    linkTo(methodOn(TeamController.class).getTeamById(team.getId())).withSelfRel()
+//                );
                 return dto;
             })
             .collect(Collectors.toList());

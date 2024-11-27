@@ -14,38 +14,37 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Team;
-import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
+import org.tbeerbower.wsfl_backend.service.TeamService;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Tag(name = "League", description = "League management APIs for organizing teams and seasons")
 @RestController
 @RequestMapping("/api/leagues")
-public class LeagueController extends BaseController {
+public class LeagueController  {
 
     private final LeagueService leagueService;
+    private final TeamService teamService;
     private final PagedResourcesAssembler<LeagueSummaryDto> pagedResourcesAssembler;
 
     @Autowired
-    public LeagueController(LeagueService leagueService,
-                          PagedResourcesAssembler<LeagueSummaryDto> pagedResourcesAssembler) {
+    public LeagueController(LeagueService leagueService, TeamService teamService,
+                            PagedResourcesAssembler<LeagueSummaryDto> pagedResourcesAssembler) {
         this.leagueService = leagueService;
+        this.teamService = teamService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
@@ -62,12 +61,12 @@ public class LeagueController extends BaseController {
         )
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<LeagueSummaryDto>>> getAllLeagues(
+    public ResponseEntity<Page<LeagueSummaryDto>> getAllLeagues(
             @Parameter(description = "Pagination parameters")
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<League> leagues = leagueService.findAll(pageable);
         Page<LeagueSummaryDto> leagueDtos = leagues.map(this::convertToLeagueSummaryDto);
-        return ok(leagueDtos);
+        return ResponseEntity.ok(leagueDtos);
     }
 
     @Operation(
@@ -89,17 +88,17 @@ public class LeagueController extends BaseController {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<LeagueDetailsDto>> getLeagueById(@PathVariable Long id) {
+    public ResponseEntity<LeagueDetailsDto> getLeagueById(@PathVariable Long id) {
         League league = leagueService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
         LeagueDetailsDto leagueDto = convertToLeagueDetailsDto(league);
-        List<Link> links = List.of(
-            linkTo(methodOn(LeagueController.class).getLeagueTeams(id)).withRel("teams"),
-            linkTo(methodOn(LeagueController.class).getLeagueById(id)).withSelfRel()
-        );
+//        List<Link> links = List.of(
+//            linkTo(methodOn(LeagueController.class).getLeagueTeams(id)).withRel("teams"),
+//            linkTo(methodOn(LeagueController.class).getLeagueById(id)).withSelfRel()
+//        );
 
-        return ok(leagueDto, links);
+        return ResponseEntity.ok(leagueDto);
     }
 
     @Operation(
@@ -128,7 +127,7 @@ public class LeagueController extends BaseController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<LeagueDetailsDto>> createLeague(
+    public ResponseEntity<LeagueDetailsDto> createLeague(
             @Parameter(description = "League creation details", required = true)
             @Valid @RequestBody LeagueCreateDto createDto) {
         League league = new League();
@@ -136,7 +135,7 @@ public class LeagueController extends BaseController {
         league.setSeason(createDto.getSeason());
 
         League savedLeague = leagueService.save(league);
-        return ok(convertToLeagueDetailsDto(savedLeague));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToLeagueDetailsDto(savedLeague));
     }
 
     @Operation(
@@ -165,7 +164,7 @@ public class LeagueController extends BaseController {
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<LeagueDetailsDto>> updateLeague(
+    public ResponseEntity<LeagueDetailsDto> updateLeague(
             @Parameter(description = "ID of the league to update", required = true)
             @PathVariable Long id,
             @Parameter(description = "Updated league details", required = true)
@@ -177,7 +176,7 @@ public class LeagueController extends BaseController {
         league.setSeason(updateDto.getSeason());
 
         League updatedLeague = leagueService.save(league);
-        return ok(convertToLeagueDetailsDto(updatedLeague));
+        return ResponseEntity.ok(convertToLeagueDetailsDto(updatedLeague));
     }
 
     @Operation(
@@ -206,7 +205,7 @@ public class LeagueController extends BaseController {
     })
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<LeagueDetailsDto>> patchLeague(
+    public ResponseEntity<LeagueDetailsDto> patchLeague(
             @Parameter(description = "ID of the league to patch", required = true)
             @PathVariable Long id,
             @Parameter(description = "Fields to update", required = true)
@@ -222,7 +221,7 @@ public class LeagueController extends BaseController {
         }
 
         League updatedLeague = leagueService.save(league);
-        return ok(convertToLeagueDetailsDto(updatedLeague));
+        return ResponseEntity.ok(convertToLeagueDetailsDto(updatedLeague));
     }
 
     @Operation(
@@ -249,7 +248,7 @@ public class LeagueController extends BaseController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<Void>> deleteLeague(
+    public ResponseEntity<Void> deleteLeague(
             @Parameter(description = "ID of the league to delete", required = true)
             @PathVariable Long id) {
         if (!leagueService.existsById(id)) {
@@ -278,17 +277,16 @@ public class LeagueController extends BaseController {
         )
     })
     @GetMapping("/{id}/teams")
-    public ResponseEntity<WsflResponse<List<TeamSummaryDto>>> getLeagueTeams(
+    public ResponseEntity<Page<TeamSummaryDto>> getLeagueTeams(
             @Parameter(description = "ID of the league", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         League league = leagueService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
-        List<TeamSummaryDto> teams = league.getTeams().stream()
-                .map(this::convertToTeamSummaryDto)
-                .collect(Collectors.toList());
+        Page<TeamSummaryDto> teams = teamService.findByLeague(league, pageable).map(this::convertToTeamSummaryDto);
 
-        return ok(teams);
+        return ResponseEntity.ok(teams);
     }
 
     // Helper methods for DTO conversion
@@ -320,8 +318,8 @@ public class LeagueController extends BaseController {
             teamDtos
         );
 
-        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(LeagueController.class).getAllLeagues(Pageable.unpaged())).withRel("leagues"));
+//        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
+//        dto.add(linkTo(methodOn(LeagueController.class).getAllLeagues(Pageable.unpaged())).withRel("leagues"));
         
         return dto;
     }

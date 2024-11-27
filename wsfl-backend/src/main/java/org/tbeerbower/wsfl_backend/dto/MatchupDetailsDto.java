@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Detailed information about a matchup")
 @Relation(collectionRelation = "matchups", itemRelation = "matchup")
-public class MatchupDetailsDto extends RepresentationModel<MatchupDetailsDto> {
+public class MatchupDetailsDto {
     @Schema(description = "Unique identifier of the matchup")
     private Long id;
 

@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
@@ -26,7 +26,7 @@ import org.tbeerbower.wsfl_backend.service.LeagueService;
 @Tag(name = "Draft", description = "Draft management APIs for league player selection")
 @RestController
 @RequestMapping("/api/drafts")
-public class DraftController extends BaseController {
+public class DraftController  {
     
     private final DraftService draftService;
     private final LeagueService leagueService;
@@ -47,7 +47,7 @@ public class DraftController extends BaseController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping
-    public ResponseEntity<WsflResponse<Page<DraftSummaryDto>>> getAllDrafts(
+    public ResponseEntity<Page<DraftSummaryDto>> getAllDrafts(
             @Parameter(description = "League ID to filter drafts")
             @RequestParam(required = false) Long leagueId,
             @Parameter(description = "Season number to filter drafts")
@@ -65,7 +65,7 @@ public class DraftController extends BaseController {
         }
         
         Page<DraftSummaryDto> draftDtos = drafts.map(draft -> draftDtoAssembler.toModel(draft));
-        return ok(draftDtos);
+        return ResponseEntity.ok(draftDtos);
     }
 
     @Operation(summary = "Get draft by ID", description = "Retrieves detailed information about a specific draft")
@@ -74,14 +74,14 @@ public class DraftController extends BaseController {
         @ApiResponse(responseCode = "404", description = "Draft not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<DraftSummaryDto>> getDraft(
+    public ResponseEntity<DraftSummaryDto> getDraft(
             @Parameter(description = "ID of the draft to retrieve", required = true)
             @PathVariable Long id) {
         
         Draft draft = draftService.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
             
-        return ok(draftDtoAssembler.toModel(draft));
+        return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 
     @Operation(summary = "Create new draft", description = "Creates a new draft for a league's season")
@@ -93,7 +93,7 @@ public class DraftController extends BaseController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<DraftSummaryDto>> createDraft(
+    public ResponseEntity<DraftSummaryDto> createDraft(
             @Parameter(description = "Draft creation data", required = true)
             @Valid @RequestBody DraftCreateDto createDto) {
         
@@ -102,7 +102,7 @@ public class DraftController extends BaseController {
         }
         
         Draft draft = draftService.create(createDto);
-        return created(draftDtoAssembler.toModel(draft));
+        return ResponseEntity.status(HttpStatus.CREATED).body(draftDtoAssembler.toModel(draft));
     }
 
     @Operation(summary = "Start draft", description = "Initiates the draft process for a specific draft")
@@ -113,7 +113,7 @@ public class DraftController extends BaseController {
     })
     @PostMapping("/{id}/start")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<DraftSummaryDto>> startDraft(
+    public ResponseEntity<DraftSummaryDto> startDraft(
             @Parameter(description = "ID of the draft to start", required = true)
             @PathVariable Long id) {
         
@@ -121,7 +121,7 @@ public class DraftController extends BaseController {
             .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
         
         draft = draftService.startDraft(draft);
-        return ok(draftDtoAssembler.toModel(draft));
+        return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 
     @Operation(summary = "End draft", description = "Completes the draft process for a specific draft")
@@ -132,7 +132,7 @@ public class DraftController extends BaseController {
     })
     @PostMapping("/{id}/end")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<DraftSummaryDto>> endDraft(
+    public ResponseEntity<DraftSummaryDto> endDraft(
             @Parameter(description = "ID of the draft to end", required = true)
             @PathVariable Long id) {
         
@@ -140,6 +140,6 @@ public class DraftController extends BaseController {
             .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
         
         draft = draftService.endDraft(draft);
-        return ok(draftDtoAssembler.toModel(draft));
+        return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 }

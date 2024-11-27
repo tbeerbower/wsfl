@@ -50,18 +50,18 @@ public class TeamServiceImpl implements TeamService {
     }
     
     @Override
-    public List<Team> findByLeague(League league) {
-        return teamRepository.findByLeague(league);
+    public Page<Team> findByLeague(League league, Pageable pageable) {
+        return teamRepository.findByLeague(league, pageable);
     }
     
     @Override
-    public List<Team> findByOwner(User owner) {
-        return teamRepository.findByOwner(owner);
+    public Page<Team> findByOwner(User owner, Pageable pageable) {
+        return teamRepository.findByOwner(owner, pageable);
     }
     
     @Override
-    public List<Team> getLeagueStandings(League league) {
-        return teamRepository.findByLeagueOrderByWinsDescTotalScoreAsc(league);
+    public Page<Team> getLeagueStandings(League league, Pageable pageable) {
+        return teamRepository.findByLeagueOrderByWinsDescTotalScoreAsc(league, pageable);
     }
     
     @Override

@@ -1,44 +1,44 @@
 package org.tbeerbower.wsfl_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
+import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User", description = "User management APIs")
-public class UserController extends BaseController {
+public class UserController  {
 
     private final UserService userService;
+    private final TeamService teamService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, TeamService teamService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.teamService = teamService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -54,20 +54,11 @@ public class UserController extends BaseController {
                          schema = @Schema(implementation = UserSummaryDto.class))
     )
     @GetMapping
-    public ResponseEntity<WsflResponse<List<UserSummaryDto>>> getAllUsers(Pageable pageable) {
+    public ResponseEntity<Page<UserSummaryDto>> getAllUsers(Pageable pageable) {
         Page<User> users = userService.findAll(pageable);
-        List<UserSummaryDto> userDtos = users.map(this::convertToUserSummaryDto).getContent();
+        Page<UserSummaryDto> userDtos = users.map(this::convertToUserSummaryDto);
         
-        WsflResponse<List<UserSummaryDto>> response = 
-            new WsflResponse<>(userDtos);
-        response.setMeta(new WsflResponse.Meta(
-            users.getTotalElements(),
-            users.getTotalPages(),
-            users.getNumber(),
-            users.getSize()
-        ));
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userDtos);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -89,17 +80,17 @@ public class UserController extends BaseController {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<WsflResponse<UserDetailsDto>> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDetailsDto> getUserById(@PathVariable Long id) {
         User user = userService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
         UserDetailsDto userDto = convertToUserDetailsDto(user);
-        List<Link> links = List.of(
-            linkTo(methodOn(UserController.class).getUserTeams(id)).withRel("teams"),
-            linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel()
-        );
+//        List<Link> links = List.of(
+//            linkTo(methodOn(UserController.class).getUserTeams(id)).withRel("teams"),
+//            linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel()
+//        );
         
-        return ok(userDto, links);
+        return ResponseEntity.ok(userDto);
     }
 
     @Operation(
@@ -113,15 +104,15 @@ public class UserController extends BaseController {
                          schema = @Schema(implementation = TeamSummaryDto.class))
     )
     @GetMapping("/{id}/teams")
-    public ResponseEntity<WsflResponse<List<TeamSummaryDto>>> getUserTeams(@PathVariable Long id) {
+    public ResponseEntity<Page<TeamSummaryDto>> getUserTeams(@PathVariable Long id,
+                                                             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         User user = userService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        List<TeamSummaryDto> teams = user.getTeams().stream()
-                .map(this::convertToTeamSummaryDto)
-                .collect(Collectors.toList());
+        Page<TeamSummaryDto> teams = teamService.findByOwner(user, pageable)
+                .map(this::convertToTeamSummaryDto);
         
-        return ok(teams);
+        return ResponseEntity.ok(teams);
     }
 
     @Operation(
@@ -142,7 +133,7 @@ public class UserController extends BaseController {
         )
     })
     @PostMapping
-    public ResponseEntity<WsflResponse<UserDetailsDto>> createUser(
+    public ResponseEntity<UserDetailsDto> createUser(
             @Valid @RequestBody UserCreateDto createDto) {
         if (userService.existsByEmail(createDto.getEmail())) {
             throw new ValidationException("Email already exists");
@@ -151,7 +142,8 @@ public class UserController extends BaseController {
         User user = convertToUser(createDto);
         user.setPassword(passwordEncoder.encode(createDto.getPassword()));
         User savedUser = userService.save(user);
-        return created(convertToUserDetailsDto(savedUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToUserDetailsDto(savedUser));
+
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -173,7 +165,7 @@ public class UserController extends BaseController {
         )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<WsflResponse<UserDetailsDto>> updateUser(
+    public ResponseEntity<UserDetailsDto> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserCreateDto updateDto) {
         
@@ -188,7 +180,7 @@ public class UserController extends BaseController {
         user.setId(id);
         user.setPassword(passwordEncoder.encode(updateDto.getPassword()));
         User updatedUser = userService.save(user);
-        return ok(convertToUserDetailsDto(updatedUser));
+        return ResponseEntity.ok(convertToUserDetailsDto(updatedUser));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -210,7 +202,7 @@ public class UserController extends BaseController {
         )
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<WsflResponse<UserDetailsDto>> patchUser(
+    public ResponseEntity<UserDetailsDto> patchUser(
             @PathVariable Long id,
             @Valid @RequestBody UserPatchDto patchDto) {
         
@@ -233,7 +225,7 @@ public class UserController extends BaseController {
         }
         
         User updatedUser = userService.save(user);
-        return ok(convertToUserDetailsDto(updatedUser));
+        return ResponseEntity.ok(convertToUserDetailsDto(updatedUser));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -253,12 +245,12 @@ public class UserController extends BaseController {
         )
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<WsflResponse<Void>> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (!userService.findById(id).isPresent()) {
             throw new ResourceNotFoundException("User", "id", id);
         }
         userService.deleteById(id);
-        return noContent();
+        return ResponseEntity.noContent().build();
     }
 
     // Helper methods for DTO conversion

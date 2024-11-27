@@ -2,8 +2,6 @@ package org.tbeerbower.wsfl_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.tbeerbower.wsfl_backend.api.WsflResponse;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Race;
@@ -26,14 +24,11 @@ import org.tbeerbower.wsfl_backend.service.RaceResultService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
 import org.tbeerbower.wsfl_backend.service.RunnerService;
 
-import java.time.LocalTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Tag(name = "Race Results", description = "APIs for managing race results and runner performance")
 @RestController
 @RequestMapping("/api/race-results")
-public class RaceResultController extends BaseController {
+public class RaceResultController  {
 
     private final RaceResultService raceResultService;
     private final RaceService raceService;
@@ -55,11 +50,11 @@ public class RaceResultController extends BaseController {
     })
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<WsflResponse<Page<RaceResultSummaryDto>>> getAllRaceResults(
+    public ResponseEntity<Page<RaceResultSummaryDto>> getAllRaceResults(
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<RaceResult> results = raceResultService.findAll(pageable);
         Page<RaceResultSummaryDto> dtoPage = results.map(this::convertToRaceResultSummaryDto);
-        return ok(dtoPage);
+        return ResponseEntity.ok(dtoPage);
     }
 
     @Operation(summary = "Get race result by ID", description = "Retrieves a specific race result by its ID")
@@ -70,11 +65,11 @@ public class RaceResultController extends BaseController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<WsflResponse<RaceResultSummaryDto>> getRaceResult(
+    public ResponseEntity<RaceResultSummaryDto> getRaceResult(
             @Parameter(description = "ID of the race result") @PathVariable Long id) {
         RaceResult result = raceResultService.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Race result not found with id: " + id));
-        return ok(convertToRaceResultSummaryDto(result));
+        return ResponseEntity.ok(convertToRaceResultSummaryDto(result));
     }
 
     @Operation(summary = "Create race result", description = "Creates a new race result")
@@ -86,7 +81,7 @@ public class RaceResultController extends BaseController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<RaceResultSummaryDto>> createRaceResult(
+    public ResponseEntity<RaceResultSummaryDto> createRaceResult(
             @Valid @RequestBody RaceResultCreateDto createDto) {
         Race race = raceService.findById(createDto.getRaceId())
             .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + createDto.getRaceId()));
@@ -101,7 +96,8 @@ public class RaceResultController extends BaseController {
         result.setFinishTime(createDto.getFinishTime());
 
         RaceResult savedResult = raceResultService.save(result);
-        return created(convertToRaceResultSummaryDto(savedResult));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceResultSummaryDto(savedResult));
+
     }
 
     @Operation(summary = "Update race result", description = "Updates an existing race result")
@@ -113,7 +109,7 @@ public class RaceResultController extends BaseController {
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<RaceResultSummaryDto>> updateRaceResult(
+    public ResponseEntity<RaceResultSummaryDto> updateRaceResult(
             @Parameter(description = "ID of the race result") @PathVariable Long id,
             @Valid @RequestBody RaceResultUpdateDto updateDto) {
         RaceResult result = raceResultService.findById(id)
@@ -127,7 +123,7 @@ public class RaceResultController extends BaseController {
         }
 
         RaceResult updatedResult = raceResultService.save(result);
-        return ok(convertToRaceResultSummaryDto(updatedResult));
+        return ResponseEntity.ok(convertToRaceResultSummaryDto(updatedResult));
     }
 
     @Operation(summary = "Delete race result", description = "Deletes a race result")
@@ -138,13 +134,13 @@ public class RaceResultController extends BaseController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WsflResponse<Void>> deleteRaceResult(
+    public ResponseEntity<Void> deleteRaceResult(
             @Parameter(description = "ID of the race result") @PathVariable Long id) {
         if (!raceResultService.existsById(id)) {
             throw new ResourceNotFoundException("Race result not found with id: " + id);
         }
         raceResultService.deleteById(id);
-        return noContent();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 
     @Operation(summary = "Get results by race", description = "Retrieves all results for a specific race")
@@ -155,15 +151,14 @@ public class RaceResultController extends BaseController {
     })
     @GetMapping("/race/{raceId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<WsflResponse<List<RaceResultSummaryDto>>> getResultsByRace(
-            @Parameter(description = "ID of the race") @PathVariable Long raceId) {
+    public ResponseEntity<Page<RaceResultSummaryDto>> getResultsByRace(
+            @Parameter(description = "ID of the race") @PathVariable Long raceId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Race race = raceService.findById(raceId)
             .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + raceId));
-        List<RaceResult> results = raceResultService.findByRace(race);
-        List<RaceResultSummaryDto> dtos = results.stream()
-            .map(this::convertToRaceResultSummaryDto)
-            .collect(Collectors.toList());
-        return ok(dtos);
+        Page<RaceResult> results = raceResultService.findByRace(race, pageable);
+        Page<RaceResultSummaryDto> dtos = results.map(this::convertToRaceResultSummaryDto);
+        return ResponseEntity.ok(dtos);
     }
 
     private RaceResultSummaryDto convertToRaceResultSummaryDto(RaceResult result) {

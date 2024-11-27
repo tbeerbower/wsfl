@@ -10,22 +10,21 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
-public class LeagueDtoAssembler implements RepresentationModelAssembler<League, LeagueSummaryDto> {
+public class LeagueDtoAssembler  {
 
-    @Override
     public LeagueSummaryDto toModel(League league) {
         LeagueSummaryDto dto = createLeagueSummaryDto(league);
         
-        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(LeagueController.class).getAllLeagues(null)).withRel("leagues"));
-        dto.add(linkTo(methodOn(LeagueController.class).getLeagueTeams(league.getId())).withRel("teams"));
+//        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
+//        dto.add(linkTo(methodOn(LeagueController.class).getAllLeagues(null)).withRel("leagues"));
+//        dto.add(linkTo(methodOn(LeagueController.class).getLeagueTeams(league.getId())).withRel("teams"));
         
         return dto;
     }
 
     public LeagueSummaryDto toSummaryDto(League league) {
         LeagueSummaryDto dto = createLeagueSummaryDto(league);
-        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
+ //       dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
         return dto;
     }
 
