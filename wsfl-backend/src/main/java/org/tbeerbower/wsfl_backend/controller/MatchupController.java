@@ -1,0 +1,165 @@
+package org.tbeerbower.wsfl_backend.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.api.WsflResponse;
+import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
+import org.tbeerbower.wsfl_backend.dto.MatchupCreateDto;
+import org.tbeerbower.wsfl_backend.dto.MatchupDetailsDto;
+import org.tbeerbower.wsfl_backend.dto.MatchupSummaryDto;
+import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
+import org.tbeerbower.wsfl_backend.model.Matchup;
+import org.tbeerbower.wsfl_backend.service.MatchupService;
+import org.tbeerbower.wsfl_backend.service.RaceService;
+import org.tbeerbower.wsfl_backend.service.TeamService;
+
+@RestController
+@RequestMapping("/api/matchups")
+public class MatchupController extends BaseController {
+
+    private final MatchupService matchupService;
+    private final RaceService raceService;
+    private final TeamService teamService;
+    private final MatchupDtoAssembler matchupDtoAssembler;
+
+    @Autowired
+    public MatchupController(MatchupService matchupService, 
+                           RaceService raceService,
+                           TeamService teamService,
+                           MatchupDtoAssembler matchupDtoAssembler) {
+        this.matchupService = matchupService;
+        this.raceService = raceService;
+        this.teamService = teamService;
+        this.matchupDtoAssembler = matchupDtoAssembler;
+    }
+
+    @Operation(summary = "Get all matchups", description = "Retrieves a paginated list of all matchups in the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @GetMapping
+    public ResponseEntity<WsflResponse<Page<MatchupSummaryDto>>> getAllMatchups(
+            @Parameter(description = "Page number (0-based)")
+            @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Filter by race ID")
+            @RequestParam(required = false) Long raceId) {
+        
+        Page<Matchup> matchups = raceId != null ? 
+            matchupService.findByRace(raceId, pageable) :
+            matchupService.findAll(pageable);
+            
+        Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
+        return ok(matchupDtos);
+    }
+
+    @Operation(summary = "Get matchups by race", description = "Retrieves a paginated list of matchups for a specific race")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
+        @ApiResponse(responseCode = "404", description = "Race not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @GetMapping("/race/{raceId}")
+    public ResponseEntity<WsflResponse<Page<MatchupSummaryDto>>> getMatchupsByRace(
+            @Parameter(description = "ID of the race")
+            @PathVariable Long raceId,
+            @Parameter(description = "Page number (0-based)")
+            @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Filter by team ID")
+            @RequestParam(required = false) Long teamId) {
+        
+        Page<Matchup> matchups = teamId != null ?
+            matchupService.findByRaceAndTeam(raceId, teamId, pageable) :
+            matchupService.findByRace(raceId, pageable);
+            
+        Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
+        return ok(matchupDtos);
+    }
+
+    @Operation(summary = "Get a matchup by ID", description = "Retrieves a specific matchup by its ID")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Matchup found"),
+        @ApiResponse(responseCode = "404", description = "Matchup not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<WsflResponse<MatchupDetailsDto>> getMatchup(
+            @Parameter(description = "ID of the matchup")
+            @PathVariable Long id) {
+        
+        Matchup matchup = matchupService.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
+            
+        return ok(matchupDtoAssembler.toDetailedModel(matchup));
+    }
+
+    @Operation(summary = "Create a new matchup", description = "Creates a new matchup in the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Matchup created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input"),
+        @ApiResponse(responseCode = "403", description = "Not authorized to create matchups")
+    })
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<WsflResponse<MatchupDetailsDto>> createMatchup(
+            @Parameter(description = "Matchup creation data")
+            @Valid @RequestBody MatchupCreateDto createDto) {
+        
+        Matchup matchup = matchupService.create(createDto);
+        return created(matchupDtoAssembler.toDetailedModel(matchup));
+    }
+
+    @Operation(summary = "Update matchup scores", description = "Updates the scores for both teams in a matchup")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Scores updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Matchup not found"),
+        @ApiResponse(responseCode = "403", description = "Not authorized to update matchups")
+    })
+    @PatchMapping("/{id}/scores")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<WsflResponse<MatchupDetailsDto>> updateMatchupScores(
+            @Parameter(description = "ID of the matchup")
+            @PathVariable Long id,
+            @Parameter(description = "Score for team 1")
+            @RequestParam Integer team1Score,
+            @Parameter(description = "Score for team 2")
+            @RequestParam Integer team2Score) {
+        
+        Matchup matchup = matchupService.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
+            
+        matchup = matchupService.updateScores(id, team1Score, team2Score);
+        return ok(matchupDtoAssembler.toDetailedModel(matchup));
+    }
+
+    @Operation(summary = "Delete a matchup", description = "Deletes a matchup from the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Successfully deleted matchup"),
+        @ApiResponse(responseCode = "404", description = "Matchup not found"),
+        @ApiResponse(responseCode = "403", description = "Not authorized to delete matchups")
+    })
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<WsflResponse<Void>> deleteMatchup(
+            @Parameter(description = "ID of the matchup")
+            @PathVariable Long id) {
+        
+        if (!matchupService.existsById(id)) {
+            throw new ResourceNotFoundException("Matchup not found with id: " + id);
+        }
+        
+        matchupService.deleteById(id);
+        return noContent();
+    }
+}
