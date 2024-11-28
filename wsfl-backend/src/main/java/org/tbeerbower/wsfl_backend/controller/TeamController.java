@@ -232,64 +232,6 @@ public class TeamController  {
         return ResponseEntity.ok(runners);
     }
 
-    @Operation(
-        summary = "Get teams by league",
-        description = "Retrieves all teams belonging to a specific league"
-    )
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved teams"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "League not found",
-            content = @Content(schema = @Schema(type = "string", example = "League not found with id: 123"))
-        )
-    })
-    @GetMapping("/league/{leagueId}")
-    public ResponseEntity<Page<TeamSummaryDto>> getTeamsByLeague(
-            @Parameter(description = "ID of the league", required = true)
-            @PathVariable Long leagueId,
-            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
-        League league = leagueService.findById(leagueId)
-                .orElseThrow(() -> new ResourceNotFoundException("League", "id", leagueId));
-                
-        Page<TeamSummaryDto> teamDtos = teamService.findByLeague(league,pageable)
-                .map(this::convertToTeamSummaryDto);
-                
-        return ResponseEntity.ok(teamDtos);
-    }
-
-    @Operation(
-        summary = "Get league standings",
-        description = "Retrieves teams in a league ordered by wins and total score"
-    )
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved standings"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "League not found",
-            content = @Content(schema = @Schema(type = "string", example = "League not found with id: 123"))
-        )
-    })
-    @GetMapping("/standings/{leagueId}")
-    public ResponseEntity<Page<TeamDetailsDto>> getLeagueStandings(
-            @Parameter(description = "ID of the league", required = true)
-            @PathVariable Long leagueId,
-            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
-        League league = leagueService.findById(leagueId)
-                .orElseThrow(() -> new ResourceNotFoundException("League", "id", leagueId));
-
-        Page<TeamDetailsDto> standings = teamService.getLeagueStandings(league, pageable)
-                .map(this::convertToTeamDetailsDto);
-
-        return ResponseEntity.ok(standings);
-    }
-
     // Helper methods for DTO conversion
     private TeamSummaryDto convertToTeamSummaryDto(Team team) {
         return new TeamSummaryDto(

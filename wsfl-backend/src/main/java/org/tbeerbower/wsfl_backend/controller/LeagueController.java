@@ -264,11 +264,15 @@ public class LeagueController  {
     public ResponseEntity<Page<TeamSummaryDto>> getLeagueTeams(
             @Parameter(description = "ID of the league", required = true)
             @PathVariable Long id,
+            @Parameter(description = "Order teams by standings")
+            @RequestParam(defaultValue = "true") Boolean standings,
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         League league = leagueService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
-        Page<TeamSummaryDto> teams = teamService.findByLeague(league, pageable).map(this::convertToTeamSummaryDto);
+        Page<Team> teamsPage = standings ?
+                teamService.getLeagueStandings(league, pageable) : teamService.findByLeague(league, pageable);
+        Page<TeamSummaryDto> teams = teamsPage.map(this::convertToTeamSummaryDto);
 
         return ResponseEntity.ok(teams);
     }
