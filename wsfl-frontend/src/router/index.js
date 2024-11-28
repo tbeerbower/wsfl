@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import AddTeamView from '../views/AddTeamView.vue'
 import AddLeagueView from '../views/AddLeagueView.vue'
+import LeagueAdminView from '../views/LeagueAdminView.vue'
 
 const routes = [
   {
@@ -39,6 +40,12 @@ const routes = [
     path: '/add-league',
     name: 'add-league',
     component: AddLeagueView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/leagues/:id',
+    name: 'league-admin',
+    component: LeagueAdminView,
     meta: { requiresAuth: true }
   }
 ]

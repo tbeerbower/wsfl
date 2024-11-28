@@ -16,7 +16,7 @@
         <div v-if="loading.adminLeagues">Loading leagues...</div>
         <div v-else-if="error.adminLeagues" class="error-message">{{ error.adminLeagues }}</div>
         <div class="leagues-grid">
-          <div v-for="league in adminLeagues" :key="league.id" class="league-card">
+          <div v-for="league in adminLeagues" :key="league.id" class="league-card" @click="$router.push(`/leagues/${league.id}`)">
             <div class="league-header">
               <h3>{{ league.name }}</h3>
               <span class="season-badge">Season {{ league.season }}</span>
@@ -669,6 +669,13 @@ h3 {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.league-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .league-header {
