@@ -77,7 +77,7 @@ public class RaceController  {
         @ApiResponse(
             responseCode = "404",
             description = "Race not found",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string"))
         )
     })
     @GetMapping("/{id}")
@@ -100,12 +100,12 @@ public class RaceController  {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         ),
         @ApiResponse(
             responseCode = "404",
             description = "League not found",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "League not found with id: 1"))
         )
     })
     @PreAuthorize("hasRole('ADMIN')")
@@ -137,12 +137,12 @@ public class RaceController  {
         @ApiResponse(
             responseCode = "404",
             description = "Race or League not found",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1"))
         ),
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         )
     })
     @PreAuthorize("hasRole('ADMIN')")
@@ -179,7 +179,7 @@ public class RaceController  {
         @ApiResponse(
             responseCode = "404",
             description = "Race not found",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1"))
         )
     })
     @PreAuthorize("hasRole('ADMIN')")
@@ -205,7 +205,7 @@ public class RaceController  {
         @ApiResponse(
             responseCode = "404",
             description = "Race not found",
-            content = @Content(schema = @Schema(implementation = ErrorDto.class))
+            content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1"))
         )
     })
     @GetMapping("/{id}/results")

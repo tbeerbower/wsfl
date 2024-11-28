@@ -2,6 +2,8 @@ package org.tbeerbower.wsfl_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,7 +48,7 @@ public class RaceResultController  {
     @Operation(summary = "Get all race results", description = "Retrieves a paginated list of all race results")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved race results"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping
     @PreAuthorize("hasRole('USER')")
@@ -60,8 +62,8 @@ public class RaceResultController  {
     @Operation(summary = "Get race result by ID", description = "Retrieves a specific race result by its ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved race result"),
-        @ApiResponse(responseCode = "404", description = "Race result not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "404", description = "Race result not found", content = @Content(schema = @Schema(type = "string", example = "Race result not found with id: 1"))),
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
@@ -75,9 +77,9 @@ public class RaceResultController  {
     @Operation(summary = "Create race result", description = "Creates a new race result")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Race result created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "403", description = "Access denied"),
-        @ApiResponse(responseCode = "404", description = "Race or runner not found")
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(type = "string", example = "Invalid input"))),
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied"))),
+        @ApiResponse(responseCode = "404", description = "Race or runner not found", content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1")))
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -103,9 +105,9 @@ public class RaceResultController  {
     @Operation(summary = "Update race result", description = "Updates an existing race result")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Race result updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "403", description = "Access denied"),
-        @ApiResponse(responseCode = "404", description = "Race result not found")
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(type = "string", example = "Invalid input"))),
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied"))),
+        @ApiResponse(responseCode = "404", description = "Race result not found", content = @Content(schema = @Schema(type = "string", example = "Race result not found with id: 1")))
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -129,8 +131,8 @@ public class RaceResultController  {
     @Operation(summary = "Delete race result", description = "Deletes a race result")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Race result deleted successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied"),
-        @ApiResponse(responseCode = "404", description = "Race result not found")
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied"))),
+        @ApiResponse(responseCode = "404", description = "Race result not found", content = @Content(schema = @Schema(type = "string", example = "Race result not found with id: 1")))
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -146,8 +148,8 @@ public class RaceResultController  {
     @Operation(summary = "Get results by race", description = "Retrieves all results for a specific race")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved race results"),
-        @ApiResponse(responseCode = "403", description = "Access denied"),
-        @ApiResponse(responseCode = "404", description = "Race not found")
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied"))),
+        @ApiResponse(responseCode = "404", description = "Race not found", content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1")))
     })
     @GetMapping("/race/{raceId}")
     @PreAuthorize("hasRole('USER')")

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 
+@Tag(name = "Matchup", description = "Matchup management APIs for creating and managing team matchups")
 @RestController
 @RequestMapping("/api/matchups")
 public class MatchupController  {
@@ -49,7 +51,7 @@ public class MatchupController  {
     @Operation(summary = "Get all matchups", description = "Retrieves a paginated list of all matchups in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
-        @ApiResponse(responseCode = "403", description = "Access denied", content = @io.swagger.v3.oas.annotations.media.Content(schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", example = "Access denied")))
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping
     public ResponseEntity<Page<MatchupSummaryDto>> getAllMatchups(

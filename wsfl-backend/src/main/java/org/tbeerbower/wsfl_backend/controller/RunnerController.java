@@ -54,10 +54,6 @@ public class RunnerController  {
         Page<Runner> runners = runnerService.findAll(pageable);
         Page<RunnerSummaryDto> runnerDtos = runners.map(runner -> {
             RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
-//            List<Link> links = List.of(
-//                linkTo(methodOn(RunnerController.class).getRunnerById(runner.getId())).withSelfRel(),
-//                linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
-//            );
             return dto;
         });
         return ResponseEntity.ok(runnerDtos);
@@ -86,11 +82,6 @@ public class RunnerController  {
                 .orElseThrow(() -> new ResourceNotFoundException("Runner", "id", id));
         
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(runner);
-//        runnerDto.add(
-//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-//            linkTo(methodOn(RunnerController.class).getRunnersByGender(runner.getGender(), null)).withRel("runners-by-gender")
-//        );
-        
         return ResponseEntity.ok(runnerDto);
     }
     
@@ -115,11 +106,6 @@ public class RunnerController  {
             RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
             return dto;
         });
-        
-//        List<Link> links = List.of(
-//            linkTo(methodOn(RunnerController.class).getRunnersByGender(gender, null)).withRel("self")
-//        );
-        
         return ResponseEntity.ok(runnerDtos);
     }
     
@@ -138,7 +124,7 @@ public class RunnerController  {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input data",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         )
     })
     @PostMapping
@@ -147,12 +133,6 @@ public class RunnerController  {
         Runner runner = convertToRunner(createDto);
         Runner savedRunner = runnerService.save(runner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(savedRunner);
-        
-//        runnerDto.add(
-//            linkTo(methodOn(RunnerController.class).getRunnerById(savedRunner.getId())).withSelfRel(),
-//            linkTo(methodOn(RunnerController.class).getRunnersByGender(savedRunner.getGender(), null)).withRel("runners-by-gender")
-//        );
-        
         return ResponseEntity.status(201).body(runnerDto);
     }
     
@@ -171,12 +151,12 @@ public class RunnerController  {
         @ApiResponse(
             responseCode = "404",
             description = "Runner not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Runner not found with id: 1"))
         ),
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input data",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         )
     })
     @PutMapping("/{id}")
@@ -190,11 +170,6 @@ public class RunnerController  {
         runner.setId(id);
         Runner updatedRunner = runnerService.save(runner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
-        
-//        runnerDto.add(
-//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-//            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
-//        );
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -214,12 +189,12 @@ public class RunnerController  {
         @ApiResponse(
             responseCode = "404",
             description = "Runner not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Runner not found with id: 1"))
         ),
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input data",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         )
     })
     @PatchMapping("/{id}")
@@ -232,11 +207,6 @@ public class RunnerController  {
         updateRunnerFromPatch(existingRunner, patchDto);
         Runner updatedRunner = runnerService.save(existingRunner);
         RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
-        
-//        runnerDto.add(
-//            linkTo(methodOn(RunnerController.class).getRunnerById(id)).withSelfRel(),
-//            linkTo(methodOn(RunnerController.class).getRunnersByGender(updatedRunner.getGender(), null)).withRel("runners-by-gender")
-//        );
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -254,7 +224,7 @@ public class RunnerController  {
         @ApiResponse(
             responseCode = "404",
             description = "Runner not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Runner not found with id: 1"))
         )
     })
     @DeleteMapping("/{id}")
@@ -279,9 +249,6 @@ public class RunnerController  {
                     team.getTies(),
                     team.getTotalScore()
                 );
-//                dto.add(
-//                    linkTo(methodOn(TeamController.class).getTeamById(team.getId())).withSelfRel()
-//                );
                 return dto;
             })
             .collect(Collectors.toList());

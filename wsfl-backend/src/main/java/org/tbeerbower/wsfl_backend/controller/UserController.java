@@ -76,7 +76,7 @@ public class UserController  {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "User not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
         )
     })
     @GetMapping("/{id}")
@@ -85,11 +85,7 @@ public class UserController  {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
         UserDetailsDto userDto = convertToUserDetailsDto(user);
-//        List<Link> links = List.of(
-//            linkTo(methodOn(UserController.class).getUserTeams(id)).withRel("teams"),
-//            linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel()
-//        );
-        
+
         return ResponseEntity.ok(userDto);
     }
 
@@ -129,7 +125,7 @@ public class UserController  {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
             description = "Email already exists",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "Email already exists"))
         )
     })
     @PostMapping
@@ -161,7 +157,7 @@ public class UserController  {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "User not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
         )
     })
     @PutMapping("/{id}")
@@ -198,7 +194,7 @@ public class UserController  {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "User not found",
-            content = @Content
+            content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
         )
     })
     @PatchMapping("/{id}")

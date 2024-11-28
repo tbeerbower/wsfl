@@ -87,10 +87,6 @@ public class TeamController  {
                 .orElseThrow(() -> new ResourceNotFoundException("Team", "id", id));
 
         TeamDetailsDto teamDto = convertToTeamDetailsDto(team);
-//        List<Link> links = List.of(
-//            linkTo(methodOn(TeamController.class).getTeamRunners(id)).withRel("runners"),
-//            linkTo(methodOn(TeamController.class).getTeamById(id)).withSelfRel()
-//        );
 
         return ResponseEntity.ok(teamDto);
     }
@@ -109,17 +105,17 @@ public class TeamController  {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid input data",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))
         ),
         @ApiResponse(
             responseCode = "404",
             description = "League not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "League not found with id: 1"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to create teams",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @PostMapping
@@ -151,12 +147,12 @@ public class TeamController  {
         @ApiResponse(
             responseCode = "404",
             description = "Team not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Team not found with id: 123"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to update teams",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @PutMapping("/{id}")
@@ -192,12 +188,12 @@ public class TeamController  {
         @ApiResponse(
             responseCode = "404",
             description = "Team not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Team not found with id: 123"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to delete teams",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @DeleteMapping("/{id}")
@@ -224,7 +220,7 @@ public class TeamController  {
         @ApiResponse(
             responseCode = "404",
             description = "Team not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Team not found with id: 123"))
         )
     })
     @GetMapping("/{id}/runners")
@@ -284,7 +280,7 @@ public class TeamController  {
         @ApiResponse(
             responseCode = "404",
             description = "League not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "League not found with id: 123"))
         )
     })
     @GetMapping("/standings/{leagueId}")
