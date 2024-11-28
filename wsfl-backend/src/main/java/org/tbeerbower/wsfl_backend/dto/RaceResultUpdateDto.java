@@ -13,9 +13,14 @@ public class RaceResultUpdateDto {
     @Min(value = 1, message = "Gender place must be greater than 0")
     private Integer genderPlace;
 
+    @Schema(description = "The overall place of the runner in the race", example = "5")
+    @NotNull(message = "Overall place is required")
+    @Min(value = 1, message = "Overall place must be greater than 0")
+    private Integer overallPlace;
+
     @Schema(description = "Runner's finish time", example = "01:23:45")
     @NotNull(message = "Finish time is required")
-    private LocalTime finishTime;
+    private String time;
 
     // Getters and Setters
     public Integer getGenderPlace() {
@@ -26,11 +31,19 @@ public class RaceResultUpdateDto {
         this.genderPlace = genderPlace;
     }
 
-    public LocalTime getFinishTime() {
-        return finishTime;
+    public Integer getOverallPlace() {
+        return overallPlace;
     }
 
-    public void setFinishTime(LocalTime finishTime) {
-        this.finishTime = finishTime;
+    public void setOverallPlace(Integer overallPlace) {
+        this.overallPlace = overallPlace;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 }

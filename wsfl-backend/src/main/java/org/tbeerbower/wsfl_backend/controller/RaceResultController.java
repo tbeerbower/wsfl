@@ -98,7 +98,8 @@ public class RaceResultController  {
         result.setRace(race);
         result.setRunner(runner);
         result.setGenderPlace(createDto.getGenderPlace());
-        result.setFinishTime(createDto.getFinishTime());
+        result.setOverallPlace(createDto.getOverallPlace());
+        result.setTime(createDto.getTime());
 
         RaceResult savedResult = raceResultService.save(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceResultDetailsDto(savedResult));
@@ -123,8 +124,11 @@ public class RaceResultController  {
         if (updateDto.getGenderPlace() != null) {
             result.setGenderPlace(updateDto.getGenderPlace());
         }
-        if (updateDto.getFinishTime() != null) {
-            result.setFinishTime(updateDto.getFinishTime());
+        if (updateDto.getOverallPlace() != null) {
+            result.setOverallPlace(updateDto.getOverallPlace());
+        }
+        if (updateDto.getTime() != null) {
+            result.setTime(updateDto.getTime());
         }
 
         RaceResult updatedResult = raceResultService.save(result);

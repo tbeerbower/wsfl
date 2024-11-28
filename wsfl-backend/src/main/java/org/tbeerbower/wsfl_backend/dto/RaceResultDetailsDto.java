@@ -15,8 +15,11 @@ public class RaceResultDetailsDto {
     @Schema(description = "Runner's place within their gender category", example = "3")
     private Integer genderPlace;
 
+    @Schema(description = "Runner's place overall", example = "3")
+    private Integer overallPlace;
+
     @Schema(description = "Runner's finish time", example = "01:23:45")
-    private LocalTime finishTime;
+    private String time;
     
     @Schema(description = "Race information")
     private RaceSummaryDto race;
@@ -24,10 +27,11 @@ public class RaceResultDetailsDto {
     @Schema(description = "Runner information")
     private RunnerSummaryDto runner;
 
-    public RaceResultDetailsDto(Long id, Integer genderPlace, LocalTime finishTime, RaceSummaryDto race, RunnerSummaryDto runner) {
+    public RaceResultDetailsDto(Long id, Integer genderPlace, Integer overallPlace, String time, RaceSummaryDto race, RunnerSummaryDto runner) {
         this.id = id;
         this.genderPlace = genderPlace;
-        this.finishTime = finishTime;
+        this.overallPlace = overallPlace;
+        this.time = time;
         this.race = race;
         this.runner = runner;
     }
@@ -35,7 +39,15 @@ public class RaceResultDetailsDto {
     // Getters only for immutability
     public Long getId() { return id; }
     public Integer getGenderPlace() { return genderPlace; }
-    public LocalTime getFinishTime() { return finishTime; }
+
+    public Integer getOverallPlace() {
+        return overallPlace;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
     public RaceSummaryDto getRace() { return race; }
     public RunnerSummaryDto getRunner() { return runner; }
 }

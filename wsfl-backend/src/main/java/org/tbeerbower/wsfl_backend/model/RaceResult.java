@@ -9,12 +9,16 @@ public class RaceResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @Column(name = "gender_place")
     private Integer genderPlace;
 
-    @Column(name = "finish_time")
-    private LocalTime finishTime;
-    
+    @Column(name = "overall_place")
+    private Integer overallPlace;
+
+    @Column(name = "time")
+    private String time;
+
     @ManyToOne
     @JoinColumn(name = "race_id")
     private Race race;
@@ -28,10 +32,11 @@ public class RaceResult {
     }
     
     // Constructor for DTO conversion
-    public RaceResult(Long id, Integer genderPlace, LocalTime finishTime, Race race, Runner runner) {
+    public RaceResult(Long id, Integer genderPlace, Integer overallPlace, String time, Race race, Runner runner) {
         this.id = id;
         this.genderPlace = genderPlace;
-        this.finishTime = finishTime;
+        this.overallPlace = overallPlace;
+        this.time = time;
         this.race = race;
         this.runner = runner;
     }
@@ -53,12 +58,20 @@ public class RaceResult {
         this.genderPlace = genderPlace;
     }
 
-    public LocalTime getFinishTime() {
-        return finishTime;
+    public Integer getOverallPlace() {
+        return overallPlace;
     }
 
-    public void setFinishTime(LocalTime finishTime) {
-        this.finishTime = finishTime;
+    public void setOverallPlace(Integer overallPlace) {
+        this.overallPlace = overallPlace;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 
     public Race getRace() {

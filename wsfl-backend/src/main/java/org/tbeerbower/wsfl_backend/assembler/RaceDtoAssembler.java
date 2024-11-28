@@ -52,6 +52,8 @@ public class RaceDtoAssembler {
         return new RaceResultSummaryDto(
             result.getId(),
             result.getGenderPlace(),
+            result.getOverallPlace(),
+            result.getTime(),
             runnerDto
         );
     }

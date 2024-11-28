@@ -16,6 +16,8 @@ public class RaceResultDtoAssembler {
         return new RaceResultSummaryDto(
             raceResult.getId(),
             raceResult.getGenderPlace(),
+            raceResult.getOverallPlace(),
+            raceResult.getTime(),
             new RunnerSummaryDto(
                 raceResult.getRunner().getId(),
                 raceResult.getRunner().getName(),
@@ -28,7 +30,8 @@ public class RaceResultDtoAssembler {
         return new RaceResultDetailsDto(
             raceResult.getId(),
             raceResult.getGenderPlace(),
-            raceResult.getFinishTime(),
+            raceResult.getOverallPlace(),
+            raceResult.getTime(),
             new RaceSummaryDto(
                 raceResult.getRace().getId(),
                 raceResult.getRace().getName(),

@@ -22,17 +22,23 @@ public class RaceResultCreateDto {
     @Schema(description = "Runner's place within their gender category", example = "3", required = true)
     private Integer genderPlace;
 
+    @NotNull(message = "Overall place is required")
+    @Min(value = 1, message = "Overall place must be positive")
+    @Schema(description = "Runner's place overall", example = "3", required = true)
+    private Integer overallPlace;
+
     @Schema(description = "Runner's finish time", example = "01:23:45")
-    private LocalTime finishTime;
+    private String time;
 
     public RaceResultCreateDto() {
     }
 
-    public RaceResultCreateDto(Long raceId, Long runnerId, Integer genderPlace, LocalTime finishTime) {
+    public RaceResultCreateDto(Long raceId, Long runnerId, Integer genderPlace, Integer overallPlace, String time) {
         this.raceId = raceId;
         this.runnerId = runnerId;
         this.genderPlace = genderPlace;
-        this.finishTime = finishTime;
+        this.overallPlace = overallPlace;
+        this.time = time;
     }
 
     // Getters and Setters
@@ -45,6 +51,19 @@ public class RaceResultCreateDto {
     public Integer getGenderPlace() { return genderPlace; }
     public void setGenderPlace(Integer genderPlace) { this.genderPlace = genderPlace; }
 
-    public LocalTime getFinishTime() { return finishTime; }
-    public void setFinishTime(LocalTime finishTime) { this.finishTime = finishTime; }
+    public Integer getOverallPlace() {
+        return overallPlace;
+    }
+
+    public void setOverallPlace(Integer overallPlace) {
+        this.overallPlace = overallPlace;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 }

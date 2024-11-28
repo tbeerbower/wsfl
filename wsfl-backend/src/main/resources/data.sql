@@ -62,15 +62,15 @@ INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
 (5, 'Winter Opener', '2024-11-01', false, 2);
 
 -- Insert Race Results
-INSERT INTO race_results (id, gender_place, race_id, runner_id) VALUES
-(1, 1, 1, 1), -- Mike Johnson results
-(2, 1, 1, 2), -- Sarah Williams results
-(3, 2, 1, 3), -- Tom Brown results
-(4, 2, 1, 4), -- Lisa Davis results
-(5, 1, 2, 5), -- James Wilson results
-(6, 1, 2, 6), -- Emma Thompson results
-(7, 2, 2, 7), -- David Miller results
-(8, 2, 2, 8); -- Rachel Green results
+INSERT INTO race_results (id, gender_place, overall_place, time, race_id, runner_id) VALUES
+(1, 1, 1, '25:14', 1, 1), -- Mike Johnson results
+(2, 1, 2, '25:24', 1, 2), -- Sarah Williams results
+(3, 2, 3, '26:14', 1, 3), -- Tom Brown results
+(4, 2, 4, '27:33', 1, 4), -- Lisa Davis results
+(5, 1, 1, '21:18', 2, 5), -- James Wilson results
+(6, 1, 2, '21:24', 2, 6), -- Emma Thompson results
+(7, 2, 3, '22:32', 2, 7), -- David Miller results
+(8, 2, 4, '24:02', 2, 8); -- Rachel Green results
 
 -- Insert Matchups
 INSERT INTO matchups (id, race_id, team1_id, team2_id, team1score, team2score) VALUES
