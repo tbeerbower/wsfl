@@ -16,7 +16,16 @@
         <div v-else class="teams-grid">
           <div v-for="team in teams" :key="team.id" class="team-card">
             <h3>{{ team.name }}</h3>
-            <p>League: {{ team.league?.name || 'No League' }}</p>
+            <div class="team-stats">
+              <div class="stat-row">
+                <span class="stat-label">Record:</span>
+                <span class="stat-value">{{ team.wins || 0 }}W - {{ team.losses || 0 }}L - {{ team.ties || 0 }}T</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Total Score:</span>
+                <span class="stat-value">{{ team.totalScore || 0 }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -30,11 +39,29 @@
         </div>
         <div v-else class="matchups-list">
           <div v-for="matchup in matchups" :key="matchup.id" class="matchup-card">
-            <div class="matchup-teams">
-              {{ matchup.team1?.name || 'Team 1' }} vs {{ matchup.team2?.name || 'Team 2' }}
+            <div class="matchup-header">
+              <span class="race-label">Race #{{ matchup.raceId }}</span>
             </div>
-            <div class="matchup-score" v-if="matchup.score1 !== null && matchup.score2 !== null">
-              {{ matchup.score1 }} - {{ matchup.score2 }}
+            <div class="matchup-teams">
+              <div class="team-column" :class="{ 'winner': matchup.team1Score < matchup.team2Score }">
+                <h4>{{ matchup.team1?.name }}</h4>
+                <div class="team-record">
+                  {{ matchup.team1?.wins || 0 }}W - {{ matchup.team1?.losses || 0 }}L - {{ matchup.team1?.ties || 0 }}T
+                </div>
+                <div class="team-score" v-if="matchup.team1Score !== null">
+                  Score: {{ matchup.team1Score }}
+                </div>
+              </div>
+              <div class="vs-badge">VS</div>
+              <div class="team-column" :class="{ 'winner': matchup.team2Score < matchup.team1Score }">
+                <h4>{{ matchup.team2?.name }}</h4>
+                <div class="team-record">
+                  {{ matchup.team2?.wins || 0 }}W - {{ matchup.team2?.losses || 0 }}L - {{ matchup.team2?.ties || 0 }}T
+                </div>
+                <div class="team-score" v-if="matchup.team2Score !== null">
+                  Score: {{ matchup.team2Score }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -113,7 +140,7 @@ export default {
       error.value.teams = null
       try {
         const response = await axios.get(`/api/users/${user.value.id}/teams`)
-        teams.value = response.data || []
+        teams.value = response.data.content || [] // Extract teams from paginated response
       } catch (err) {
         error.value.teams = 'Failed to load teams'
         console.error(err)
@@ -131,7 +158,7 @@ export default {
         const response = await axios.get('/api/matchups', {
           params: { userId: user.value.id }
         })
-        matchups.value = response.data || []
+        matchups.value = response.data.content || []
       } catch (err) {
         error.value.matchups = 'Failed to load matchups'
         console.error(err)
@@ -254,25 +281,119 @@ export default {
 }
 
 .team-card {
-  padding: 15px;
+  padding: 20px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.team-stats {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.matchup-card {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.matchup-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.race-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.matchup-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.team-column {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+.team-column.winner {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+}
+
+.vs-badge {
+  font-weight: bold;
+  color: #666;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 50%;
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #2196F3;
+}
+
+.team-record {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.team-score {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
 }
 
 .matchups-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.matchup-card {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 20px;
 }
 
 .standings-table {
@@ -318,7 +439,8 @@ h2 {
 }
 
 h3 {
-  margin: 0 0 10px 0;
+  margin: 0;
   font-size: 18px;
+  color: #2196F3;
 }
 </style>

@@ -3,20 +3,20 @@ TRUNCATE TABLE users, leagues, teams, runners, races, race_results, matchups, te
 
 -- Insert Users with hashed passwords (password is 'password')
 INSERT INTO users (id, email, name, picture, active, password) VALUES
-(1, 'john.doe@example.com', 'John Doe', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
+(1, 'tbeerbower@gmail.com', 'Tom B', '', true, '$2a$10$TXkorQjx0GhjdjgJ2A84.OQ5W3Q5OWWu.SXXCKjyDt.vXD2WdzxyS'),
 (2, 'jane.smith@example.com', 'Jane Smith', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
 (3, 'bob.wilson@example.com', 'Bob Wilson', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
 (4, 'alice.jones@example.com', 'Alice Jones', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
-(5, 'tbeerbower@gmail.com', 'Tom B', '', true, '$2a$10$TXkorQjx0GhjdjgJ2A84.OQ5W3Q5OWWu.SXXCKjyDt.vXD2WdzxyS');
+(5, 'john.doe@example.com', 'John Doe', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m');
 
 -- Insert User Roles
 INSERT INTO user_roles (user_id, role) VALUES
 (1, 'ROLE_USER'),
+(1, 'ROLE_ADMIN'),
 (2, 'ROLE_USER'),
 (3, 'ROLE_USER'),
 (4, 'ROLE_USER'),
-(5, 'ROLE_USER'),
-(5, 'ROLE_ADMIN');
+(5, 'ROLE_USER');
 
 -- Insert Leagues
 INSERT INTO leagues (id, name, season, max_teams, admin_id) VALUES
