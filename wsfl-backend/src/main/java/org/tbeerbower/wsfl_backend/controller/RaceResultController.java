@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.RaceResultDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Race;
@@ -29,20 +30,22 @@ import org.tbeerbower.wsfl_backend.service.RunnerService;
 
 @Tag(name = "Race Results", description = "APIs for managing race results and runner performance")
 @RestController
-@RequestMapping("/api/race-results")
+@RequestMapping("/api/results")
 public class RaceResultController  {
 
     private final RaceResultService raceResultService;
     private final RaceService raceService;
     private final RunnerService runnerService;
+    private final RaceResultDtoAssembler raceResultDtoAssembler;
 
     @Autowired
     public RaceResultController(RaceResultService raceResultService,
-                              RaceService raceService,
-                              RunnerService runnerService) {
+                                RaceService raceService,
+                                RunnerService runnerService, RaceResultDtoAssembler raceResultDtoAssembler) {
         this.raceResultService = raceResultService;
         this.raceService = raceService;
         this.runnerService = runnerService;
+        this.raceResultDtoAssembler = raceResultDtoAssembler;
     }
 
     @Operation(summary = "Get all race results", description = "Retrieves a paginated list of all race results")
@@ -52,10 +55,10 @@ public class RaceResultController  {
     })
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<RaceResultSummaryDto>> getAllRaceResults(
+    public ResponseEntity<Page<RaceResultDetailsDto>> getAllRaceResults(
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<RaceResult> results = raceResultService.findAll(pageable);
-        Page<RaceResultSummaryDto> dtoPage = results.map(this::convertToRaceResultSummaryDto);
+        Page<RaceResultDetailsDto> dtoPage = results.map(this::convertToRaceResultDetailsDto);
         return ResponseEntity.ok(dtoPage);
     }
 
@@ -67,11 +70,11 @@ public class RaceResultController  {
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<RaceResultSummaryDto> getRaceResult(
+    public ResponseEntity<RaceResultDetailsDto> getRaceResult(
             @Parameter(description = "ID of the race result") @PathVariable Long id) {
         RaceResult result = raceResultService.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Race result not found with id: " + id));
-        return ResponseEntity.ok(convertToRaceResultSummaryDto(result));
+        return ResponseEntity.ok(convertToRaceResultDetailsDto(result));
     }
 
     @Operation(summary = "Create race result", description = "Creates a new race result")
@@ -83,7 +86,7 @@ public class RaceResultController  {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RaceResultSummaryDto> createRaceResult(
+    public ResponseEntity<RaceResultDetailsDto> createRaceResult(
             @Valid @RequestBody RaceResultCreateDto createDto) {
         Race race = raceService.findById(createDto.getRaceId())
             .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + createDto.getRaceId()));
@@ -98,7 +101,7 @@ public class RaceResultController  {
         result.setFinishTime(createDto.getFinishTime());
 
         RaceResult savedResult = raceResultService.save(result);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceResultSummaryDto(savedResult));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceResultDetailsDto(savedResult));
 
     }
 
@@ -111,7 +114,7 @@ public class RaceResultController  {
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RaceResultSummaryDto> updateRaceResult(
+    public ResponseEntity<RaceResultDetailsDto> updateRaceResult(
             @Parameter(description = "ID of the race result") @PathVariable Long id,
             @Valid @RequestBody RaceResultUpdateDto updateDto) {
         RaceResult result = raceResultService.findById(id)
@@ -125,7 +128,7 @@ public class RaceResultController  {
         }
 
         RaceResult updatedResult = raceResultService.save(result);
-        return ResponseEntity.ok(convertToRaceResultSummaryDto(updatedResult));
+        return ResponseEntity.ok(convertToRaceResultDetailsDto(updatedResult));
     }
 
     @Operation(summary = "Delete race result", description = "Deletes a race result")
@@ -145,33 +148,7 @@ public class RaceResultController  {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 
-    @Operation(summary = "Get results by race", description = "Retrieves all results for a specific race")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved race results"),
-        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied"))),
-        @ApiResponse(responseCode = "404", description = "Race not found", content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1")))
-    })
-    @GetMapping("/race/{raceId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<RaceResultSummaryDto>> getResultsByRace(
-            @Parameter(description = "ID of the race") @PathVariable Long raceId,
-            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
-        Race race = raceService.findById(raceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Race not found with id: " + raceId));
-        Page<RaceResult> results = raceResultService.findByRace(race, pageable);
-        Page<RaceResultSummaryDto> dtos = results.map(this::convertToRaceResultSummaryDto);
-        return ResponseEntity.ok(dtos);
-    }
-
-    private RaceResultSummaryDto convertToRaceResultSummaryDto(RaceResult result) {
-        return new RaceResultSummaryDto(
-            result.getId(),
-            result.getGenderPlace(),
-            new RunnerSummaryDto(
-                result.getRunner().getId(),
-                result.getRunner().getName(),
-                result.getRunner().getGender()
-            )
-        );
+    private RaceResultDetailsDto convertToRaceResultDetailsDto(RaceResult result) {
+        return raceResultDtoAssembler.toDetailedModel(result);
     }
 }

@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.RaceDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.RaceResultDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
@@ -41,17 +43,20 @@ public class RaceController  {
     private final RaceResultService raceResultService;
     private final LeagueService leagueService;
     private final MatchupService matchupService;
+    private final RaceDtoAssembler raceDtoAssembler;
     private final MatchupDtoAssembler matchupDtoAssembler;
-
+    private final RaceResultDtoAssembler raceResultDtoAssembler;
 
 
     @Autowired
-    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService, MatchupService matchupService, MatchupDtoAssembler matchupDtoAssembler) {
+    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService, MatchupService matchupService, RaceDtoAssembler raceDtoAssembler, MatchupDtoAssembler matchupDtoAssembler, RaceResultDtoAssembler raceResultDtoAssembler) {
         this.raceService = raceService;
         this.raceResultService = raceResultService;
         this.leagueService = leagueService;
         this.matchupService = matchupService;
+        this.raceDtoAssembler = raceDtoAssembler;
         this.matchupDtoAssembler = matchupDtoAssembler;
+        this.raceResultDtoAssembler = raceResultDtoAssembler;
     }
 
     @Operation(
@@ -257,44 +262,14 @@ public class RaceController  {
 
     // Helper methods for DTO conversion
     private RaceSummaryDto convertToRaceSummaryDto(Race race) {
-        return new RaceSummaryDto(
-            race.getId(),
-            race.getName(),
-            race.getDate(),
-            race.getIsPlayoff()
-        );
+        return raceDtoAssembler.toModel(race);
     }
 
     private RaceDetailsDto convertToRaceDetailsDto(Race race) {
-        List<RaceResultSummaryDto> resultDtos = race.getResults().stream()
-                .map(this::convertToRaceResultSummaryDto)
-                .collect(Collectors.toList());
-
-        LeagueSummaryDto leagueDto = new LeagueSummaryDto(
-            race.getLeague().getId(),
-            race.getLeague().getName(),
-            race.getLeague().getSeason()
-        );
-
-        return new RaceDetailsDto(
-            race.getId(),
-            race.getName(),
-            race.getDate(),
-            race.getIsPlayoff(),
-            leagueDto,
-            resultDtos
-        );
+        return raceDtoAssembler.toDetailedModel(race);
     }
 
     private RaceResultSummaryDto convertToRaceResultSummaryDto(RaceResult result) {
-        return new RaceResultSummaryDto(
-            result.getId(),
-            result.getGenderPlace(),
-            new RunnerSummaryDto(
-                result.getRunner().getId(),
-                result.getRunner().getName(),
-                result.getRunner().getGender()
-            )
-        );
+        return raceResultDtoAssembler.toModel(result);
     }
 }
