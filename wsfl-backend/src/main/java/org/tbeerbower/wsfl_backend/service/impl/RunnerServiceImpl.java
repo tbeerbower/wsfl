@@ -48,7 +48,8 @@ public class RunnerServiceImpl implements RunnerService {
     
     @Override
     public Page<Runner> findByGender(String gender, Pageable pageable) {
-        return runnerRepository.findByGender(gender, pageable);
+        return runnerRepository.findByGender(
+                gender.toUpperCase().startsWith("M") ? "M" : "F", pageable);
     }
     
     @Override

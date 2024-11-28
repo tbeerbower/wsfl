@@ -55,9 +55,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved leagues",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = PagedModel.class))
+            description = "Successfully retrieved leagues"
         )
     })
     @GetMapping
@@ -76,9 +74,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "League found",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = LeagueDetailsDto.class))
+            description = "League found"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -93,10 +89,6 @@ public class LeagueController  {
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
         LeagueDetailsDto leagueDto = convertToLeagueDetailsDto(league);
-//        List<Link> links = List.of(
-//            linkTo(methodOn(LeagueController.class).getLeagueTeams(id)).withRel("teams"),
-//            linkTo(methodOn(LeagueController.class).getLeagueById(id)).withSelfRel()
-//        );
 
         return ResponseEntity.ok(leagueDto);
     }
@@ -108,9 +100,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "League created successfully",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = LeagueDetailsDto.class))
+            description = "League created successfully"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -145,9 +135,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "League updated successfully",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = LeagueDetailsDto.class))
+            description = "League updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -186,9 +174,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "League updated successfully",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = LeagueDetailsDto.class))
+            description = "League updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -265,9 +251,7 @@ public class LeagueController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved teams",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = TeamSummaryDto.class))
+            description = "Successfully retrieved teams"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -318,9 +302,6 @@ public class LeagueController  {
             teamDtos
         );
 
-//        dto.add(linkTo(methodOn(LeagueController.class).getLeagueById(league.getId())).withSelfRel());
-//        dto.add(linkTo(methodOn(LeagueController.class).getAllLeagues(Pageable.unpaged())).withRel("leagues"));
-        
         return dto;
     }
 

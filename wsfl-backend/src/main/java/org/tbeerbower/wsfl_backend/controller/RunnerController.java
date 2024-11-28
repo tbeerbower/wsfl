@@ -43,15 +43,18 @@ public class RunnerController  {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved runners",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = Page.class))
+            description = "Successfully retrieved runners"
         )
     })
     @GetMapping
     public ResponseEntity<Page<RunnerSummaryDto>> getAllRunners(
+            @Parameter(description = "Gender(M/F) to filter runners")
+            @RequestParam(required = false) String gender,
             @Parameter(description = "Pagination parameters") Pageable pageable) {
-        Page<Runner> runners = runnerService.findAll(pageable);
+
+        Page<Runner> runners = gender == null ?
+                runnerService.findAll(pageable) : runnerService.findByGender(gender, pageable);
+
         Page<RunnerSummaryDto> runnerDtos = runners.map(runner -> {
             RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
             return dto;
@@ -66,9 +69,7 @@ public class RunnerController  {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Runner found",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = RunnerDetailsDto.class))
+            description = "Runner found"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -85,30 +86,6 @@ public class RunnerController  {
         return ResponseEntity.ok(runnerDto);
     }
     
-    @Operation(
-        summary = "Get runners by gender",
-        description = "Retrieves a paginated list of runners of a specific gender"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved runners",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = Page.class))
-        )
-    })
-    @GetMapping("/gender/{gender}")
-    public ResponseEntity<Page<RunnerSummaryDto>> getRunnersByGender(
-            @PathVariable String gender,
-            @Parameter(description = "Pagination parameters") Pageable pageable) {
-        Page<Runner> runners = runnerService.findByGender(gender, pageable);
-        Page<RunnerSummaryDto> runnerDtos = runners.map(runner -> {
-            RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
-            return dto;
-        });
-        return ResponseEntity.ok(runnerDtos);
-    }
-    
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Create a new runner",
@@ -117,9 +94,7 @@ public class RunnerController  {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "201",
-            description = "Runner created successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = RunnerDetailsDto.class))
+            description = "Runner created successfully"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -144,9 +119,7 @@ public class RunnerController  {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Runner updated successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = RunnerDetailsDto.class))
+            description = "Runner updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -182,9 +155,7 @@ public class RunnerController  {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Runner updated successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = RunnerDetailsDto.class))
+            description = "Runner updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",

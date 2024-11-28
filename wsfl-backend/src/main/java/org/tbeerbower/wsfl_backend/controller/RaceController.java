@@ -66,8 +66,7 @@ public class RaceController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved races",
-            content = @Content(schema = @Schema(implementation = RaceSummaryDto.class))
+            description = "Successfully retrieved races"
         )
     })
     @GetMapping
@@ -85,13 +84,12 @@ public class RaceController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved race",
-            content = @Content(schema = @Schema(implementation = RaceDetailsDto.class))
+            description = "Successfully retrieved race"
         ),
         @ApiResponse(
             responseCode = "404",
             description = "Race not found",
-            content = @Content(schema = @Schema(type = "string"))
+            content = @Content(schema = @Schema(type = "string", example = "Race not found with id: 1"))
         )
     })
     @GetMapping("/{id}")
@@ -108,8 +106,7 @@ public class RaceController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "201",
-            description = "Race created successfully",
-            content = @Content(schema = @Schema(implementation = RaceDetailsDto.class))
+            description = "Race created successfully"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -145,8 +142,7 @@ public class RaceController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Race updated successfully",
-            content = @Content(schema = @Schema(implementation = RaceDetailsDto.class))
+            description = "Race updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -213,8 +209,7 @@ public class RaceController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved results",
-            content = @Content(schema = @Schema(implementation = RaceResultSummaryDto.class))
+            description = "Successfully retrieved results"
         ),
         @ApiResponse(
             responseCode = "404",

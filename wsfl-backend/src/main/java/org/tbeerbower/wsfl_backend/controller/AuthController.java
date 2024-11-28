@@ -52,9 +52,7 @@ public class AuthController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully authenticated",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = LoginResponse.class))
+            description = "Successfully authenticated"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -83,9 +81,7 @@ public class AuthController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "User registered successfully",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UserSummaryDto.class))
+            description = "User registered successfully"
         ),
         @ApiResponse(
             responseCode = "400",

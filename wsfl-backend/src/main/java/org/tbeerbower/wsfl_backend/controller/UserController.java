@@ -3,6 +3,8 @@ package org.tbeerbower.wsfl_backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -47,11 +49,9 @@ public class UserController  {
         summary = "Get all users",
         description = "Retrieves a paginated list of all users in the system"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponse(
         responseCode = "200",
-        description = "Successfully retrieved users",
-        content = @Content(mediaType = "application/json", 
-                         schema = @Schema(implementation = UserSummaryDto.class))
+        description = "Successfully retrieved users"
     )
     @GetMapping
     public ResponseEntity<Page<UserSummaryDto>> getAllUsers(Pageable pageable) {
@@ -66,14 +66,12 @@ public class UserController  {
         summary = "Get a user by ID",
         description = "Retrieves a specific user by their ID"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "200",
-            description = "User found",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = UserDetailsDto.class))
+            description = "User found"
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        @ApiResponse(
             responseCode = "404",
             description = "User not found",
             content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
@@ -93,11 +91,9 @@ public class UserController  {
         summary = "Get teams owned by user",
         description = "Retrieves all teams owned by a specific user"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponse(
         responseCode = "200",
-        description = "Successfully retrieved teams",
-        content = @Content(mediaType = "application/json", 
-                         schema = @Schema(implementation = TeamSummaryDto.class))
+        description = "Successfully retrieved teams"
     )
     @GetMapping("/{id}/teams")
     public ResponseEntity<Page<TeamSummaryDto>> getUserTeams(@PathVariable Long id,
@@ -115,14 +111,12 @@ public class UserController  {
         summary = "Create a new user",
         description = "Creates a new user with the provided information"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "201",
-            description = "User created successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = UserDetailsDto.class))
+            description = "User created successfully"
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        @ApiResponse(
             responseCode = "400",
             description = "Email already exists",
             content = @Content(schema = @Schema(type = "string", example = "Email already exists"))
@@ -147,14 +141,12 @@ public class UserController  {
         summary = "Update a user",
         description = "Updates an existing user's information"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "200",
-            description = "User updated successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = UserDetailsDto.class))
+            description = "User updated successfully"
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        @ApiResponse(
             responseCode = "404",
             description = "User not found",
             content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
@@ -184,14 +176,12 @@ public class UserController  {
         summary = "Partially update a user",
         description = "Updates specific fields of an existing user"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "200",
-            description = "User updated successfully",
-            content = @Content(mediaType = "application/json", 
-                             schema = @Schema(implementation = UserDetailsDto.class))
+            description = "User updated successfully"
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        @ApiResponse(
             responseCode = "404",
             description = "User not found",
             content = @Content(schema = @Schema(type = "string", example = "User not found with id: 1"))
@@ -229,12 +219,12 @@ public class UserController  {
         summary = "Delete a user",
         description = "Deletes a user by their ID"
     )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "204",
             description = "User deleted successfully"
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        @ApiResponse(
             responseCode = "404",
             description = "User not found",
             content = @Content

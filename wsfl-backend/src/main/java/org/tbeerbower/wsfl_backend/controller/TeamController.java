@@ -51,8 +51,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved teams",
-            content = @Content(schema = @Schema(implementation = TeamSummaryDto.class))
+            description = "Successfully retrieved teams"
         )
     })
     @GetMapping
@@ -70,8 +69,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Team found",
-            content = @Content(schema = @Schema(implementation = TeamDetailsDto.class))
+            description = "Team found"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -99,8 +97,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Team created successfully",
-            content = @Content(schema = @Schema(implementation = TeamDetailsDto.class))
+            description = "Team created successfully"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -141,8 +138,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Team updated successfully",
-            content = @Content(schema = @Schema(implementation = TeamDetailsDto.class))
+            description = "Team updated successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -214,8 +210,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved runners",
-            content = @Content(schema = @Schema(implementation = RunnerSummaryDto.class))
+            description = "Successfully retrieved runners"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -244,8 +239,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved teams",
-            content = @Content(schema = @Schema(implementation = List.class))
+            description = "Successfully retrieved teams"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -274,8 +268,7 @@ public class TeamController  {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved standings",
-            content = @Content(schema = @Schema(implementation = TeamDetailsDto.class))
+            description = "Successfully retrieved standings"
         ),
         @ApiResponse(
             responseCode = "404",
