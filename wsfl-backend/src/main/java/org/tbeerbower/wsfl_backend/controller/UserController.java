@@ -54,9 +54,9 @@ public class UserController  {
         description = "Successfully retrieved users"
     )
     @GetMapping
-    public ResponseEntity<Page<UserSummaryDto>> getAllUsers(Pageable pageable) {
+    public ResponseEntity<Page<UserDetailsDto>> getAllUsers(Pageable pageable) {
         Page<User> users = userService.findAll(pageable);
-        Page<UserSummaryDto> userDtos = users.map(this::convertToUserSummaryDto);
+        Page<UserDetailsDto> userDtos = users.map(this::convertToUserDetailsDto);
         
         return ResponseEntity.ok(userDtos);
     }
@@ -209,7 +209,12 @@ public class UserController  {
         if (patchDto.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(patchDto.getPassword()));
         }
-        
+        if (patchDto.getPicture() != null) {
+            user.setPicture(patchDto.getPicture());
+        }
+        if (patchDto.isActive() != null) {
+            user.setActive(patchDto.isActive());
+        }
         User updatedUser = userService.save(user);
         return ResponseEntity.ok(convertToUserDetailsDto(updatedUser));
     }
@@ -247,8 +252,10 @@ public class UserController  {
 
         return new UserDetailsDto(
             user.getId(),
-            user.getName(),
             user.getEmail(),
+            user.getName(),
+            user.getPicture(),
+            user.isActive(),
             user.getRoles(),
             teamSummaries
         );

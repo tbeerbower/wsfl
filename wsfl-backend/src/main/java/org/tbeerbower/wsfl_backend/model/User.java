@@ -16,6 +16,10 @@ public class User {
     @Column(unique = true)
     private String email;
     private String name;
+
+    private String picture;
+
+    private boolean active = true;
     
     @JsonIgnore
     private String password;
@@ -27,7 +31,19 @@ public class User {
     
     @OneToMany(mappedBy = "owner")
     private Set<Team> teams = new HashSet<>();
-    
+
+
+    public User() {
+    }
+
+    public User(String email, String name, String picture, String password, Set<String> roles) {
+        this.email = email;
+        this.name = name;
+        this.picture = picture;
+        this.password = password;
+        this.roles = roles;
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -51,6 +67,22 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @JsonIgnore

@@ -2,12 +2,12 @@
 TRUNCATE TABLE users, leagues, teams, runners, races, race_results, matchups, team_runners, user_roles, drafts, draft_order, draft_picks CASCADE;
 
 -- Insert Users with hashed passwords (password is 'password')
-INSERT INTO users (id, email, name, password) VALUES
-(1, 'john.doe@example.com', 'John Doe', '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
-(2, 'jane.smith@example.com', 'Jane Smith', '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
-(3, 'bob.wilson@example.com', 'Bob Wilson', '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
-(4, 'alice.jones@example.com', 'Alice Jones', '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
-(5, 'tbeerbower@gmail.com', 'Tom B', '$2a$10$TXkorQjx0GhjdjgJ2A84.OQ5W3Q5OWWu.SXXCKjyDt.vXD2WdzxyS');
+INSERT INTO users (id, email, name, picture, active, password) VALUES
+(1, 'john.doe@example.com', 'John Doe', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
+(2, 'jane.smith@example.com', 'Jane Smith', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
+(3, 'bob.wilson@example.com', 'Bob Wilson', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
+(4, 'alice.jones@example.com', 'Alice Jones', '', true, '$2a$10$rS.rJzP0ZHqq2hV3HDzpBeMQOGA0FWyoCxjWxvVHrfqVGfCJrqY6m'),
+(5, 'tbeerbower@gmail.com', 'Tom B', '', true, '$2a$10$TXkorQjx0GhjdjgJ2A84.OQ5W3Q5OWWu.SXXCKjyDt.vXD2WdzxyS');
 
 -- Insert User Roles
 INSERT INTO user_roles (user_id, role) VALUES

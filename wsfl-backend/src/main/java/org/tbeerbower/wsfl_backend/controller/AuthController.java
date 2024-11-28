@@ -103,6 +103,8 @@ public class AuthController  {
         user.setEmail(userDto.getEmail());
         user.setName(userDto.getName());
         user.setPassword(userDto.getPassword());
+        user.setPicture(userDto.getPicture());
+        user.setActive(true);
         user.setRoles(Collections.singleton("USER"));
         User savedUser = userService.save(user);
 

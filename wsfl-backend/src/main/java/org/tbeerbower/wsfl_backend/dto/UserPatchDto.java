@@ -29,6 +29,14 @@ public class UserPatchDto {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
+    @Schema(description = "User's picture src",
+            example = "https://pics.org/smiley.png",
+            nullable = true)
+    private String picture;
+
+    @Schema(description = "Is the user active", example = "true")
+    private Boolean active;
+
     public String getName() {
         return name;
     }
@@ -51,5 +59,21 @@ public class UserPatchDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public Boolean isActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

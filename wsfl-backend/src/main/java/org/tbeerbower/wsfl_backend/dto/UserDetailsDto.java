@@ -15,16 +15,24 @@ public class UserDetailsDto {
     @Schema(description = "Full name of the user", example = "John Doe")
     private String name;
 
+    @Schema(description = "Picture src of the user", example = "https://pics.org/smiley.png")
+    private String picture;
+
+    @Schema(description = "Is the user active", example = "true")
+    private boolean active;
+
     @Schema(description = "Roles assigned to the user", example = "[\"ROLE_USER\", \"ROLE_ADMIN\"]")
     private Set<String> roles;
 
     @Schema(description = "Teams associated with the user")
     private List<TeamSummaryDto> teams;
 
-    public UserDetailsDto(Long id, String email, String name, Set<String> roles, List<TeamSummaryDto> teams) {
+    public UserDetailsDto(Long id, String email, String name, String picture, boolean active, Set<String> roles, List<TeamSummaryDto> teams) {
         this.id = id;
         this.email = email;
         this.name = name;
+        this.picture = picture;
+        this.active = active;
         this.roles = roles;
         this.teams = teams;
     }
@@ -33,6 +41,15 @@ public class UserDetailsDto {
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getName() { return name; }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
     public Set<String> getRoles() { return roles; }
     public List<TeamSummaryDto> getTeams() { return teams; }
 }

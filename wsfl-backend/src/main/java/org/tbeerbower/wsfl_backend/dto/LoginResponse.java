@@ -19,6 +19,8 @@ public class LoginResponse {
             user.getId(),
             user.getEmail(),
             user.getName(),
+            user.getPicture(),
+            user.isActive(),
             user.getRoles(),
             Collections.emptyList() // Teams will be loaded separately if needed
         );
