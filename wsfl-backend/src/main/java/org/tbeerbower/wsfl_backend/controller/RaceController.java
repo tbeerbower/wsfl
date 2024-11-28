@@ -17,12 +17,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
+import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.RaceResult;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
+import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.RaceResultService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
 
@@ -37,12 +40,18 @@ public class RaceController  {
     private final RaceService raceService;
     private final RaceResultService raceResultService;
     private final LeagueService leagueService;
+    private final MatchupService matchupService;
+    private final MatchupDtoAssembler matchupDtoAssembler;
+
+
 
     @Autowired
-    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService) {
+    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService, MatchupService matchupService, MatchupDtoAssembler matchupDtoAssembler) {
         this.raceService = raceService;
         this.raceResultService = raceResultService;
         this.leagueService = leagueService;
+        this.matchupService = matchupService;
+        this.matchupDtoAssembler = matchupDtoAssembler;
     }
 
     @Operation(
@@ -219,6 +228,31 @@ public class RaceController  {
                 .map(this::convertToRaceResultSummaryDto);
 
         return ResponseEntity.ok(results);
+    }
+
+    @Operation(summary = "Get matchups by race", description = "Retrieves a paginated list of matchups for a specific race")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
+            @ApiResponse(responseCode = "404", description = "Race not found", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Race not found with id: 123"))),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Access denied")))
+    })
+    @GetMapping("/{id}/matchups")
+    public ResponseEntity<Page<MatchupSummaryDto>> getMatchupsByRace(
+            @Parameter(description = "ID of the race")
+            @PathVariable Long id,
+            @Parameter(description = "Page number (0-based)")
+            @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Filter by team ID")
+            @RequestParam(required = false) Long teamId) {
+
+        Page<Matchup> matchups = teamId != null ?
+                matchupService.findByRaceAndTeam(id, teamId, pageable) :
+                matchupService.findByRace(id, pageable);
+
+        Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
+        return ResponseEntity.ok(matchupDtos);
     }
 
     // Helper methods for DTO conversion

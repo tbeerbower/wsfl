@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.MatchupCreateDto;
 import org.tbeerbower.wsfl_backend.dto.MatchupDetailsDto;
+import org.tbeerbower.wsfl_backend.dto.MatchupPatchDto;
 import org.tbeerbower.wsfl_backend.dto.MatchupSummaryDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Matchup;
@@ -68,30 +69,6 @@ public class MatchupController  {
         return ResponseEntity.ok(matchupDtos);
     }
 
-    @Operation(summary = "Get matchups by race", description = "Retrieves a paginated list of matchups for a specific race")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
-        @ApiResponse(responseCode = "404", description = "Race not found", content = @Content(mediaType = "application/json",
-                schema = @Schema(type = "string", example = "Race not found with id: 123"))),
-        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json",
-                schema = @Schema(type = "string", example = "Access denied")))
-    })
-    @GetMapping("/race/{raceId}")
-    public ResponseEntity<Page<MatchupSummaryDto>> getMatchupsByRace(
-            @Parameter(description = "ID of the race")
-            @PathVariable Long raceId,
-            @Parameter(description = "Page number (0-based)")
-            @PageableDefault(size = 20) Pageable pageable,
-            @Parameter(description = "Filter by team ID")
-            @RequestParam(required = false) Long teamId) {
-        
-        Page<Matchup> matchups = teamId != null ?
-            matchupService.findByRaceAndTeam(raceId, teamId, pageable) :
-            matchupService.findByRace(raceId, pageable);
-            
-        Page<MatchupSummaryDto> matchupDtos = matchups.map(matchupDtoAssembler::toModel);
-        return ResponseEntity.ok(matchupDtos);
-    }
 
     @Operation(summary = "Get a matchup by ID", description = "Retrieves a specific matchup by its ID")
     @ApiResponses({
@@ -139,20 +116,18 @@ public class MatchupController  {
         @ApiResponse(responseCode = "403", description = "Not authorized to update matchups", content = @Content(mediaType = "application/json",
                 schema = @Schema(type = "string", example = "Access denied")))
     })
-    @PatchMapping("/{id}/scores")
+    @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MatchupDetailsDto> updateMatchupScores(
             @Parameter(description = "ID of the matchup")
             @PathVariable Long id,
-            @Parameter(description = "Score for team 1")
-            @RequestParam Integer team1Score,
-            @Parameter(description = "Score for team 2")
-            @RequestParam Integer team2Score) {
+            @Parameter(description = "Matchup patch data")
+            @Valid @RequestBody MatchupPatchDto patchDto) {
 
         matchupService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
 
-        Matchup matchup = matchupService.updateScores(id, team1Score, team2Score);
+        Matchup matchup = matchupService.updateScores(id, patchDto.getTeam1Score(), patchDto.getTeam2Score());
         return ResponseEntity.ok(matchupDtoAssembler.toDetailedModel(matchup));
     }
 
