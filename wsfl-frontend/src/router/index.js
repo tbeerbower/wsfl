@@ -1,28 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
+import DashboardView from '../views/DashboardView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import AddTeamView from '../views/AddTeamView.vue'
+import AddLeagueView from '../views/AddLeagueView.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('../views/LoginView.vue'),
+    component: LoginView,
     meta: { requiresGuest: true }
   },
   {
     path: '/register',
     name: 'register',
-    component: () => import('../views/RegisterView.vue'),
+    component: RegisterView,
     meta: { requiresGuest: true }
-  },
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('../views/DashboardView.vue'),
-    meta: { requiresAuth: true }
   },
   {
     path: '/',
     redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: DashboardView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/add-team',
+    name: 'add-team',
+    component: AddTeamView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/add-league',
+    name: 'add-league',
+    component: AddLeagueView,
+    meta: { requiresAuth: true }
   }
 ]
 

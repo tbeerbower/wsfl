@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Team;
+import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.repository.LeagueRepository;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
 
@@ -30,6 +31,11 @@ public class LeagueServiceImpl implements LeagueService {
     @Override
     public List<League> findAll() {
         return leagueRepository.findAll();
+    }
+
+    @Override
+    public Page<League> findByAdmin(User admin, Pageable pageable) {
+        return leagueRepository.findByAdmin(admin, pageable);
     }
 
     @Override

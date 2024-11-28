@@ -19,12 +19,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.LeagueDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Team;
+import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
+import org.tbeerbower.wsfl_backend.service.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,14 +42,15 @@ public class LeagueController  {
 
     private final LeagueService leagueService;
     private final TeamService teamService;
-    private final PagedResourcesAssembler<LeagueSummaryDto> pagedResourcesAssembler;
+    private final UserService userService;
+    private final LeagueDtoAssembler leagueDtoAssembler;
 
     @Autowired
-    public LeagueController(LeagueService leagueService, TeamService teamService,
-                            PagedResourcesAssembler<LeagueSummaryDto> pagedResourcesAssembler) {
+    public LeagueController(LeagueService leagueService, TeamService teamService, UserService userService, LeagueDtoAssembler leagueDtoAssembler) {
         this.leagueService = leagueService;
         this.teamService = teamService;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.userService = userService;
+        this.leagueDtoAssembler = leagueDtoAssembler;
     }
 
     @Operation(
@@ -64,7 +68,7 @@ public class LeagueController  {
             @Parameter(description = "Pagination parameters")
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<League> leagues = leagueService.findAll(pageable);
-        Page<LeagueSummaryDto> leagueDtos = leagues.map(this::convertToLeagueSummaryDto);
+        Page<LeagueSummaryDto> leagueDtos = leagues.map(leagueDtoAssembler::toModel);
         return ResponseEntity.ok(leagueDtos);
     }
 
@@ -89,7 +93,7 @@ public class LeagueController  {
         League league = leagueService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
-        LeagueDetailsDto leagueDto = convertToLeagueDetailsDto(league);
+        LeagueDetailsDto leagueDto = leagueDtoAssembler.toDetailsDto(league);
 
         return ResponseEntity.ok(leagueDto);
     }
@@ -121,12 +125,16 @@ public class LeagueController  {
     public ResponseEntity<LeagueDetailsDto> createLeague(
             @Parameter(description = "League creation details", required = true)
             @Valid @RequestBody LeagueCreateDto createDto) {
+        User admin = userService.findById(createDto.getAdminId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", createDto.getAdminId()));
+        
         League league = new League();
         league.setName(createDto.getName());
         league.setSeason(createDto.getSeason());
+        league.setAdmin(admin);
 
         League savedLeague = leagueService.save(league);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToLeagueDetailsDto(savedLeague));
+        return ResponseEntity.status(HttpStatus.CREATED).body(leagueDtoAssembler.toDetailsDto(savedLeague));
     }
 
     @Operation(
@@ -165,7 +173,7 @@ public class LeagueController  {
         league.setSeason(updateDto.getSeason());
 
         League updatedLeague = leagueService.save(league);
-        return ResponseEntity.ok(convertToLeagueDetailsDto(updatedLeague));
+        return ResponseEntity.ok(leagueDtoAssembler.toDetailsDto(updatedLeague));
     }
 
     @Operation(
@@ -208,7 +216,7 @@ public class LeagueController  {
         }
 
         League updatedLeague = leagueService.save(league);
-        return ResponseEntity.ok(convertToLeagueDetailsDto(updatedLeague));
+        return ResponseEntity.ok(leagueDtoAssembler.toDetailsDto(updatedLeague));
     }
 
     @Operation(
@@ -279,37 +287,6 @@ public class LeagueController  {
     }
 
     // Helper methods for DTO conversion
-    private LeagueSummaryDto convertToLeagueSummaryDto(League league) {
-        return new LeagueSummaryDto(
-            league.getId(),
-            league.getName(),
-            league.getSeason()
-        );
-    }
-
-    private LeagueDetailsDto convertToLeagueDetailsDto(League league) {
-        List<TeamSummaryDto> teamDtos = league.getTeams().stream()
-            .map(team -> new TeamSummaryDto(
-                team.getId(),
-                team.getName(),
-                team.getWins(),
-                team.getLosses(),
-                team.getTies(),
-                team.getTotalScore()
-            ))
-            .collect(Collectors.toList());
-
-        LeagueDetailsDto dto = new LeagueDetailsDto(
-            league.getId(),
-            league.getName(),
-            league.getSeason(),
-            league.getAdmin() != null ? league.getAdmin().getId() : null,
-            teamDtos
-        );
-
-        return dto;
-    }
-
     private TeamSummaryDto convertToTeamSummaryDto(Team team) {
         return new TeamSummaryDto(
             team.getId(),

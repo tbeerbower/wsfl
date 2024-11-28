@@ -23,8 +23,10 @@ import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Runner;
 import org.tbeerbower.wsfl_backend.model.Team;
+import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
+import org.tbeerbower.wsfl_backend.service.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,14 +41,16 @@ public class TeamController  {
 
     private final TeamService teamService;
     private final LeagueService leagueService;
+    private final UserService userService;
 
     private final TeamDtoAssembler teamDtoAssembler;
 
 
     @Autowired
-    public TeamController(TeamService teamService, LeagueService leagueService, TeamDtoAssembler teamDtoAssembler) {
+    public TeamController(TeamService teamService, LeagueService leagueService, UserService userService, TeamDtoAssembler teamDtoAssembler) {
         this.teamService = teamService;
         this.leagueService = leagueService;
+        this.userService = userService;
         this.teamDtoAssembler = teamDtoAssembler;
     }
 
@@ -128,9 +132,13 @@ public class TeamController  {
         League league = leagueService.findById(createDto.getLeagueId())
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", createDto.getLeagueId()));
 
+        User owner = userService.findById(createDto.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", createDto.getOwnerId()));
+
         Team team = new Team();
         team.setName(createDto.getName());
         team.setLeague(league);
+        team.setOwner(owner);
 
         Team savedTeam = teamService.save(team);
         return ResponseEntity.status(HttpStatus.CREATED).body(teamDtoAssembler.toDetailedModel(savedTeam));

@@ -6,25 +6,76 @@
     </header>
 
     <div class="dashboard-content">
+      <div v-if="adminLeagues.length > 0" class="dashboard-section">
+        <div class="section-header">
+          <h2>My Leagues (Admin)</h2>
+          <router-link to="/add-league" class="add-league-button">
+            Add League
+          </router-link>
+        </div>
+        <div v-if="loading.adminLeagues">Loading leagues...</div>
+        <div v-else-if="error.adminLeagues" class="error-message">{{ error.adminLeagues }}</div>
+        <div class="leagues-grid">
+          <div v-for="league in adminLeagues" :key="league.id" class="league-card">
+            <div class="league-header">
+              <h3>{{ league.name }}</h3>
+              <span class="season-badge">Season {{ league.season }}</span>
+            </div>
+            <div class="league-stats">
+              <div class="stat-item">
+                <span class="stat-label">Teams</span>
+                <span class="stat-value">{{ league.teams.length }}</span>
+              </div>
+            </div>
+            <div class="teams-list">
+              <h4>Teams</h4>
+              <div class="team-standings">
+                <div v-for="team in sortedTeams(league.teams)" :key="team.id" class="team-row">
+                  <span class="team-name">{{ team.name }}</span>
+                  <span class="team-record">{{ team.wins }}-{{ team.losses }}-{{ team.ties }}</span>
+                  <span class="team-score">{{ team.totalScore }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="dashboard-section">
-        <h2>My Teams</h2>
+        <div class="section-header">
+          <h2>My Teams</h2>
+          <router-link to="/add-team" class="add-team-button">
+            Add Team
+          </router-link>
+        </div>
         <div v-if="loading.teams">Loading teams...</div>
         <div v-else-if="error.teams" class="error-message">{{ error.teams }}</div>
         <div v-else-if="teams.length === 0" class="empty-state">
-          You haven't created any teams yet.
+          You don't have any teams yet.
         </div>
         <div v-else class="teams-grid">
           <div v-for="team in teams" :key="team.id" class="team-card">
-            <h3>{{ team.name }}</h3>
+            <div class="team-header">
+              <h3>{{ team.name }}</h3>
+              <div class="league-badge">{{ team.league?.name || 'No League' }}</div>
+            </div>
             <div class="team-stats">
-              <div class="stat-row">
-                <span class="stat-label">Record:</span>
-                <span class="stat-value">{{ team.wins || 0 }}W - {{ team.losses || 0 }}L - {{ team.ties || 0 }}T</span>
+              <div class="stat-item">
+                <span class="stat-label">Record</span>
+                <span class="stat-value">{{ team.wins }}-{{ team.losses }}-{{ team.ties }}</span>
               </div>
-              <div class="stat-row">
-                <span class="stat-label">Total Score:</span>
-                <span class="stat-value">{{ team.totalScore || 0 }}</span>
+              <div class="stat-item">
+                <span class="stat-label">Score</span>
+                <span class="stat-value">{{ team.totalScore }}</span>
               </div>
+            </div>
+            <div class="team-roster">
+              <h4>Runners</h4>
+              <ul>
+                <li v-for="runner in team.runners" :key="runner.id">
+                  {{ runner.name }} ({{ runner.gender }})
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -122,18 +173,21 @@ export default {
     
     const teams = ref([])
     const matchups = ref([])
+    const adminLeagues = ref([])
     const leagueStandings = ref({})
     
     const loading = ref({
       teams: false,
       matchups: false,
-      standings: false
+      standings: false,
+      adminLeagues: false
     })
     
     const error = ref({
       teams: null,
       matchups: null,
-      standings: null
+      standings: null,
+      adminLeagues: null
     })
 
     const user = computed(() => store.getters['auth/currentUser'])
@@ -147,6 +201,17 @@ export default {
       if (totalGames === 0) return '.000'
       const percentage = (team.wins + (team.ties * 0.5)) / totalGames
       return percentage.toFixed(3).substring(1) // Remove leading zero
+    }
+
+    const sortedTeams = (teams) => {
+      return [...teams].sort((a, b) => {
+        // Sort by win percentage first
+        const aWinPct = (a.wins + 0.5 * a.ties) / (a.wins + a.losses + a.ties || 1)
+        const bWinPct = (b.wins + 0.5 * b.ties) / (b.wins + b.losses + b.ties || 1)
+        if (aWinPct !== bWinPct) return bWinPct - aWinPct
+        // Use total score as tiebreaker
+        return b.totalScore - a.totalScore
+      })
     }
 
     const fetchTeams = async () => {
@@ -224,30 +289,47 @@ export default {
       }
     }
 
+    const fetchAdminLeagues = async () => {
+      if (!user.value?.id) return
+      
+      loading.value.adminLeagues = true
+      error.value.adminLeagues = null
+      try {
+        const response = await axios.get(`/api/users/${user.value.id}/leagues`)
+        adminLeagues.value = response.data.content || []
+      } catch (err) {
+        error.value.adminLeagues = 'Failed to load leagues'
+        console.error('Error fetching admin leagues:', err)
+      } finally {
+        loading.value.adminLeagues = false
+      }
+    }
+
     const handleLogout = () => {
       store.dispatch('auth/logout')
       router.push('/login')
     }
 
     onMounted(() => {
-      if (user.value?.id) {
-        fetchTeams().then(() => {
-          fetchMatchups()
-          fetchStandings()
-        })
-      }
+      fetchTeams().then(() => {
+        fetchMatchups()
+        fetchStandings()
+        fetchAdminLeagues()
+      })
     })
 
     return {
       user,
       teams,
       matchups,
+      adminLeagues,
       leagueStandings,
       loading,
       error,
       handleLogout,
       isUserTeam,
-      calculateWinPercentage
+      calculateWinPercentage,
+      sortedTeams
     }
   }
 }
@@ -303,33 +385,74 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.team-stats {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.stat-row {
+.team-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
 }
 
-.stat-row:last-child {
-  border-bottom: none;
+.team-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  flex: 1;
+}
+
+.league-badge {
+  padding: 0.25rem 0.75rem;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.team-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .stat-label {
+  font-size: 0.875rem;
   color: #666;
-  font-weight: 500;
 }
 
 .stat-value {
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #2c3e50;
+}
+
+.team-roster {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.team-roster h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.team-roster ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.team-roster li {
+  padding: 0.25rem 0;
+  color: #666;
+  font-size: 0.875rem;
 }
 
 .matchup-card {
@@ -509,5 +632,136 @@ h3 {
   margin: 0;
   font-size: 18px;
   color: #2196F3;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.add-team-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.add-team-button:hover {
+  background-color: #2c5282;
+}
+
+.leagues-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.league-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.league-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.league-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  flex: 1;
+}
+
+.season-badge {
+  padding: 0.25rem 0.75rem;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.league-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.teams-list {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.teams-list h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.team-standings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.team-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.team-row:hover {
+  background-color: #f8f9fa;
+}
+
+.team-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.team-record {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.team-score {
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.add-league-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-league-button:hover {
+  background-color: #2c5282;
 }
 </style>

@@ -16,12 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.LeagueDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.TeamDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
+import org.tbeerbower.wsfl_backend.service.LeagueService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
@@ -38,14 +40,18 @@ public class UserController  {
 
     private final UserService userService;
     private final TeamService teamService;
+    private final LeagueService leagueService;
     private final PasswordEncoder passwordEncoder;
     private final TeamDtoAssembler teamDtoAssembler;
+    private final LeagueDtoAssembler leagueDtoAssembler;
 
-    public UserController(UserService userService, TeamService teamService, PasswordEncoder passwordEncoder, TeamDtoAssembler teamDtoAssembler) {
+    public UserController(UserService userService, TeamService teamService, LeagueService leagueService, PasswordEncoder passwordEncoder, TeamDtoAssembler teamDtoAssembler, LeagueDtoAssembler leagueDtoAssembler) {
         this.userService = userService;
         this.teamService = teamService;
+        this.leagueService = leagueService;
         this.passwordEncoder = passwordEncoder;
         this.teamDtoAssembler = teamDtoAssembler;
+        this.leagueDtoAssembler = leagueDtoAssembler;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,6 +114,26 @@ public class UserController  {
         Page<TeamDetailsDto> teams = teamService.findByOwner(user, pageable)
                 .map(teamDtoAssembler::toDetailedModel);
         
+        return ResponseEntity.ok(teams);
+    }
+
+    @Operation(
+            summary = "Get leagues administered by user",
+            description = "Retrieves all leagues administered by a specific user"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved leagues"
+    )
+    @GetMapping("/{id}/leagues")
+    public ResponseEntity<Page<LeagueDetailsDto>> getUserLeagues(@PathVariable Long id,
+                                                             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        Page<LeagueDetailsDto> teams = leagueService.findByAdmin(user, pageable)
+                .map(leagueDtoAssembler::toDetailsDto);
+
         return ResponseEntity.ok(teams);
     }
 
