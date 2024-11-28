@@ -1,11 +1,10 @@
-package org.tbeerbower.wsfl_backend.controller;
+package org.tbeerbower.wsfl_backend.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.Verification;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,22 +12,23 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.tbeerbower.wsfl_backend.dto.GoogleAuthRequest;
+import org.tbeerbower.wsfl_backend.dto.LoginResponse;
 import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.repository.UserRepository;
-import org.tbeerbower.wsfl_backend.security.JwtUtil;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -39,12 +39,8 @@ import java.util.List;
 import java.util.Set;
 
 
-@Tag(name = "Google Authentication", description = "Google OAuth management APIs")
-@RestController
-@PreAuthorize("permitAll()")
-@CrossOrigin(origins = "http://localhost:8080")
-@RequestMapping("/api/auth/google")
-public class GoogleAuthController {
+@Component
+public class GoogleAuthUtil {
     private static final String GOOGLE_ISSUER = "https://accounts.google.com";
     public static final String GOOGLE_APIS_TOKEN_URL = "https://oauth2.googleapis.com/token";
     public static final String GOOGLE_APIS_OAUTH_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs";
@@ -63,59 +59,36 @@ public class GoogleAuthController {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    public GoogleAuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+    public GoogleAuthUtil(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
     }
 
-    @Operation(
-            summary = "Login Google user",
-            description = "Authenticates a Google user and returns a JWT token"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully authenticated"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Invalid ID token",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "string", example = "Invalid ID token"))
-            )
-    })
-    @PostMapping
-    public ResponseEntity<?> handleGoogleAuth(@RequestBody GoogleCode body, HttpServletResponse response) {
+    public LoginResponse handleGoogleAuth(GoogleAuthRequest request) throws AccessDeniedException{
+
+        // Exchange the authorization code for tokens
+        GoogleTokenRequest tokenRequest = new GoogleTokenRequest(
+                clientId, clientSecret, request.getCode(),
+                redirectUri, "authorization_code");
+
+        GoogleTokenResponse tokenResponse = restTemplate.exchange(
+                GOOGLE_APIS_TOKEN_URL,
+                HttpMethod.POST,
+                new HttpEntity<>(tokenRequest),
+                GoogleTokenResponse.class
+        ).getBody();
+
         try {
+            String idToken = tokenResponse.id_token;
+            // Step 2: Verify ID token
+            User user = verifyIdToken(idToken);
+            // Step 3: Create JWT
+            String jwt = jwtUtil.generateToken(user);
+            // Step 4: Return JWT to frontend
+            return new LoginResponse(jwt, user);
 
-            // Exchange the authorization code for tokens
-            GoogleTokenRequest tokenRequest = new GoogleTokenRequest(
-                    clientId, clientSecret, body.code(),
-                    redirectUri, "authorization_code");
-
-            GoogleTokenResponse tokenResponse = restTemplate.exchange(
-                    GOOGLE_APIS_TOKEN_URL,
-                    HttpMethod.POST,
-                    new HttpEntity<>(tokenRequest),
-                    GoogleTokenResponse.class
-            ).getBody();
-
-            try {
-                String idToken = tokenResponse.id_token;
-                // Step 2: Verify ID token
-                User user = verifyIdToken(idToken);
-                // Step 3: Create JWT
-                String jwt = jwtUtil.generateToken(user);
-                // Step 4: Return JWT to frontend
-                GoogleAuthResponse authResponse = new GoogleAuthResponse(jwt, user);
-                return ResponseEntity.ok().body(authResponse);
-
-            } catch (JWTVerificationException e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid ID token: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            //e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
+        } catch (JWTVerificationException e) {
+            throw new AccessDeniedException("Invalid ID token: " + e.getMessage());
         }
     }
 
@@ -163,9 +136,6 @@ public class GoogleAuthController {
         return jwksResponse.findPublicKeyById(keyId);
     }
 
-    public record GoogleCode(String code) {
-    }
-
     private record GoogleTokenRequest(String client_id, String client_secret,
                                       String code, String redirect_uri, String grant_type) {
     }
@@ -173,8 +143,6 @@ public class GoogleAuthController {
     private record GoogleTokenResponse(String access_token, String id_token) {
     }
 
-    private record GoogleAuthResponse(String jwt, User user) {
-    }
 
     public record JwksResponse(List<JwksKey> keys) {
         public record JwksKey(String kid, String n, String e) {

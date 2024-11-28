@@ -1,5 +1,6 @@
 package org.tbeerbower.wsfl_backend.controller;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -7,11 +8,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.dto.GoogleAuthRequest;
 import org.tbeerbower.wsfl_backend.dto.LoginRequest;
 import org.tbeerbower.wsfl_backend.dto.LoginResponse;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
@@ -21,6 +27,7 @@ import org.tbeerbower.wsfl_backend.dto.UserSummaryDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
 import org.tbeerbower.wsfl_backend.model.User;
+import org.tbeerbower.wsfl_backend.security.GoogleAuthUtil;
 import org.tbeerbower.wsfl_backend.security.JwtUtil;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
@@ -37,12 +44,14 @@ public class AuthController  {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final GoogleAuthUtil googleAuthUtil;
 
     @Autowired
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GoogleAuthUtil googleAuthUtil) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.googleAuthUtil = googleAuthUtil;
     }
 
     @Operation(
@@ -115,5 +124,26 @@ public class AuthController  {
         );
 
         return ResponseEntity.ok(userSummaryDto);
+    }
+
+    @Operation(
+            summary = "Login Google user",
+            description = "Authenticates a Google user and returns a JWT token"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Invalid ID token",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "string", example = "Invalid ID token"))
+            )
+    })
+    @PostMapping("/google")
+    public ResponseEntity<LoginResponse> handleGoogleAuth(@RequestBody GoogleAuthRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok().body(googleAuthUtil.handleGoogleAuth(request));
     }
 }
