@@ -34,6 +34,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @Tag(name = "League", description = "League management APIs for organizing teams and seasons")
 @RestController
 @RequestMapping("/api/leagues")
+@CrossOrigin(origins = "http://localhost:8080")
 public class LeagueController  {
 
     private final LeagueService leagueService;

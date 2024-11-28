@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Race", description = "Race management APIs for scheduling and managing races")
 @RestController
 @RequestMapping("/api/races")
+@CrossOrigin(origins = "http://localhost:8080")
 public class RaceController  {
 
     private final RaceService raceService;

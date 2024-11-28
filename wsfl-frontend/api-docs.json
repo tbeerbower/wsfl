@@ -1,0 +1,4375 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "WSFL (Winter Series Fantasy League) API",
+        "description": "API for managing fantasy running league competitions",
+        "termsOfService": "https://www.example.com/terms",
+        "contact": {
+            "name": "API Support",
+            "url": "https://www.example.com",
+            "email": "your.email@example.com"
+        },
+        "license": {
+            "name": "MIT License",
+            "url": "https://choosealicense.com/licenses/mit/"
+        },
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:9000",
+            "description": "Development server"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Draft",
+            "description": "Draft management APIs for league player selection"
+        },
+        {
+            "name": "Runner",
+            "description": "Runner management APIs"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication management APIs"
+        },
+        {
+            "name": "League",
+            "description": "League management APIs for organizing teams and seasons"
+        },
+        {
+            "name": "Race Results",
+            "description": "APIs for managing race results and runner performance"
+        },
+        {
+            "name": "User",
+            "description": "User management APIs"
+        },
+        {
+            "name": "Race",
+            "description": "Race management APIs for scheduling and managing races"
+        },
+        {
+            "name": "Team",
+            "description": "Team management APIs for managing teams and their rosters"
+        },
+        {
+            "name": "Matchup",
+            "description": "Matchup management APIs for creating and managing team matchups"
+        }
+    ],
+    "paths": {
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get a user by ID",
+                "description": "Retrieves a specific user by their ID",
+                "operationId": "getUserById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "User not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update a user",
+                "description": "Updates an existing user's information",
+                "operationId": "updateUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "User not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete a user",
+                "description": "Deletes a user by their ID",
+                "operationId": "deleteUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "204": {
+                        "description": "User deleted successfully"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Partially update a user",
+                "description": "Updates specific fields of an existing user",
+                "operationId": "patchUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserPatchDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "User not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}": {
+            "get": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Get team by ID",
+                "description": "Retrieves detailed information about a specific team",
+                "operationId": "getTeamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the team to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Team not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Team not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Team found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Update team",
+                "description": "Updates an existing team's information",
+                "operationId": "updateTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the team to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamUpdateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Team not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Team not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Team updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to update teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Delete team",
+                "description": "Deletes an existing team and its roster",
+                "operationId": "deleteTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the team to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Team not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Team not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to delete teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Team deleted successfully"
+                    }
+                }
+            }
+        },
+        "/api/runners/{id}": {
+            "get": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Get a runner by ID",
+                "description": "Retrieves a specific runner by their ID with all details",
+                "operationId": "getRunnerById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Runner not found"
+                    },
+                    "200": {
+                        "description": "Runner found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RunnerDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Update a runner",
+                "description": "Updates an existing runner's information",
+                "operationId": "updateRunner",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunnerCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Runner not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Runner not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Runner updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RunnerDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Delete a runner",
+                "description": "Deletes an existing runner",
+                "operationId": "deleteRunner",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Runner not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Runner not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Runner deleted successfully"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Partially update a runner",
+                "description": "Updates specific fields of an existing runner",
+                "operationId": "patchRunner",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunnerPatchDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Runner not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Runner not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Runner updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RunnerDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/results/{id}": {
+            "get": {
+                "tags": [
+                    "Race Results"
+                ],
+                "summary": "Get race result by ID",
+                "description": "Retrieves a specific race result by its ID",
+                "operationId": "getRaceResult",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the race result",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved race result",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceResultDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Race result not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race result not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Race Results"
+                ],
+                "summary": "Update race result",
+                "description": "Updates an existing race result",
+                "operationId": "updateRaceResult",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the race result",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RaceResultUpdateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Race result updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceResultDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Race result not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race result not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Race Results"
+                ],
+                "summary": "Delete race result",
+                "description": "Deletes a race result",
+                "operationId": "deleteRaceResult",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the race result",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Race result deleted successfully"
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Race result not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race result not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/races/{id}": {
+            "get": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Get race by ID",
+                "description": "Retrieves detailed information about a specific race",
+                "operationId": "getRaceById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved race",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Race not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Update race",
+                "description": "Updates an existing race's information",
+                "operationId": "updateRace",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RaceUpdateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Race updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Race or League not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Delete race",
+                "description": "Deletes a race from the system",
+                "operationId": "deleteRace",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Race deleted successfully"
+                    },
+                    "404": {
+                        "description": "Race not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/leagues/{id}": {
+            "get": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Get league by ID",
+                "description": "Retrieves detailed information about a specific league",
+                "operationId": "getLeagueById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "League found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Update league",
+                "description": "Updates an existing league's information",
+                "operationId": "updateLeague",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the league to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LeagueCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "League updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to update leagues",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Delete league",
+                "description": "Deletes an existing league and all its associated data",
+                "operationId": "deleteLeague",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the league to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "League deleted successfully"
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to delete leagues",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Patch league",
+                "description": "Partially updates specific fields of an existing league",
+                "operationId": "patchLeague",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the league to patch",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LeaguePatchDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "League updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to update leagues",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get all users",
+                "description": "Retrieves a paginated list of all users in the system",
+                "operationId": "getAllUsers",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved users",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageUserDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create a new user",
+                "description": "Creates a new user with the provided information",
+                "operationId": "createUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Email already exists"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams": {
+            "get": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Get all teams",
+                "description": "Retrieves a paginated list of all teams in the system",
+                "operationId": "getAllTeams",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageTeamSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Create new team",
+                "description": "Creates a new team in a specific league",
+                "operationId": "createTeam",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Team created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to create teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/runners": {
+            "get": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Get all runners",
+                "description": "Retrieves a paginated list of all runners in the system",
+                "operationId": "getAllRunners",
+                "parameters": [
+                    {
+                        "name": "gender",
+                        "in": "query",
+                        "description": "Gender(M/F) to filter runners",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "Pagination parameters",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved runners",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageRunnerSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Runner"
+                ],
+                "summary": "Create a new runner",
+                "description": "Creates a new runner with the provided information",
+                "operationId": "createRunner",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunnerCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Runner created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RunnerDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/results": {
+            "get": {
+                "tags": [
+                    "Race Results"
+                ],
+                "summary": "Get all race results",
+                "description": "Retrieves a paginated list of all race results",
+                "operationId": "getAllRaceResults",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved race results",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageRaceResultDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Race Results"
+                ],
+                "summary": "Create race result",
+                "description": "Creates a new race result",
+                "operationId": "createRaceResult",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RaceResultCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Race or runner not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Race result created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceResultDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/races": {
+            "get": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Get all races",
+                "description": "Retrieves a paginated list of all races in the system",
+                "operationId": "getAllRaces",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved races",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageRaceSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Create new race",
+                "description": "Creates a new race in the system",
+                "operationId": "createRace",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RaceCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Race created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RaceDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchups": {
+            "get": {
+                "tags": [
+                    "Matchup"
+                ],
+                "summary": "Get all matchups",
+                "description": "Retrieves a paginated list of all matchups in the system",
+                "operationId": "getAllMatchups",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "Page number (0-based)",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    },
+                    {
+                        "name": "raceId",
+                        "in": "query",
+                        "description": "Filter by race ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved matchups",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageMatchupSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Matchup"
+                ],
+                "summary": "Create a new matchup",
+                "description": "Creates a new matchup in the system",
+                "operationId": "createMatchup",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MatchupCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Matchup created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchupDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to create matchups",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/leagues": {
+            "get": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Get all leagues",
+                "description": "Retrieves a paginated list of all leagues in the system",
+                "operationId": "getAllLeagues",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved leagues",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLeagueSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Create new league",
+                "description": "Creates a new league with the provided information",
+                "operationId": "createLeague",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LeagueCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "League created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueDetailsDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to create leagues",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/drafts": {
+            "get": {
+                "tags": [
+                    "Draft"
+                ],
+                "summary": "Get all drafts",
+                "description": "Retrieves a paginated list of all drafts in the system, with optional filtering by league and season",
+                "operationId": "getAllDrafts",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "query",
+                        "description": "League ID to filter drafts",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "season",
+                        "in": "query",
+                        "description": "Season number to filter drafts",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved drafts",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDraftSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Draft"
+                ],
+                "summary": "Create new draft",
+                "description": "Creates a new draft for a league's season",
+                "operationId": "createDraft",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Draft created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to create drafts",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/drafts/{id}/start": {
+            "post": {
+                "tags": [
+                    "Draft"
+                ],
+                "summary": "Start draft",
+                "description": "Initiates the draft process for a specific draft",
+                "operationId": "startDraft",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the draft to start",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Draft started successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to start drafts",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Draft not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Draft not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/drafts/{id}/end": {
+            "post": {
+                "tags": [
+                    "Draft"
+                ],
+                "summary": "End draft",
+                "description": "Completes the draft process for a specific draft",
+                "operationId": "endDraft",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the draft to end",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Not authorized to end drafts",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Draft ended successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Draft not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Draft not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register new user",
+                "description": "Creates a new user account with the provided information",
+                "operationId": "register",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserPatchDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Email already exists"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user",
+                "description": "Authenticates a user and returns a JWT token",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid email or password"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/google": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login Google user",
+                "description": "Authenticates a Google user and returns a JWT token",
+                "operationId": "handleGoogleAuth",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GoogleAuthRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid ID token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid ID token"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchups/{id}": {
+            "get": {
+                "tags": [
+                    "Matchup"
+                ],
+                "summary": "Get a matchup by ID",
+                "description": "Retrieves a specific matchup by its ID",
+                "operationId": "getMatchup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the matchup",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Matchup not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Matchup not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Matchup found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchupDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Matchup"
+                ],
+                "summary": "Delete a matchup",
+                "description": "Deletes a matchup from the system",
+                "operationId": "deleteMatchup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the matchup",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Not authorized to delete matchups",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successfully deleted matchup"
+                    },
+                    "404": {
+                        "description": "Matchup not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Matchup not found with id: 123"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Matchup"
+                ],
+                "summary": "Update matchup scores",
+                "description": "Updates the scores for both teams in a matchup",
+                "operationId": "updateMatchupScores",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the matchup",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MatchupPatchDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "403": {
+                        "description": "Not authorized to update matchups",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Matchup not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Matchup not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Scores updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchupDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/teams": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get teams owned by user",
+                "description": "Retrieves all teams owned by a specific user",
+                "operationId": "getUserTeams",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageTeamSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/runners": {
+            "get": {
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Get team runners",
+                "description": "Retrieves all runners on a specific team's roster",
+                "operationId": "getTeamRunners",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Team not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Team not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved runners",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RunnerSummaryDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/races/{id}/results": {
+            "get": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Get race results",
+                "description": "Retrieves all results for a specific race",
+                "operationId": "getRaceResults",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Race not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 1"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved results",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageRaceResultSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/races/{id}/matchups": {
+            "get": {
+                "tags": [
+                    "Race"
+                ],
+                "summary": "Get matchups by race",
+                "description": "Retrieves a paginated list of matchups for a specific race",
+                "operationId": "getMatchupsByRace",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the race",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "Page number (0-based)",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    },
+                    {
+                        "name": "teamId",
+                        "in": "query",
+                        "description": "Filter by team ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Race not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Race not found with id: 123"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved matchups",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageMatchupSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/leagues/{id}/teams": {
+            "get": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Get league teams",
+                "description": "Retrieves all teams participating in a specific league",
+                "operationId": "getLeagueTeams",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the league",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "standings",
+                        "in": "query",
+                        "description": "Order teams by standings",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved teams",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageTeamSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/drafts/{id}": {
+            "get": {
+                "tags": [
+                    "Draft"
+                ],
+                "summary": "Get draft by ID",
+                "description": "Retrieves detailed information about a specific draft",
+                "operationId": "getDraft",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the draft to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Draft found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Draft not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Draft not found with id: 1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UserCreateDto": {
+                "required": [
+                    "email",
+                    "name",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "Full name of the user",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "format": "email",
+                        "example": "john.doe@example.com"
+                    },
+                    "password": {
+                        "maxLength": 2147483647,
+                        "minLength": 6,
+                        "type": "string",
+                        "description": "User's password",
+                        "format": "password",
+                        "example": "********"
+                    }
+                },
+                "description": "DTO for creating a new user"
+            },
+            "TeamSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Team's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Team's name",
+                        "example": "Thunderbolts"
+                    },
+                    "wins": {
+                        "type": "integer",
+                        "description": "Number of wins",
+                        "format": "int32",
+                        "example": 10
+                    },
+                    "losses": {
+                        "type": "integer",
+                        "description": "Number of losses",
+                        "format": "int32",
+                        "example": 5
+                    },
+                    "ties": {
+                        "type": "integer",
+                        "description": "Number of ties",
+                        "format": "int32",
+                        "example": 2
+                    },
+                    "totalScore": {
+                        "type": "integer",
+                        "description": "Total score",
+                        "format": "int32",
+                        "example": 157
+                    }
+                },
+                "description": "Summary representation of a team"
+            },
+            "UserDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the user",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "example": "user@example.com"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Full name of the user",
+                        "example": "John Doe"
+                    },
+                    "picture": {
+                        "type": "string",
+                        "description": "Picture src of the user",
+                        "example": "https://pics.org/smiley.png"
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "description": "Is the user active",
+                        "example": true
+                    },
+                    "roles": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "description": "Roles assigned to the user",
+                        "example": [
+                            "ROLE_USER",
+                            "ROLE_ADMIN"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "Roles assigned to the user",
+                            "example": "[\"ROLE_USER\",\"ROLE_ADMIN\"]"
+                        }
+                    },
+                    "teams": {
+                        "type": "array",
+                        "description": "Teams associated with the user",
+                        "items": {
+                            "$ref": "#/components/schemas/TeamSummaryDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a user"
+            },
+            "TeamUpdateDto": {
+                "required": [
+                    "city",
+                    "leagueId",
+                    "name",
+                    "state"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "The name of the team",
+                        "example": "Swift Striders"
+                    },
+                    "leagueId": {
+                        "type": "integer",
+                        "description": "The ID of the league this team belongs to",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "city": {
+                        "maxLength": 100,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "The team's home city",
+                        "example": "Boston"
+                    },
+                    "state": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "The team's home state",
+                        "example": "MA"
+                    }
+                },
+                "description": "Updated team details"
+            },
+            "LeagueSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the league",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the league"
+                    },
+                    "season": {
+                        "type": "integer",
+                        "description": "Current season number",
+                        "format": "int32"
+                    }
+                },
+                "description": "Summary information about a league"
+            },
+            "RunnerSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Runner's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Runner's full name",
+                        "example": "John Doe"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "description": "Runner's gender (M or F)",
+                        "example": "M"
+                    }
+                },
+                "description": "Summary representation of a runner"
+            },
+            "TeamDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the team",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the team",
+                        "example": "Speed Demons"
+                    },
+                    "wins": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches won",
+                        "format": "int32",
+                        "example": 5
+                    },
+                    "losses": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches lost",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "ties": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches tied",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "totalScore": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Total score accumulated by the team",
+                        "format": "int32",
+                        "example": 450
+                    },
+                    "league": {
+                        "$ref": "#/components/schemas/LeagueSummaryDto"
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/UserSummaryDto"
+                    },
+                    "runners": {
+                        "type": "array",
+                        "description": "List of runners on the team",
+                        "items": {
+                            "$ref": "#/components/schemas/RunnerSummaryDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a team"
+            },
+            "UserSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the user",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Full name of the user",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "example": "john.doe@example.com"
+                    }
+                },
+                "description": "Summary representation of a user"
+            },
+            "RunnerCreateDto": {
+                "required": [
+                    "gender",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Runner's full name",
+                        "example": "John Doe"
+                    },
+                    "gender": {
+                        "pattern": "^(M|F)$",
+                        "type": "string",
+                        "description": "Runner's gender (M or F)",
+                        "example": "M"
+                    }
+                },
+                "description": "DTO for creating a new runner"
+            },
+            "RunnerDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Runner's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Runner's full name",
+                        "example": "John Doe"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "description": "Runner's gender (M or F)",
+                        "example": "M"
+                    },
+                    "teams": {
+                        "type": "array",
+                        "description": "Teams the runner belongs to",
+                        "items": {
+                            "$ref": "#/components/schemas/TeamSummaryDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a runner"
+            },
+            "RaceResultUpdateDto": {
+                "required": [
+                    "genderPlace",
+                    "overallPlace",
+                    "time"
+                ],
+                "type": "object",
+                "properties": {
+                    "genderPlace": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "The gender-specific place of the runner in the race",
+                        "format": "int32",
+                        "example": 5
+                    },
+                    "overallPlace": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "The overall place of the runner in the race",
+                        "format": "int32",
+                        "example": 5
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "Runner's finish time",
+                        "example": "01:23:45"
+                    }
+                },
+                "description": "Data transfer object for updating a race result"
+            },
+            "RaceResultDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Race result's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "genderPlace": {
+                        "type": "integer",
+                        "description": "Runner's place within their gender category",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "overallPlace": {
+                        "type": "integer",
+                        "description": "Runner's place overall",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "Runner's finish time",
+                        "example": "01:23:45"
+                    },
+                    "race": {
+                        "$ref": "#/components/schemas/RaceSummaryDto"
+                    },
+                    "runner": {
+                        "$ref": "#/components/schemas/RunnerSummaryDto"
+                    }
+                },
+                "description": "Detailed representation of a race result"
+            },
+            "RaceSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Race's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the race",
+                        "example": "Spring Championship"
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date of the race",
+                        "format": "date",
+                        "example": "2024-06-15"
+                    },
+                    "isPlayoff": {
+                        "type": "boolean",
+                        "description": "Whether this is a playoff race",
+                        "example": false
+                    }
+                },
+                "description": "Summary representation of a race"
+            },
+            "RaceUpdateDto": {
+                "required": [
+                    "date",
+                    "isPlayoff",
+                    "leagueId",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the race",
+                        "example": "Spring Championship"
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date of the race",
+                        "format": "date",
+                        "example": "2024-06-15"
+                    },
+                    "isPlayoff": {
+                        "type": "boolean",
+                        "description": "Whether this is a playoff race",
+                        "example": false
+                    },
+                    "leagueId": {
+                        "type": "integer",
+                        "description": "ID of the league this race belongs to",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "description": "Data transfer object for updating a race"
+            },
+            "RaceDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Race's unique identifier",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the race",
+                        "example": "Spring Championship"
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date of the race",
+                        "format": "date",
+                        "example": "2024-06-15"
+                    },
+                    "isPlayoff": {
+                        "type": "boolean",
+                        "description": "Whether this is a playoff race",
+                        "example": false
+                    },
+                    "league": {
+                        "$ref": "#/components/schemas/LeagueSummaryDto"
+                    },
+                    "results": {
+                        "type": "array",
+                        "description": "List of race results",
+                        "items": {
+                            "$ref": "#/components/schemas/RaceResultSummaryDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a race"
+            },
+            "RaceResultSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the race result",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "genderPlace": {
+                        "type": "integer",
+                        "description": "Runner's finishing position within their gender category",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "overallPlace": {
+                        "type": "integer",
+                        "description": "Runner's finishing position overall",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "Runner's finish time",
+                        "example": "01:23:45"
+                    },
+                    "runner": {
+                        "$ref": "#/components/schemas/RunnerSummaryDto"
+                    }
+                },
+                "description": "Summary of a runner's result in a race"
+            },
+            "LeagueCreateDto": {
+                "required": [
+                    "adminId",
+                    "name",
+                    "season"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the league",
+                        "example": "Fantasy Premier League 2024"
+                    },
+                    "season": {
+                        "maximum": 9999,
+                        "minimum": 1900,
+                        "type": "integer",
+                        "description": "Season year for the league",
+                        "format": "int32",
+                        "example": 2024
+                    },
+                    "adminId": {
+                        "type": "integer",
+                        "description": "ID of the league administrator",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "description": "League creation details"
+            },
+            "LeagueDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the league",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the league",
+                        "example": "Fantasy Premier League 2024"
+                    },
+                    "season": {
+                        "type": "integer",
+                        "description": "Season year of the league",
+                        "format": "int32",
+                        "example": 2024
+                    },
+                    "adminId": {
+                        "type": "integer",
+                        "description": "ID of the league administrator",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "teams": {
+                        "type": "array",
+                        "description": "List of teams participating in the league",
+                        "items": {
+                            "$ref": "#/components/schemas/TeamSummaryDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a league"
+            },
+            "TeamCreateDto": {
+                "required": [
+                    "leagueId",
+                    "name",
+                    "ownerId"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 0,
+                        "type": "string",
+                        "description": "Name of the team",
+                        "example": "Speed Demons"
+                    },
+                    "leagueId": {
+                        "type": "integer",
+                        "description": "ID of the league this team belongs to",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "ownerId": {
+                        "type": "integer",
+                        "description": "ID of the team owner/manager",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "description": "Team creation details"
+            },
+            "RaceResultCreateDto": {
+                "required": [
+                    "genderPlace",
+                    "overallPlace",
+                    "raceId",
+                    "runnerId"
+                ],
+                "type": "object",
+                "properties": {
+                    "raceId": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "ID of the race",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "runnerId": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "ID of the runner",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "genderPlace": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Runner's place within their gender category",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "overallPlace": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Runner's place overall",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "Runner's finish time",
+                        "example": "01:23:45"
+                    }
+                },
+                "description": "DTO for creating or updating a race result"
+            },
+            "RaceCreateDto": {
+                "required": [
+                    "date",
+                    "leagueId",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the race",
+                        "example": "Spring Championship"
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date of the race",
+                        "format": "date",
+                        "example": "2024-06-15"
+                    },
+                    "isPlayoff": {
+                        "type": "boolean",
+                        "description": "Whether this is a playoff race",
+                        "example": false
+                    },
+                    "leagueId": {
+                        "type": "integer",
+                        "description": "ID of the league this race belongs to",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "description": "Data transfer object for creating a new race"
+            },
+            "MatchupCreateDto": {
+                "required": [
+                    "raceId",
+                    "team1Id",
+                    "team2Id"
+                ],
+                "type": "object",
+                "properties": {
+                    "raceId": {
+                        "type": "integer",
+                        "description": "ID of the race this matchup belongs to",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "team1Id": {
+                        "type": "integer",
+                        "description": "ID of the first team in the matchup",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "team2Id": {
+                        "type": "integer",
+                        "description": "ID of the second team in the matchup",
+                        "format": "int64",
+                        "example": 2
+                    },
+                    "team1Score": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32",
+                        "example": 100
+                    },
+                    "team2Score": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32",
+                        "example": 95
+                    }
+                },
+                "description": "Matchup creation data"
+            },
+            "MatchupDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the matchup",
+                        "format": "int64"
+                    },
+                    "race": {
+                        "$ref": "#/components/schemas/RaceSummaryDto"
+                    },
+                    "team1": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team2": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team1Score": {
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32"
+                    },
+                    "team2Score": {
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32"
+                    }
+                },
+                "description": "Detailed information about a matchup"
+            },
+            "DraftCreateDto": {
+                "required": [
+                    "leagueId",
+                    "numberOfRounds",
+                    "season",
+                    "snakeOrder",
+                    "startTime"
+                ],
+                "type": "object",
+                "properties": {
+                    "leagueId": {
+                        "type": "integer",
+                        "description": "ID of the league this draft belongs to",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "season": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Season number for this draft",
+                        "format": "int32",
+                        "example": 2023
+                    },
+                    "numberOfRounds": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Number of rounds in the draft",
+                        "format": "int32",
+                        "example": 15
+                    },
+                    "snakeOrder": {
+                        "type": "boolean",
+                        "description": "Whether the draft order should snake (reverse) each round",
+                        "example": true
+                    },
+                    "startTime": {
+                        "type": "string",
+                        "description": "Scheduled start time for the draft",
+                        "format": "date-time"
+                    }
+                },
+                "description": "Draft creation data"
+            },
+            "DraftSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the draft",
+                        "format": "int64"
+                    },
+                    "league": {
+                        "$ref": "#/components/schemas/LeagueSummaryDto"
+                    },
+                    "season": {
+                        "type": "integer",
+                        "description": "Season number",
+                        "format": "int32"
+                    },
+                    "numberOfRounds": {
+                        "type": "integer",
+                        "description": "Number of rounds in the draft",
+                        "format": "int32"
+                    },
+                    "snakeOrder": {
+                        "type": "boolean",
+                        "description": "Whether the draft order snakes (reverses) each round"
+                    },
+                    "startTime": {
+                        "type": "string",
+                        "description": "Start time of the draft",
+                        "format": "date-time"
+                    },
+                    "isComplete": {
+                        "type": "boolean",
+                        "description": "Whether the draft is complete"
+                    },
+                    "currentRound": {
+                        "type": "integer",
+                        "description": "Current round number",
+                        "format": "int32"
+                    },
+                    "currentPick": {
+                        "type": "integer",
+                        "description": "Current pick number within the round",
+                        "format": "int32"
+                    },
+                    "draftOrder": {
+                        "type": "array",
+                        "description": "List of team IDs in draft order",
+                        "items": {
+                            "type": "integer",
+                            "description": "List of team IDs in draft order",
+                            "format": "int64"
+                        }
+                    }
+                },
+                "description": "Summary information about a draft"
+            },
+            "UserPatchDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "Full name of the user",
+                        "nullable": true,
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "format": "email",
+                        "nullable": true,
+                        "example": "john.doe@example.com"
+                    },
+                    "password": {
+                        "maxLength": 2147483647,
+                        "minLength": 6,
+                        "type": "string",
+                        "description": "User's password",
+                        "format": "password",
+                        "nullable": true,
+                        "example": "********"
+                    },
+                    "picture": {
+                        "type": "string",
+                        "description": "User's picture src",
+                        "nullable": true,
+                        "example": "https://pics.org/smiley.png"
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "description": "Is the user active",
+                        "example": true
+                    }
+                },
+                "description": "User registration details"
+            },
+            "LoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "description": "User's email address",
+                        "example": "user@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "User's password",
+                        "example": "********"
+                    }
+                },
+                "description": "Login credentials"
+            },
+            "LoginResponse": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "JWT authentication token",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserDetailsDto"
+                    }
+                },
+                "description": "Response object containing authentication token and user details"
+            },
+            "GoogleAuthRequest": {
+                "required": [
+                    "code"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "Google auth code",
+                        "example": "4/0AeanS0ZPhJ4ywnwGlf7hbe..."
+                    }
+                },
+                "description": "Request object for Google authentication"
+            },
+            "RunnerPatchDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string",
+                        "description": "Runner's full name",
+                        "example": "John Doe"
+                    },
+                    "gender": {
+                        "pattern": "^(M|F)$",
+                        "type": "string",
+                        "description": "Runner's gender (M or F)",
+                        "example": "M"
+                    }
+                },
+                "description": "DTO for partially updating a runner"
+            },
+            "MatchupPatchDto": {
+                "type": "object",
+                "properties": {
+                    "team1Score": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32",
+                        "example": 100
+                    },
+                    "team2Score": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32",
+                        "example": 95
+                    }
+                },
+                "description": "Matchup patch data"
+            },
+            "LeaguePatchDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string",
+                        "description": "Name of the league",
+                        "example": "Fantasy Premier League 2024"
+                    },
+                    "season": {
+                        "maximum": 9999,
+                        "minimum": 1900,
+                        "type": "integer",
+                        "description": "Season year of the league",
+                        "format": "int32",
+                        "example": 2024
+                    },
+                    "adminId": {
+                        "type": "integer",
+                        "description": "ID of the league administrator",
+                        "format": "int64",
+                        "nullable": true,
+                        "example": 1
+                    }
+                },
+                "description": "Fields to update"
+            },
+            "Pageable": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "PageUserDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserDetailsDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageableObject": {
+                "type": "object",
+                "properties": {
+                    "offset": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "pageNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "unpaged": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "SortObject": {
+                "type": "object",
+                "properties": {
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "sorted": {
+                        "type": "boolean"
+                    },
+                    "unsorted": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageTeamSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TeamSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageRunnerSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RunnerSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageRaceResultDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RaceResultDetailsDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageRaceSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RaceSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageRaceResultSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RaceResultSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "MatchupSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the matchup",
+                        "format": "int64"
+                    },
+                    "raceId": {
+                        "type": "integer",
+                        "description": "ID of the race this matchup belongs to",
+                        "format": "int64"
+                    },
+                    "team1": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team2": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team1Score": {
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32"
+                    },
+                    "team2Score": {
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32"
+                    }
+                },
+                "description": "Summary information about a matchup"
+            },
+            "PageMatchupSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MatchupSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageLeagueSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LeagueSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageDraftSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    }
+}

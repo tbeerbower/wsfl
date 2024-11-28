@@ -29,6 +29,7 @@ import org.tbeerbower.wsfl_backend.service.LeagueService;
 @Tag(name = "Draft", description = "Draft management APIs for league player selection")
 @RestController
 @RequestMapping("/api/drafts")
+@CrossOrigin(origins = "http://localhost:8080")
 public class DraftController  {
     
     private final DraftService draftService;

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Runner", description = "Runner management APIs")
 @RestController
 @RequestMapping("/api/runners")
+@CrossOrigin(origins = "http://localhost:8080")
 public class RunnerController  {
     
     private final RunnerService runnerService;

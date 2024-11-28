@@ -31,6 +31,7 @@ import org.tbeerbower.wsfl_backend.service.RunnerService;
 @Tag(name = "Race Results", description = "APIs for managing race results and runner performance")
 @RestController
 @RequestMapping("/api/results")
+@CrossOrigin(origins = "http://localhost:8080")
 public class RaceResultController  {
 
     private final RaceResultService raceResultService;

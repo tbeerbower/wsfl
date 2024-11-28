@@ -31,6 +31,7 @@ import org.tbeerbower.wsfl_backend.service.TeamService;
 @Tag(name = "Matchup", description = "Matchup management APIs for creating and managing team matchups")
 @RestController
 @RequestMapping("/api/matchups")
+@CrossOrigin(origins = "http://localhost:8080")
 public class MatchupController  {
 
     private final MatchupService matchupService;

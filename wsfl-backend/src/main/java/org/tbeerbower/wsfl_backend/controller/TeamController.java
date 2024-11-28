@@ -33,6 +33,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @Tag(name = "Team", description = "Team management APIs for managing teams and their rosters")
 @RestController
 @RequestMapping("/api/teams")
+@CrossOrigin(origins = "http://localhost:8080")
 public class TeamController  {
 
     private final TeamService teamService;

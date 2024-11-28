@@ -32,6 +32,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User", description = "User management APIs")
+@CrossOrigin(origins = "http://localhost:8080")
 public class UserController  {
 
     private final UserService userService;
