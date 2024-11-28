@@ -16,6 +16,7 @@ import org.tbeerbower.wsfl_backend.dto.LoginRequest;
 import org.tbeerbower.wsfl_backend.dto.LoginResponse;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.UserDetailsDto;
+import org.tbeerbower.wsfl_backend.dto.UserPatchDto;
 import org.tbeerbower.wsfl_backend.dto.UserSummaryDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
@@ -84,7 +85,7 @@ public class AuthController  {
             responseCode = "200",
             description = "User registered successfully",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UserDetailsDto.class))
+                    schema = @Schema(implementation = UserSummaryDto.class))
         ),
         @ApiResponse(
             responseCode = "400",
@@ -96,21 +97,25 @@ public class AuthController  {
     @PostMapping("/register")
     public ResponseEntity<UserSummaryDto> register(
             @Parameter(description = "User registration details", required = true)
-            @Valid @RequestBody User user) {
-        if (userService.findByEmail(user.getEmail()).isPresent()) {
+            @Valid @RequestBody UserPatchDto userDto) {
+        if (userService.findByEmail(userDto.getEmail()).isPresent()) {
             throw new ValidationException("Email already exists");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        User user = new User();
+        user.setEmail(userDto.getEmail());
+        user.setName(userDto.getName());
+        user.setPassword(userDto.getPassword());
         user.setRoles(Collections.singleton("USER"));
         User savedUser = userService.save(user);
 
-        UserSummaryDto userDto = new UserSummaryDto(
+        UserSummaryDto userSummaryDto = new UserSummaryDto(
             savedUser.getId(),
             savedUser.getEmail(),
             savedUser.getName()
         );
 
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity.ok(userSummaryDto);
     }
 }

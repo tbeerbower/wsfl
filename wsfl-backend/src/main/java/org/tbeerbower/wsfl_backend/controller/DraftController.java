@@ -2,6 +2,8 @@ package org.tbeerbower.wsfl_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,7 +47,7 @@ public class DraftController  {
     @Operation(summary = "Get all drafts", description = "Retrieves a paginated list of all drafts in the system, with optional filtering by league and season")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved drafts"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping
     public ResponseEntity<Page<DraftSummaryDto>> getAllDrafts(
@@ -71,7 +74,7 @@ public class DraftController  {
     @Operation(summary = "Get draft by ID", description = "Retrieves detailed information about a specific draft")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Draft found"),
-        @ApiResponse(responseCode = "404", description = "Draft not found")
+        @ApiResponse(responseCode = "404", description = "Draft not found",  content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1")))
     })
     @GetMapping("/{id}")
     public ResponseEntity<DraftSummaryDto> getDraft(
@@ -87,9 +90,9 @@ public class DraftController  {
     @Operation(summary = "Create new draft", description = "Creates a new draft for a league's season")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Draft created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "404", description = "League not found"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to create drafts")
+        @ApiResponse(responseCode = "400", description = "Invalid input",  content = @Content(schema = @Schema(type = "string", example = "Invalid input data"))),
+        @ApiResponse(responseCode = "404", description = "League not found", content = @Content(schema = @Schema(type = "string", example = "League not found with id: 1"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to create drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,8 +111,8 @@ public class DraftController  {
     @Operation(summary = "Start draft", description = "Initiates the draft process for a specific draft")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Draft started successfully"),
-        @ApiResponse(responseCode = "404", description = "Draft not found"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to start drafts")
+        @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to start drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @PostMapping("/{id}/start")
     @PreAuthorize("hasRole('ADMIN')")
@@ -127,8 +130,8 @@ public class DraftController  {
     @Operation(summary = "End draft", description = "Completes the draft process for a specific draft")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Draft ended successfully"),
-        @ApiResponse(responseCode = "404", description = "Draft not found"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to end drafts")
+        @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to end drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @PostMapping("/{id}/end")
     @PreAuthorize("hasRole('ADMIN')")

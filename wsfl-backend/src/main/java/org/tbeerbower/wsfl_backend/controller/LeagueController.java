@@ -116,13 +116,13 @@ public class LeagueController  {
             responseCode = "400",
             description = "Invalid input data",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "Invalid input data"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to create leagues",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @PostMapping
@@ -153,13 +153,13 @@ public class LeagueController  {
             responseCode = "404",
             description = "League not found",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "League not found with id: 123"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to update leagues",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @PutMapping("/{id}")
@@ -194,13 +194,13 @@ public class LeagueController  {
             responseCode = "404",
             description = "League not found",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "League not found with id: 123"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to update leagues",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @PatchMapping("/{id}")
@@ -237,13 +237,13 @@ public class LeagueController  {
             responseCode = "404",
             description = "League not found",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "League not found with id: 123"))
         ),
         @ApiResponse(
             responseCode = "403",
             description = "Not authorized to delete leagues",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "Access denied"))
         )
     })
     @DeleteMapping("/{id}")
@@ -273,7 +273,7 @@ public class LeagueController  {
             responseCode = "404",
             description = "League not found",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(type = "string"))
+                    schema = @Schema(type = "string", example = "League not found with id: 123"))
         )
     })
     @GetMapping("/{id}/teams")

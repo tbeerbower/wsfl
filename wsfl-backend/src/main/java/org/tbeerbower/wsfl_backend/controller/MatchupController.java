@@ -2,6 +2,8 @@ package org.tbeerbower.wsfl_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -47,7 +49,7 @@ public class MatchupController  {
     @Operation(summary = "Get all matchups", description = "Retrieves a paginated list of all matchups in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @io.swagger.v3.oas.annotations.media.Content(schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", example = "Access denied")))
     })
     @GetMapping
     public ResponseEntity<Page<MatchupSummaryDto>> getAllMatchups(
@@ -67,8 +69,10 @@ public class MatchupController  {
     @Operation(summary = "Get matchups by race", description = "Retrieves a paginated list of matchups for a specific race")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Successfully retrieved matchups"),
-        @ApiResponse(responseCode = "404", description = "Race not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "404", description = "Race not found", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Race not found with id: 123"))),
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping("/race/{raceId}")
     public ResponseEntity<Page<MatchupSummaryDto>> getMatchupsByRace(
@@ -90,8 +94,10 @@ public class MatchupController  {
     @Operation(summary = "Get a matchup by ID", description = "Retrieves a specific matchup by its ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Matchup found"),
-        @ApiResponse(responseCode = "404", description = "Matchup not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "404", description = "Matchup not found", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Matchup not found with id: 123"))),
+        @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Access denied")))
     })
     @GetMapping("/{id}")
     public ResponseEntity<MatchupDetailsDto> getMatchup(
@@ -107,8 +113,10 @@ public class MatchupController  {
     @Operation(summary = "Create a new matchup", description = "Creates a new matchup in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Matchup created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to create matchups")
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Invalid input data"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to create matchups", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Access denied")))
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -124,8 +132,10 @@ public class MatchupController  {
     @Operation(summary = "Update matchup scores", description = "Updates the scores for both teams in a matchup")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Scores updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Matchup not found"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to update matchups")
+        @ApiResponse(responseCode = "404", description = "Matchup not found", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Matchup not found with id: 123"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to update matchups", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Access denied")))
     })
     @PatchMapping("/{id}/scores")
     @PreAuthorize("hasRole('ADMIN')")
@@ -147,8 +157,10 @@ public class MatchupController  {
     @Operation(summary = "Delete a matchup", description = "Deletes a matchup from the system")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Successfully deleted matchup"),
-        @ApiResponse(responseCode = "404", description = "Matchup not found"),
-        @ApiResponse(responseCode = "403", description = "Not authorized to delete matchups")
+        @ApiResponse(responseCode = "404", description = "Matchup not found", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Matchup not found with id: 123"))),
+        @ApiResponse(responseCode = "403", description = "Not authorized to delete matchups", content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "string", example = "Access denied")))
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
