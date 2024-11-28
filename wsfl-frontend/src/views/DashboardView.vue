@@ -71,32 +71,37 @@
         <h2>League Standings</h2>
         <div v-if="loading.standings">Loading standings...</div>
         <div v-else-if="error.standings" class="error-message">{{ error.standings }}</div>
-        <div v-else-if="standings.length === 0" class="empty-state">
+        <div v-else-if="Object.keys(leagueStandings).length === 0" class="empty-state">
           No standings available.
         </div>
-        <div v-else class="standings-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>W</th>
-                <th>L</th>
-                <th>T</th>
-                <th>Score</th>
-                <th>League</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="team in standings" :key="team.id">
-                <td>{{ team.name || 'Unknown Team' }}</td>
-                <td>{{ team.wins || 0 }}</td>
-                <td>{{ team.losses || 0 }}</td>
-                <td>{{ team.ties || 0 }}</td>
-                <td>{{ team.totalScore || 0 }}</td>
-                <td>{{ team.leagueName || 'Unknown League' }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else class="leagues-container">
+          <div v-for="(league, leagueId) in leagueStandings" :key="leagueId" class="league-section">
+            <h3>{{ league.name }}</h3>
+            <div class="standings-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="text-left">Team</th>
+                    <th class="text-center">W</th>
+                    <th class="text-center">L</th>
+                    <th class="text-center">T</th>
+                    <th class="text-center">PCT</th>
+                    <th class="text-right">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="team in league.teams" :key="team.id" :class="{ 'user-team': isUserTeam(team.id) }">
+                    <td class="text-left">{{ team.name }}</td>
+                    <td class="text-center">{{ team.wins }}</td>
+                    <td class="text-center">{{ team.losses }}</td>
+                    <td class="text-center">{{ team.ties }}</td>
+                    <td class="text-center">{{ calculateWinPercentage(team) }}</td>
+                    <td class="text-right">{{ team.totalScore }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -117,7 +122,7 @@ export default {
     
     const teams = ref([])
     const matchups = ref([])
-    const standings = ref([])
+    const leagueStandings = ref({})
     
     const loading = ref({
       teams: false,
@@ -132,6 +137,17 @@ export default {
     })
 
     const user = computed(() => store.getters['auth/currentUser'])
+
+    const isUserTeam = (teamId) => {
+      return teams.value.some(team => team.id === teamId)
+    }
+
+    const calculateWinPercentage = (team) => {
+      const totalGames = team.wins + team.losses + team.ties
+      if (totalGames === 0) return '.000'
+      const percentage = (team.wins + (team.ties * 0.5)) / totalGames
+      return percentage.toFixed(3).substring(1) // Remove leading zero
+    }
 
     const fetchTeams = async () => {
       if (!user.value?.id) return
@@ -173,36 +189,33 @@ export default {
       loading.value.standings = true
       error.value.standings = null
       try {
-        // Get all unique league IDs from user's teams
-        const leagueIds = [...new Set(teams.value
-          .filter(team => team.league?.id)
-          .map(team => team.league.id))]
+        // Get user's teams to find league IDs
+        const userTeamsResponse = await axios.get(`/api/users/${user.value.id}/teams`)
+        const userTeams = userTeamsResponse.data.content || []
+        
+        // Get unique leagues with their names
+        const leagues = userTeams.reduce((acc, team) => {
+          if (team.league && !acc[team.league.id]) {
+            acc[team.league.id] = {
+              id: team.league.id,
+              name: team.league.name,
+              teams: []
+            }
+          }
+          return acc
+        }, {})
 
         // Fetch standings for each league
-        const allStandings = await Promise.all(
-          leagueIds.map(async (leagueId) => {
-            const response = await axios.get(`/api/leagues/${leagueId}/teams`)
-            const leagueTeams = response.data || []
-            // Add league info to each team
-            const league = teams.value.find(t => t.league?.id === leagueId)?.league
-            return leagueTeams.map(team => ({
-              ...team,
-              leagueName: league?.name || 'Unknown League'
-            }))
+        await Promise.all(
+          Object.values(leagues).map(async (league) => {
+            const response = await axios.get(`/api/leagues/${league.id}/teams`, {
+              params: { standings: true }
+            })
+            league.teams = response.data.content || []
           })
         )
 
-        // Flatten and sort all standings
-        standings.value = allStandings
-          .flat()
-          .sort((a, b) => {
-            // Sort by win percentage first
-            const aWinPct = (a.wins || 0) / ((a.wins || 0) + (a.losses || 0) + (a.ties || 0) || 1)
-            const bWinPct = (b.wins || 0) / ((b.wins || 0) + (b.losses || 0) + (b.ties || 0) || 1)
-            if (aWinPct !== bWinPct) return bWinPct - aWinPct
-            // Use total score as tiebreaker
-            return (a.totalScore || 0) - (b.totalScore || 0)
-          })
+        leagueStandings.value = leagues
       } catch (err) {
         error.value.standings = 'Failed to load standings'
         console.error(err)
@@ -229,10 +242,12 @@ export default {
       user,
       teams,
       matchups,
-      standings,
+      leagueStandings,
       loading,
       error,
-      handleLogout
+      handleLogout,
+      isUserTeam,
+      calculateWinPercentage
     }
   }
 }
@@ -396,25 +411,77 @@ h4 {
   gap: 20px;
 }
 
+.leagues-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.league-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+}
+
+.league-section h3 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
 .standings-table {
-  margin-top: 20px;
+  margin-top: 1rem;
   overflow-x: auto;
 }
 
-table {
+.standings-table table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.standings-table th, .standings-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
 }
 
-th {
-  background-color: #f5f5f5;
-  font-weight: bold;
+.standings-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.standings-table .text-left {
+  text-align: left;
+}
+
+.standings-table .text-center {
+  text-align: center;
+}
+
+.standings-table .text-right {
+  text-align: right;
+}
+
+.standings-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.standings-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.standings-table .user-team {
+  background-color: #e3f2fd;
+}
+
+.standings-table .user-team:hover {
+  background-color: #bbdefb;
+}
+
+.standings-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .error-message {

@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.TeamDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
@@ -39,10 +40,14 @@ public class TeamController  {
     private final TeamService teamService;
     private final LeagueService leagueService;
 
+    private final TeamDtoAssembler teamDtoAssembler;
+
+
     @Autowired
-    public TeamController(TeamService teamService, LeagueService leagueService) {
+    public TeamController(TeamService teamService, LeagueService leagueService, TeamDtoAssembler teamDtoAssembler) {
         this.teamService = teamService;
         this.leagueService = leagueService;
+        this.teamDtoAssembler = teamDtoAssembler;
     }
 
     @Operation(
@@ -56,10 +61,10 @@ public class TeamController  {
         )
     })
     @GetMapping
-    public ResponseEntity<Page<TeamSummaryDto>> getAllTeams(
+    public ResponseEntity<Page<TeamDetailsDto>> getAllTeams(
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<Team> teams = teamService.findAll(pageable);
-        Page<TeamSummaryDto> teamDtos = teams.map(team -> convertToTeamSummaryDto(team));
+        Page<TeamDetailsDto> teamDtos = teams.map(team -> teamDtoAssembler.toDetailedModel(team));
         return ResponseEntity.ok(teamDtos);
     }
 
@@ -85,7 +90,7 @@ public class TeamController  {
         Team team = teamService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Team", "id", id));
 
-        TeamDetailsDto teamDto = convertToTeamDetailsDto(team);
+        TeamDetailsDto teamDto = teamDtoAssembler.toDetailedModel(team);
 
         return ResponseEntity.ok(teamDto);
     }
@@ -128,7 +133,7 @@ public class TeamController  {
         team.setLeague(league);
 
         Team savedTeam = teamService.save(team);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToTeamDetailsDto(savedTeam));
+        return ResponseEntity.status(HttpStatus.CREATED).body(teamDtoAssembler.toDetailedModel(savedTeam));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -169,7 +174,7 @@ public class TeamController  {
         }
 
         Team updatedTeam = teamService.save(team);
-        return ResponseEntity.ok(convertToTeamDetailsDto(updatedTeam));
+        return ResponseEntity.ok(teamDtoAssembler.toDetailedModel(updatedTeam));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -233,49 +238,6 @@ public class TeamController  {
         return ResponseEntity.ok(runners);
     }
 
-    // Helper methods for DTO conversion
-    private TeamSummaryDto convertToTeamSummaryDto(Team team) {
-        return new TeamSummaryDto(
-            team.getId(),
-            team.getName(),
-            team.getWins(),
-            team.getLosses(),
-            team.getTies(),
-            team.getTotalScore()
-        );
-    }
-
-    private TeamDetailsDto convertToTeamDetailsDto(Team team) {
-        List<RunnerSummaryDto> runnerDtos = team.getRunners().stream()
-                .map(this::convertToRunnerSummaryDto)
-                .collect(Collectors.toList());
-
-        League league = team.getLeague();
-        LeagueSummaryDto leagueDto = new LeagueSummaryDto(
-            league.getId(),
-            league.getName(),
-            league.getSeason()
-        );
-
-        UserSummaryDto ownerDto = new UserSummaryDto(
-            team.getOwner().getId(),
-            team.getOwner().getEmail(),
-            team.getOwner().getName()
-        );
-
-        TeamDetailsDto teamDto = new TeamDetailsDto(
-            team.getId(),
-            team.getName(),
-            team.getWins(),
-            team.getLosses(),
-            team.getTies(),
-            team.getTotalScore(),
-            leagueDto,
-            ownerDto
-        );
-        teamDto.setRunners(runnerDtos);
-        return teamDto;
-    }
 
     private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
         return new RunnerSummaryDto(

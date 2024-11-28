@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.TeamDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
@@ -38,11 +39,13 @@ public class UserController  {
     private final UserService userService;
     private final TeamService teamService;
     private final PasswordEncoder passwordEncoder;
+    private final TeamDtoAssembler teamDtoAssembler;
 
-    public UserController(UserService userService, TeamService teamService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, TeamService teamService, PasswordEncoder passwordEncoder, TeamDtoAssembler teamDtoAssembler) {
         this.userService = userService;
         this.teamService = teamService;
         this.passwordEncoder = passwordEncoder;
+        this.teamDtoAssembler = teamDtoAssembler;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -97,13 +100,13 @@ public class UserController  {
         description = "Successfully retrieved teams"
     )
     @GetMapping("/{id}/teams")
-    public ResponseEntity<Page<TeamSummaryDto>> getUserTeams(@PathVariable Long id,
+    public ResponseEntity<Page<TeamDetailsDto>> getUserTeams(@PathVariable Long id,
                                                              @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         User user = userService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        Page<TeamSummaryDto> teams = teamService.findByOwner(user, pageable)
-                .map(this::convertToTeamSummaryDto);
+        Page<TeamDetailsDto> teams = teamService.findByOwner(user, pageable)
+                .map(teamDtoAssembler::toDetailedModel);
         
         return ResponseEntity.ok(teams);
     }
