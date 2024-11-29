@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
 import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.model.Draft;
+import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Runner;
 import org.tbeerbower.wsfl_backend.model.Team;
@@ -31,4 +32,5 @@ public interface DraftService {
     boolean isTeamTurn(Draft draft, Team team);
     Draft startDraft(Draft draft);
     Draft endDraft(Draft draft);
+    Page<DraftPick> findDraftPicksByDraft(Draft draft, Long teamId, Pageable pageable);
 }

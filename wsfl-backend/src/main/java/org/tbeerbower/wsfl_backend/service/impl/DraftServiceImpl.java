@@ -13,6 +13,7 @@ import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Runner;
 import org.tbeerbower.wsfl_backend.model.Team;
+import org.tbeerbower.wsfl_backend.repository.DraftPickRepository;
 import org.tbeerbower.wsfl_backend.repository.DraftRepository;
 import org.tbeerbower.wsfl_backend.repository.LeagueRepository;
 import org.tbeerbower.wsfl_backend.repository.RunnerRepository;
@@ -24,16 +25,18 @@ import java.util.stream.Collectors;
 
 @Service
 public class DraftServiceImpl implements DraftService {
-    
+
     private final DraftRepository draftRepository;
+    private final DraftPickRepository draftPickRepository;
     private final RunnerRepository runnerRepository;
     private final LeagueRepository leagueRepository;
     
     @Autowired
-    public DraftServiceImpl(DraftRepository draftRepository, 
-                          RunnerRepository runnerRepository,
-                          LeagueRepository leagueRepository) {
+    public DraftServiceImpl(DraftRepository draftRepository, DraftPickRepository draftPickRepository,
+                            RunnerRepository runnerRepository,
+                            LeagueRepository leagueRepository) {
         this.draftRepository = draftRepository;
+        this.draftPickRepository = draftPickRepository;
         this.runnerRepository = runnerRepository;
         this.leagueRepository = leagueRepository;
     }
@@ -220,7 +223,13 @@ public class DraftServiceImpl implements DraftService {
     @Transactional
     public Draft endDraft(Draft draft) {
         draft.setIsComplete(true);
-        return draftRepository.save(draft);
+        return save(draft);
+    }
+    
+    @Override
+    public Page<DraftPick> findDraftPicksByDraft(Draft draft, Long teamId, Pageable pageable) {
+        return teamId == null ? draftPickRepository.findDraftPicksByDraft(draft, pageable) :
+                draftPickRepository.findDraftPicksByDraftAndTeamId(draft, teamId, pageable);
     }
     
     private int calculatePickNumber(Draft draft) {

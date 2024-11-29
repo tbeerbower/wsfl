@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.tbeerbower.wsfl_backend.model.Draft;
+import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.model.League;
 
 import java.util.List;

@@ -19,13 +19,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.DraftPickDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
+import org.tbeerbower.wsfl_backend.dto.DraftPickSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Draft;
+import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.service.DraftService;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(name = "Draft", description = "Draft management APIs for league player selection")
 @RestController
@@ -36,14 +42,17 @@ public class DraftController  {
     private final DraftService draftService;
     private final LeagueService leagueService;
     private final DraftDtoAssembler draftDtoAssembler;
+    private final DraftPickDtoAssembler draftPickDtoAssembler;
     
     @Autowired
     public DraftController(DraftService draftService,
                          LeagueService leagueService,
-                         DraftDtoAssembler draftDtoAssembler) {
+                         DraftDtoAssembler draftDtoAssembler,
+                         DraftPickDtoAssembler draftPickDtoAssembler) {
         this.draftService = draftService;
         this.leagueService = leagueService;
         this.draftDtoAssembler = draftDtoAssembler;
+        this.draftPickDtoAssembler = draftPickDtoAssembler;
     }
 
     @Operation(summary = "Get all drafts", description = "Retrieves a paginated list of all drafts in the system, with optional filtering by league and season")
@@ -164,5 +173,40 @@ public class DraftController  {
         
         draft = draftService.endDraft(draft);
         return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
+    }
+
+    @Operation(
+        summary = "Get draft picks for a draft",
+        description = "Retrieves a paginated list of all picks for a specific draft"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved draft picks",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DraftPickSummaryDto.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Draft not found"
+        )
+    })
+    @GetMapping("/{id}/picks")
+    public ResponseEntity<Page<DraftPickSummaryDto>> getDraftPicks(
+            @Parameter(description = "ID of the draft to get picks for")
+            @PathVariable Long id,
+            @Parameter(description = "Team ID to filter draft picks")
+            @RequestParam(required = false) Long teamId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        
+        Draft draft = draftService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft", "id", id));
+        
+        Page<DraftPick> draftPicks = draftService.findDraftPicksByDraft(draft, teamId, pageable);
+        Page<DraftPickSummaryDto> draftPickDtos = draftPicks.map(draftPick -> draftPickDtoAssembler.toModel(draftPick));
+
+        return ResponseEntity.ok(draftPickDtos);
     }
 }
