@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
+import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.service.DraftService;
@@ -107,6 +108,24 @@ public class DraftController  {
         
         Draft draft = draftService.create(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(draftDtoAssembler.toModel(draft));
+    }
+
+    @Operation(summary = "Update draft", description = "Update a specific draft")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Draft updated"),
+            @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
+            @ApiResponse(responseCode = "403", description = "Not authorized to start drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
+    })
+    @PutMapping("/{id}/start")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<DraftSummaryDto> updateDraft(
+            @Parameter(description = "ID of the draft to start", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Draft update data", required = true)
+            @Valid @RequestBody DraftUpdateDto updateDto) {
+
+        Draft draft = draftService.update(id, updateDto);
+        return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 
     @Operation(summary = "Start draft", description = "Initiates the draft process for a specific draft")

@@ -3,7 +3,9 @@ package org.tbeerbower.wsfl_backend.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "drafts")
@@ -15,7 +17,8 @@ public class Draft {
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
-    
+
+    private String name;
     private Integer season;
     private Integer numberOfRounds;
     private Boolean snakeOrder;
@@ -34,14 +37,20 @@ public class Draft {
     @Column(name = "team_id")
     @OrderColumn(name = "position")
     private List<Long> draftOrder = new ArrayList<>();
-    
+
+    @ManyToMany(mappedBy = "drafts")
+    private Set<Team> teams = new HashSet<>();
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
     public League getLeague() { return league; }
     public void setLeague(League league) { this.league = league; }
-    
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public Integer getSeason() { return season; }
     public void setSeason(Integer season) { this.season = season; }
     
@@ -68,4 +77,7 @@ public class Draft {
     
     public List<Long> getDraftOrder() { return draftOrder; }
     public void setDraftOrder(List<Long> draftOrder) { this.draftOrder = draftOrder; }
+
+    public Set<Team> getTeams() { return teams; }
+    public void setTeams(Set<Team> teams) { this.teams = teams; }
 } 

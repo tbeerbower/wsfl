@@ -26,19 +26,24 @@ public class Matchup {
     
     @Column(name = "team2score")
     private Integer team2Score;
-    
+
+    @ManyToOne
+    @JoinColumn(name = "draft_id")
+    private Draft draft;
+
     // Default constructor
     public Matchup() {
     }
     
     // Constructor for DTO conversion
-    public Matchup(Long id, Race race, Team team1, Team team2, Integer team1Score, Integer team2Score) {
+    public Matchup(Long id, Race race, Team team1, Team team2, Integer team1Score, Integer team2Score, Draft draft) {
         this.id = id;
         this.race = race;
         this.team1 = team1;
         this.team2 = team2;
         this.team1Score = team1Score;
         this.team2Score = team2Score;
+        this.draft = draft;
     }
     
     // Getters and Setters
@@ -89,4 +94,12 @@ public class Matchup {
     public void setTeam2Score(Integer team2Score) {
         this.team2Score = team2Score;
     }
-} 
+
+    public Draft getDraft() {
+        return draft;
+    }
+
+    public void setDraft(Draft draft) {
+        this.draft = draft;
+    }
+}

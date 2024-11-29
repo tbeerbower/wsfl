@@ -1,8 +1,7 @@
 <template>
   <div class="dashboard-view">
     <header class="dashboard-header">
-      <h1>Welcome, {{ user?.name || 'User' }}</h1>
-      <button @click="handleLogout" class="logout-button">Logout</button>
+      <h1>Dashboard</h1>
     </header>
 
     <div class="dashboard-content">
@@ -19,7 +18,6 @@
           <div v-for="league in adminLeagues" :key="league.id" class="league-card" @click="$router.push(`/leagues/${league.id}`)">
             <div class="league-header">
               <h3>{{ league.name }}</h3>
-              <span class="season-badge">Season {{ league.season }}</span>
             </div>
             <div class="league-stats">
               <div class="stat-item">
@@ -65,17 +63,13 @@
                 <span class="stat-value">{{ team.wins }}-{{ team.losses }}-{{ team.ties }}</span>
               </div>
               <div class="stat-item">
+                <span class="stat-label">Win %</span>
+                <span class="stat-value">{{ calculateWinPercentage(team) }}%</span>
+              </div>
+              <div class="stat-item">
                 <span class="stat-label">Score</span>
                 <span class="stat-value">{{ team.totalScore }}</span>
               </div>
-            </div>
-            <div class="team-roster">
-              <h4>Runners</h4>
-              <ul>
-                <li v-for="runner in team.runners" :key="runner.id">
-                  {{ runner.name }} ({{ runner.gender }})
-                </li>
-              </ul>
             </div>
           </div>
         </div>
@@ -160,17 +154,16 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, defineComponent } from 'vue'
 import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-export default {
+export default defineComponent({
   name: 'DashboardView',
   setup() {
     const store = useStore()
-    const router = useRouter()
-    
+    const user = store.getters['auth/currentUser']
+
     const teams = ref([])
     const matchups = ref([])
     const adminLeagues = ref([])
@@ -189,8 +182,6 @@ export default {
       standings: null,
       adminLeagues: null
     })
-
-    const user = computed(() => store.getters['auth/currentUser'])
 
     const isUserTeam = (teamId) => {
       return teams.value.some(team => team.id === teamId)
@@ -215,12 +206,12 @@ export default {
     }
 
     const fetchTeams = async () => {
-      if (!user.value?.id) return
+      if (!user) return
       
       loading.value.teams = true
       error.value.teams = null
       try {
-        const response = await axios.get(`/api/users/${user.value.id}/teams`)
+        const response = await axios.get(`/api/users/${user.id}/teams`)
         teams.value = response.data.content || [] // Extract teams from paginated response
       } catch (err) {
         error.value.teams = 'Failed to load teams'
@@ -231,13 +222,13 @@ export default {
     }
 
     const fetchMatchups = async () => {
-      if (!user.value?.id) return
+      if (!user) return
       
       loading.value.matchups = true
       error.value.matchups = null
       try {
         const response = await axios.get('/api/matchups', {
-          params: { userId: user.value.id }
+          params: { userId: user.id }
         })
         matchups.value = response.data.content || []
       } catch (err) {
@@ -249,13 +240,13 @@ export default {
     }
 
     const fetchStandings = async () => {
-      if (!user.value?.id) return
+      if (!user) return
       
       loading.value.standings = true
       error.value.standings = null
       try {
         // Get user's teams to find league IDs
-        const userTeamsResponse = await axios.get(`/api/users/${user.value.id}/teams`)
+        const userTeamsResponse = await axios.get(`/api/users/${user.id}/teams`)
         const userTeams = userTeamsResponse.data.content || []
         
         // Get unique leagues with their names
@@ -290,12 +281,12 @@ export default {
     }
 
     const fetchAdminLeagues = async () => {
-      if (!user.value?.id) return
+      if (!user) return
       
       loading.value.adminLeagues = true
       error.value.adminLeagues = null
       try {
-        const response = await axios.get(`/api/users/${user.value.id}/leagues`)
+        const response = await axios.get(`/api/users/${user.id}/leagues`)
         adminLeagues.value = response.data.content || []
       } catch (err) {
         error.value.adminLeagues = 'Failed to load leagues'
@@ -303,11 +294,6 @@ export default {
       } finally {
         loading.value.adminLeagues = false
       }
-    }
-
-    const handleLogout = () => {
-      store.dispatch('auth/logout')
-      router.push('/login')
     }
 
     onMounted(() => {
@@ -326,13 +312,12 @@ export default {
       leagueStandings,
       loading,
       error,
-      handleLogout,
       isUserTeam,
       calculateWinPercentage,
       sortedTeams
     }
   }
-}
+})
 </script>
 
 <style scoped>
@@ -347,15 +332,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40px;
-}
-
-.logout-button {
-  padding: 8px 16px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .dashboard-content {
@@ -430,29 +406,6 @@ export default {
   font-size: 1.125rem;
   font-weight: 600;
   color: #2c3e50;
-}
-
-.team-roster {
-  border-top: 1px solid #eee;
-  padding-top: 1rem;
-}
-
-.team-roster h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  color: #2c3e50;
-}
-
-.team-roster ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.team-roster li {
-  padding: 0.25rem 0;
-  color: #666;
-  font-size: 0.875rem;
 }
 
 .matchup-card {
@@ -714,7 +667,7 @@ h3 {
 }
 
 .teams-list h4 {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
   font-size: 1rem;
   color: #2c3e50;
 }

@@ -217,36 +217,6 @@ public class TeamController  {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-        summary = "Get team runners",
-        description = "Retrieves all runners on a specific team's roster"
-    )
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved runners"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Team not found",
-            content = @Content(schema = @Schema(type = "string", example = "Team not found with id: 123"))
-        )
-    })
-    @GetMapping("/{id}/runners")
-    public ResponseEntity<List<RunnerSummaryDto>> getTeamRunners(
-            @Parameter(description = "ID of the team", required = true)
-            @PathVariable Long id) {
-        Team team = teamService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Team", "id", id));
-
-        List<RunnerSummaryDto> runners = team.getRunners().stream()
-                .map(this::convertToRunnerSummaryDto)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(runners);
-    }
-
-
     private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
         return new RunnerSummaryDto(
             runner.getId(),

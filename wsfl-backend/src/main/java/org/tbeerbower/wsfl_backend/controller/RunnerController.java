@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.dto.RunnerCreateDto;
-import org.tbeerbower.wsfl_backend.dto.RunnerDetailsDto;
+import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerPatchDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
@@ -79,11 +79,11 @@ public class RunnerController  {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<RunnerDetailsDto> getRunnerById(@PathVariable Long id) {
+    public ResponseEntity<RunnerSummaryDto> getRunnerById(@PathVariable Long id) {
         Runner runner = runnerService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Runner", "id", id));
         
-        RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(runner);
+        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(runner);
         return ResponseEntity.ok(runnerDto);
     }
     
@@ -104,11 +104,11 @@ public class RunnerController  {
         )
     })
     @PostMapping
-    public ResponseEntity<RunnerDetailsDto> createRunner(
+    public ResponseEntity<RunnerSummaryDto> createRunner(
             @Valid @RequestBody RunnerCreateDto createDto) {
         Runner runner = convertToRunner(createDto);
         Runner savedRunner = runnerService.save(runner);
-        RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(savedRunner);
+        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(savedRunner);
         return ResponseEntity.status(201).body(runnerDto);
     }
     
@@ -134,7 +134,7 @@ public class RunnerController  {
         )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<RunnerDetailsDto> updateRunner(
+    public ResponseEntity<RunnerSummaryDto> updateRunner(
             @PathVariable Long id,
             @Valid @RequestBody RunnerCreateDto updateDto) {
         Runner existingRunner = runnerService.findById(id)
@@ -143,7 +143,7 @@ public class RunnerController  {
         Runner runner = convertToRunner(updateDto);
         runner.setId(id);
         Runner updatedRunner = runnerService.save(runner);
-        RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
+        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(updatedRunner);
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -170,7 +170,7 @@ public class RunnerController  {
         )
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<RunnerDetailsDto> patchRunner(
+    public ResponseEntity<RunnerSummaryDto> patchRunner(
             @PathVariable Long id,
             @Valid @RequestBody RunnerPatchDto patchDto) {
         Runner existingRunner = runnerService.findById(id)
@@ -178,7 +178,7 @@ public class RunnerController  {
         
         updateRunnerFromPatch(existingRunner, patchDto);
         Runner updatedRunner = runnerService.save(existingRunner);
-        RunnerDetailsDto runnerDto = convertToRunnerDetailsDto(updatedRunner);
+        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(updatedRunner);
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -210,29 +210,6 @@ public class RunnerController  {
     }
     
     // Helper methods for DTO conversion
-    private RunnerDetailsDto convertToRunnerDetailsDto(Runner runner) {
-        List<TeamSummaryDto> teamDtos = runner.getTeams().stream()
-            .map(team -> {
-                TeamSummaryDto dto = new TeamSummaryDto(
-                    team.getId(),
-                    team.getName(),
-                    team.getWins(),
-                    team.getLosses(),
-                    team.getTies(),
-                    team.getTotalScore()
-                );
-                return dto;
-            })
-            .collect(Collectors.toList());
-            
-        return new RunnerDetailsDto(
-            runner.getId(),
-            runner.getName(),
-            runner.getGender(),
-            teamDtos
-        );
-    }
-    
     private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
         return new RunnerSummaryDto(
             runner.getId(),

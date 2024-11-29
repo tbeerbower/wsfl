@@ -127,10 +127,10 @@ public class LeagueController  {
             @Valid @RequestBody LeagueCreateDto createDto) {
         User admin = userService.findById(createDto.getAdminId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", createDto.getAdminId()));
-        
+
         League league = new League();
         league.setName(createDto.getName());
-        league.setSeason(createDto.getSeason());
+        league.setMaxTeams(createDto.getMaxTeams());
         league.setAdmin(admin);
 
         League savedLeague = leagueService.save(league);
@@ -170,7 +170,6 @@ public class LeagueController  {
                 .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
 
         league.setName(updateDto.getName());
-        league.setSeason(updateDto.getSeason());
 
         League updatedLeague = leagueService.save(league);
         return ResponseEntity.ok(leagueDtoAssembler.toDetailsDto(updatedLeague));
@@ -210,9 +209,6 @@ public class LeagueController  {
 
         if (patchDto.getName() != null) {
             league.setName(patchDto.getName());
-        }
-        if (patchDto.getSeason() != null) {
-            league.setSeason(patchDto.getSeason());
         }
 
         League updatedLeague = leagueService.save(league);

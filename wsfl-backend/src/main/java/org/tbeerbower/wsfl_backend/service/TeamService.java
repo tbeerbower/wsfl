@@ -18,6 +18,5 @@ public interface TeamService {
     Page<Team> findByLeague(League league, Pageable pageable);
     Page<Team> findByOwner(User owner, Pageable pageable);
     Page<Team> getLeagueStandings(League league, Pageable pageable);
-    boolean addRunner(Team team, Runner runner);
     void deleteById(Long id);
 }

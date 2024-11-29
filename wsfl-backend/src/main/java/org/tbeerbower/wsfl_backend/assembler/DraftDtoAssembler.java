@@ -22,15 +22,7 @@ public class DraftDtoAssembler {
 
     public DraftSummaryDto toModel(Draft draft) {
         DraftSummaryDto dto = createDraftSummaryDto(draft);
-        
-//        dto.add(linkTo(methodOn(DraftController.class).getDraft(draft.getId())).withSelfRel());
-//        dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(null, null, Pageable.unpaged())).withRel("drafts"));
-//
-//        if (draft.getLeague() != null) {
-//            dto.add(linkTo(methodOn(DraftController.class).getAllDrafts(draft.getLeague().getId(), null, Pageable.unpaged()))
-//                    .withRel("leagueDrafts"));
-//        }
-        
+
         return dto;
     }
 
@@ -40,6 +32,7 @@ public class DraftDtoAssembler {
         return new DraftSummaryDto(
             draft.getId(),
             leagueDto,
+            draft.getName(),
             draft.getSeason(),
             draft.getNumberOfRounds(),
             draft.getSnakeOrder(),

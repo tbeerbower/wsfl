@@ -15,6 +15,9 @@ public class DraftSummaryDto {
     @Schema(description = "League associated with the draft")
     private LeagueSummaryDto league;
 
+    @Schema(description = "Season name")
+    private String name;
+
     @Schema(description = "Season number")
     private Integer season;
 
@@ -39,12 +42,13 @@ public class DraftSummaryDto {
     @Schema(description = "List of team IDs in draft order")
     private List<Long> draftOrder;
 
-    public DraftSummaryDto(Long id, LeagueSummaryDto league, Integer season, 
+    public DraftSummaryDto(Long id, LeagueSummaryDto league, String name, Integer season,
                           Integer numberOfRounds, Boolean snakeOrder, LocalDateTime startTime,
                           Boolean isComplete, Integer currentRound, Integer currentPick,
                           List<Long> draftOrder) {
         this.id = id;
         this.league = league;
+        this.name = name;
         this.season = season;
         this.numberOfRounds = numberOfRounds;
         this.snakeOrder = snakeOrder;
@@ -58,6 +62,7 @@ public class DraftSummaryDto {
     // Getters
     public Long getId() { return id; }
     public LeagueSummaryDto getLeague() { return league; }
+    public String getName() { return name; }
     public Integer getSeason() { return season; }
     public Integer getNumberOfRounds() { return numberOfRounds; }
     public Boolean getSnakeOrder() { return snakeOrder; }

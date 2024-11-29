@@ -14,19 +14,15 @@ public class LeagueDetailsDto {
     @Schema(description = "Name of the league", example = "Fantasy Premier League 2024")
     private String name;
 
-    @Schema(description = "Season year of the league", example = "2024")
-    private Integer season;
-
     @Schema(description = "The league administrator", example = "1")
     private UserSummaryDto admin;
 
     @Schema(description = "List of teams participating in the league")
     private List<TeamSummaryDto> teams;
 
-    public LeagueDetailsDto(Long id, String name, Integer season, UserSummaryDto admin, List<TeamSummaryDto> teams) {
+    public LeagueDetailsDto(Long id, String name, UserSummaryDto admin, List<TeamSummaryDto> teams) {
         this.id = id;
         this.name = name;
-        this.season = season;
         this.admin = admin;
         this.teams = teams;
     }
@@ -34,7 +30,6 @@ public class LeagueDetailsDto {
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
-    public Integer getSeason() { return season; }
     public UserSummaryDto getAdmin() { return admin; }
     public List<TeamSummaryDto> getTeams() { return teams; }
 }

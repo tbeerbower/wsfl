@@ -47,12 +47,7 @@ public class LeagueServiceImpl implements LeagueService {
     public Optional<League> findById(Long id) {
         return leagueRepository.findById(id);
     }
-    
-    @Override
-    public List<League> findBySeason(Integer season) {
-        return leagueRepository.findBySeason(season);
-    }
-    
+
     @Override
     public boolean addTeam(League league, Team team) {
         if (league.getTeams().contains(team)) {

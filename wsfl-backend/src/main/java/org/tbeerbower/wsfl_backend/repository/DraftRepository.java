@@ -13,12 +13,12 @@ import java.util.List;
 public interface DraftRepository extends JpaRepository<Draft, Long> {
     List<Draft> findByLeague(League league);
     
-    @Query("SELECT d FROM Draft d WHERE d.league.id = :leagueId")
+ //   @Query("SELECT d FROM Draft d WHERE d.league.id = :leagueId")
     Page<Draft> findByLeagueId(@Param("leagueId") Long leagueId, Pageable pageable);
     
-    @Query("SELECT d FROM Draft d WHERE d.league.season = :season")
+//    @Query("SELECT d FROM Draft d WHERE d.season = :season")
     Page<Draft> findBySeason(@Param("season") Integer season, Pageable pageable);
     
-    @Query("SELECT d FROM Draft d WHERE d.league.id = :leagueId AND d.league.season = :season")
+ //   @Query("SELECT d FROM Draft d WHERE d.league.id = :leagueId AND d.season = :season")
     Page<Draft> findByLeagueIdAndSeason(@Param("leagueId") Long leagueId, @Param("season") Integer season, Pageable pageable);
 }

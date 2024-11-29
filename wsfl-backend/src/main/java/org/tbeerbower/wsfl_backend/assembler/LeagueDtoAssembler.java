@@ -40,7 +40,6 @@ public class LeagueDtoAssembler  {
         LeagueDetailsDto dto = new LeagueDetailsDto(
                 league.getId(),
                 league.getName(),
-                league.getSeason(),
                 new UserSummaryDto(league.getAdmin().getId(), league.getAdmin().getName(), league.getAdmin().getEmail()),
                 teamDtos
         );
@@ -56,8 +55,7 @@ public class LeagueDtoAssembler  {
     private LeagueSummaryDto createLeagueSummaryDto(League league) {
         return new LeagueSummaryDto(
             league.getId(),
-            league.getName(),
-            league.getSeason()
+            league.getName()
         );
     }
 }

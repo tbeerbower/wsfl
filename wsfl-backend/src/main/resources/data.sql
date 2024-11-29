@@ -19,9 +19,9 @@ INSERT INTO user_roles (user_id, role) VALUES
 (5, 'ROLE_USER');
 
 -- Insert Leagues
-INSERT INTO leagues (id, name, season, max_teams, admin_id) VALUES
-(1, 'Summer League 2024', 2024, 4, 1),
-(2, 'Winter League 2024', 2024, 4, 1);
+INSERT INTO leagues (id, name, max_teams, admin_id) VALUES
+(1, 'Summer League', 4, 1),
+(2, 'Winter League', 4, 1);
 
 -- Insert Teams
 INSERT INTO teams (id, name, wins, losses, ties, total_score, owner_id, league_id) VALUES
@@ -45,14 +45,6 @@ INSERT INTO runners (id, name, gender) VALUES
 (9, 'Chris Taylor', 'M'),
 (10, 'Amanda White', 'F');
 
--- Associate Runners with Teams
-INSERT INTO team_runners (team_id, runner_id) VALUES
-(1, 1), (1, 2),  -- Speed Demons runners
-(2, 3), (2, 4),  -- Trail Blazers runners
-(3, 5), (3, 6),  -- Road Warriors runners
-(4, 7), (4, 8),  -- Hill Climbers runners
-(5, 9), (5, 10); -- Winter Runners runners
-
 -- Insert Races
 INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
 (1, 'Spring Sprint', '2024-03-15', false, 1),
@@ -72,17 +64,11 @@ INSERT INTO race_results (id, gender_place, overall_place, time, race_id, runner
 (7, 2, 3, '22:32', 2, 7), -- David Miller results
 (8, 2, 4, '24:02', 2, 8); -- Rachel Green results
 
--- Insert Matchups
-INSERT INTO matchups (id, race_id, team1_id, team2_id, team1score, team2score) VALUES
-(1, 1, 1, 2, 20, 25), -- Speed Demons vs Trail Blazers
-(2, 1, 3, 4, 18, 28), -- Road Warriors vs Hill Climbers
-(3, 2, 1, 3, 25, 20), -- Speed Demons vs Road Warriors
-(4, 2, 2, 4, 27, 30); -- Trail Blazers vs Hill Climbers
 
 -- Insert Drafts
-INSERT INTO drafts (id, league_id, season, number_of_rounds, snake_order, start_time, is_complete, current_round, current_pick) VALUES
-(1, 1, 2024, 6, true, '2024-03-01 10:00:00', true, 6, 4),  -- Completed Summer League draft
-(2, 2, 2024, 6, true, '2024-10-15 14:00:00', false, 2, 1); -- In-progress Winter League draft
+INSERT INTO drafts (id, league_id, name, season, number_of_rounds, snake_order, start_time, is_complete, current_round, current_pick) VALUES
+(1, 1, 'Summer 2024', 2024, 6, true, '2024-03-01 10:00:00', true, 6, 4),  -- Completed Summer League draft
+(2, 2, 'Winter 2024', 2024, 6, true, '2024-10-15 14:00:00', false, 2, 1); -- In-progress Winter League draft
 
 -- Insert Draft Order for Summer League Draft
 INSERT INTO draft_order (draft_id, position, team_id) VALUES
@@ -131,6 +117,14 @@ INSERT INTO draft_picks (id, draft_id, team_id, runner_id, round, pick_number, p
 -- Round 1
 (25, 2, 6, 9, 1, 1, '2024-10-15 14:01:00'),  -- Snow Striders pick Chris Taylor
 (26, 2, 5, 10, 1, 2, '2024-10-15 14:03:00'); -- Winter Runners pick Amanda White
+
+
+-- Insert Matchups
+INSERT INTO matchups (id, race_id, team1_id, team2_id, team1score, team2score, draft_id) VALUES
+(1, 1, 1, 2, 20, 25, 1), -- Speed Demons vs Trail Blazers
+(2, 1, 3, 4, 18, 28, 1), -- Road Warriors vs Hill Climbers
+(3, 2, 1, 3, 25, 20, 1), -- Speed Demons vs Road Warriors
+(4, 2, 2, 4, 27, 30, 1); -- Trail Blazers vs Hill Climbers
 
 -- Reset sequence values
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));

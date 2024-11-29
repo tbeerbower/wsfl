@@ -26,8 +26,7 @@ public class RaceDtoAssembler {
     public RaceDetailsDto toDetailedModel(Race race) {
         LeagueSummaryDto leagueDto = new LeagueSummaryDto(
             race.getLeague().getId(),
-            race.getLeague().getName(),
-            race.getLeague().getSeason()
+            race.getLeague().getName()
         );
 
         return new RaceDetailsDto(

@@ -26,16 +26,21 @@ public class MatchupCreateDto {
     @Min(value = 0, message = "Team 2 score must not be negative")
     private Integer team2Score;
 
+    @Schema(description = "ID of the related draft", example = "1")
+    @NotNull(message = "Draft ID is required")
+    private Long draftId;
+
     public MatchupCreateDto() {
     }
 
     public MatchupCreateDto(Long raceId, Long team1Id, Long team2Id, 
-                          Integer team1Score, Integer team2Score) {
+                          Integer team1Score, Integer team2Score, Long draftId) {
         this.raceId = raceId;
         this.team1Id = team1Id;
         this.team2Id = team2Id;
         this.team1Score = team1Score;
         this.team2Score = team2Score;
+        this.draftId = draftId;
     }
 
     // Getters and Setters
@@ -53,4 +58,7 @@ public class MatchupCreateDto {
     
     public Integer getTeam2Score() { return team2Score; }
     public void setTeam2Score(Integer team2Score) { this.team2Score = team2Score; }
+
+    public Long getDraftId() { return draftId; }
+    public void setDraftId(Long draftId) { this.draftId = draftId; }
 }

@@ -13,17 +13,13 @@ public class LeagueSummaryDto {
     @Schema(description = "Name of the league")
     private String name;
 
-    @Schema(description = "Current season number")
-    private Integer season;
 
-    public LeagueSummaryDto(Long id, String name, Integer season) {
+    public LeagueSummaryDto(Long id, String name) {
         this.id = id;
         this.name = name;
-        this.season = season;
     }
 
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
-    public Integer getSeason() { return season; }
 }

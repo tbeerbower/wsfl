@@ -1,25 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import store from '../store'
-import DashboardView from '../views/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import DashboardView from '../views/DashboardView.vue'
 import AddTeamView from '../views/AddTeamView.vue'
 import AddLeagueView from '../views/AddLeagueView.vue'
 import LeagueAdminView from '../views/LeagueAdminView.vue'
 
 const routes = [
-  {
-    path: '/login',
-    name: 'login',
-    component: LoginView,
-    meta: { requiresGuest: true }
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: RegisterView,
-    meta: { requiresGuest: true }
-  },
   {
     path: '/',
     redirect: '/dashboard'
@@ -29,6 +16,16 @@ const routes = [
     name: 'dashboard',
     component: DashboardView,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView
   },
   {
     path: '/add-team',
@@ -57,12 +54,11 @@ const router = createRouter({
 
 // Navigation guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = store.getters['auth/isAuthenticated']
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const isAuthenticated = localStorage.getItem('token')
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (requiresAuth && !isAuthenticated) {
     next('/login')
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    next('/dashboard')
   } else {
     next()
   }

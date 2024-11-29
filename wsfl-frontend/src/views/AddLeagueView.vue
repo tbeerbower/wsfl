@@ -4,30 +4,15 @@
       <h1>Add New League</h1>
       <form @submit.prevent="handleSubmit" class="add-league-form">
         <div class="form-group">
-          <label for="leagueName">League Name</label>
+          <label for="name">League Name</label>
           <input
-            id="leagueName"
-            v-model="leagueName"
             type="text"
-            required
+            id="name"
+            v-model="league.name"
+            :class="{ 'error': validation.name }"
             placeholder="Enter league name"
-            :class="{ 'error': errors.leagueName }"
           >
-          <span v-if="errors.leagueName" class="error-message">{{ errors.leagueName }}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="season">Season Year</label>
-          <input
-            id="season"
-            v-model.number="season"
-            type="number"
-            required
-            min="2024"
-            max="2100"
-            :class="{ 'error': errors.season }"
-          >
-          <span v-if="errors.season" class="error-message">{{ errors.season }}</span>
+          <span class="error-message" v-if="validation.name">{{ validation.name }}</span>
         </div>
 
         <div class="form-actions">
@@ -56,49 +41,43 @@ export default {
     const store = useStore()
     const user = store.getters['auth/currentUser']
 
-    const leagueName = ref('')
-    const season = ref(new Date().getFullYear())
-    const loading = ref(false)
-    const error = ref(null)
-    const errors = ref({
-      leagueName: '',
-      season: ''
+    const league = ref({
+      name: '',
     })
 
+    const validation = ref({
+      name: '',
+    })
+
+    const loading = ref(false)
+    const error = ref(null)
+
     const validateForm = () => {
-      errors.value = {
-        leagueName: '',
-        season: ''
+      let isValid = true
+      validation.value.name = ''
+
+      if (!league.value.name.trim()) {
+        validation.value.name = 'League name is required'
+        isValid = false
       }
 
-      if (!leagueName.value.trim()) {
-        errors.value.leagueName = 'League name is required'
-      }
-      
-      const seasonNum = Number(season.value)
-      if (!season.value || seasonNum < 2024 || seasonNum > 2100) {
-        errors.value.season = 'Please enter a valid year (2024-2100)'
-      }
-
-      return !errors.value.leagueName && !errors.value.season
+      return isValid
     }
 
     const handleSubmit = async () => {
       if (!validateForm()) return
 
       loading.value = true
-      error.value = null
+      error.value = ''
 
       try {
         await axios.post('/api/leagues', {
-          name: leagueName.value.trim(),
-          season: Number(season.value),
+          name: league.value.name.trim(),
           adminId: user.id
         })
-
         router.push('/dashboard')
       } catch (err) {
-        error.value = err.response?.data?.message || 'Failed to create league'
+        error.value = 'Failed to create league'
         console.error('Error creating league:', err)
       } finally {
         loading.value = false
@@ -106,11 +85,10 @@ export default {
     }
 
     return {
-      leagueName,
-      season,
+      league,
       loading,
       error,
-      errors,
+      validation,
       handleSubmit
     }
   }

@@ -29,9 +29,6 @@ public class TeamDetailsDto {
     @Schema(description = "Summary of the team owner/manager")
     private UserSummaryDto owner;
 
-    @Schema(description = "List of runners on the team")
-    private List<RunnerSummaryDto> runners;
-
     public TeamDetailsDto(Long id, String name, Integer wins, Integer losses, 
                          Integer ties, Integer totalScore, LeagueSummaryDto league,
                          UserSummaryDto owner) {
@@ -45,10 +42,6 @@ public class TeamDetailsDto {
         this.owner = owner;
     }
 
-    public void setRunners(List<RunnerSummaryDto> runners) {
-        this.runners = runners;
-    }
-
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
@@ -58,5 +51,4 @@ public class TeamDetailsDto {
     public Integer getTotalScore() { return totalScore; }
     public LeagueSummaryDto getLeague() { return league; }
     public UserSummaryDto getOwner() { return owner; }
-    public List<RunnerSummaryDto> getRunners() { return runners; }
 }

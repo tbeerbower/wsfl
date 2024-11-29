@@ -28,21 +28,17 @@ public class TeamDtoAssembler {
     }
 
     public TeamDetailsDto toDetailedModel(Team team) {
-        List<RunnerSummaryDto> runnerDtos = team.getRunners().stream()
-                .map(this::convertToRunnerSummaryDto)
-                .collect(Collectors.toList());
 
         League league = team.getLeague();
         LeagueSummaryDto leagueDto = new LeagueSummaryDto(
                 league.getId(),
-                league.getName(),
-                league.getSeason()
+                league.getName()
         );
 
-        return getTeamDetailsDto(team, leagueDto, runnerDtos);
+        return getTeamDetailsDto(team, leagueDto);
     }
 
-    private static TeamDetailsDto getTeamDetailsDto(Team team, LeagueSummaryDto leagueDto, List<RunnerSummaryDto> runnerDtos) {
+    private static TeamDetailsDto getTeamDetailsDto(Team team, LeagueSummaryDto leagueDto) {
         UserSummaryDto ownerDto = new UserSummaryDto(
                 team.getOwner().getId(),
                 team.getOwner().getEmail(),
@@ -59,7 +55,6 @@ public class TeamDtoAssembler {
                 leagueDto,
                 ownerDto
         );
-        teamDto.setRunners(runnerDtos);
         return teamDto;
     }
 

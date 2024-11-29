@@ -63,17 +63,7 @@ public class TeamServiceImpl implements TeamService {
     public Page<Team> getLeagueStandings(League league, Pageable pageable) {
         return teamRepository.findByLeagueOrderByWinsDescTotalScoreAsc(league, pageable);
     }
-    
-    @Override
-    public boolean addRunner(Team team, Runner runner) {
-        if (team.getRunners().size() >= 5) { // Assuming max 5 runners per team
-            return false;
-        }
-        team.getRunners().add(runner);
-        teamRepository.save(team);
-        return true;
-    }
-    
+
     @Override
     public void deleteById(Long id) {
         teamRepository.deleteById(id);

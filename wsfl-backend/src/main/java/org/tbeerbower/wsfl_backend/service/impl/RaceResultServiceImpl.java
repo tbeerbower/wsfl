@@ -91,33 +91,33 @@ public class RaceResultServiceImpl implements RaceResultService {
     
     @Override
     public void updateTeamScores(Race race) {
-        List<RaceResult> raceResults = raceResultRepository.findByRace(race);
-        Map<Team, Integer> teamScores = new HashMap<>();
-        
-        // Calculate scores for each team
-        for (RaceResult result : raceResults) {
-            Set<Team> teams = result.getRunner().getTeams();
-            if (teams != null && !teams.isEmpty()) {
-                // For now, we'll use the first team in the set
-                Team team = teams.iterator().next();
-                teamScores.merge(team, result.getGenderPlace(), Integer::sum);
-            }
-        }
-        
-        // Get all matchups for this race
-        List<Matchup> matchups = matchupRepository.findByRace(race);
-        
-        // Update matchups with team scores
-        for (Matchup matchup : matchups) {
-            Team team1 = matchup.getTeam1();
-            Team team2 = matchup.getTeam2();
-            
-            Integer team1Score = teamScores.getOrDefault(team1, 0);
-            Integer team2Score = teamScores.getOrDefault(team2, 0);
-            
-            matchup.setTeam1Score(team1Score);
-            matchup.setTeam2Score(team2Score);
-            matchupRepository.save(matchup);
-        }
+//        List<RaceResult> raceResults = raceResultRepository.findByRace(race);
+//        Map<Team, Integer> teamScores = new HashMap<>();
+//
+//        // Calculate scores for each team
+//        for (RaceResult result : raceResults) {
+//            Set<Team> teams = result.getRunner().getTeams();
+//            if (teams != null && !teams.isEmpty()) {
+//                // For now, we'll use the first team in the set
+//                Team team = teams.iterator().next();
+//                teamScores.merge(team, result.getGenderPlace(), Integer::sum);
+//            }
+//        }
+//
+//        // Get all matchups for this race
+//        List<Matchup> matchups = matchupRepository.findByRace(race);
+//
+//        // Update matchups with team scores
+//        for (Matchup matchup : matchups) {
+//            Team team1 = matchup.getTeam1();
+//            Team team2 = matchup.getTeam2();
+//
+//            Integer team1Score = teamScores.getOrDefault(team1, 0);
+//            Integer team2Score = teamScores.getOrDefault(team2, 0);
+//
+//            matchup.setTeam1Score(team1Score);
+//            matchup.setTeam2Score(team2Score);
+//            matchupRepository.save(matchup);
+//        }
     }
 }

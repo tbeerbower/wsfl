@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
+import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.DraftPick;
@@ -92,24 +93,12 @@ public class DraftServiceImpl implements DraftService {
     public Draft create(DraftCreateDto createDto) {
         League league = leagueRepository.findById(createDto.getLeagueId())
             .orElseThrow(() -> new ResourceNotFoundException("League not found with id: " + createDto.getLeagueId()));
-            
+
         Draft draft = new Draft();
         draft.setLeague(league);
         draft.setSeason(createDto.getSeason());
-        draft.setStartTime(createDto.getStartTime());
-        draft = createDraft(league, createDto.getNumberOfRounds(), createDto.getSnakeOrder());
-        
-        return draft;
-    }
-    
-    @Override
-    @Transactional
-    public Draft createDraft(League league, Integer numberOfRounds, Boolean snakeOrder) {
-        Draft draft = new Draft();
-        draft.setLeague(league);
-        draft.setSeason(league.getSeason());
-        draft.setNumberOfRounds(numberOfRounds != null ? numberOfRounds : 6);
-        draft.setSnakeOrder(snakeOrder != null ? snakeOrder : true);
+        draft.setNumberOfRounds(createDto.getNumberOfRounds());
+        draft.setSnakeOrder(createDto.getSnakeOrder());
         draft.setIsComplete(false);
         draft.setCurrentRound(1);
         draft.setCurrentPick(1);
@@ -123,7 +112,26 @@ public class DraftServiceImpl implements DraftService {
         
         return draftRepository.save(draft);
     }
-    
+
+    @Override
+    @Transactional
+    public Draft update(Long id, DraftUpdateDto updateDto) {
+
+        Draft draft = findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
+
+        if (updateDto.getNumberOfRounds() != null) {
+            draft.setNumberOfRounds(updateDto.getNumberOfRounds());
+        }
+        if (updateDto.getSnakeOrder() != null) {
+            draft.setSnakeOrder(updateDto.getSnakeOrder());
+        }
+        if (updateDto.getStartTime() != null) {
+            draft.setStartTime(updateDto.getStartTime());
+        }
+        return draftRepository.save(draft);
+    }
+
     @Override
     @Transactional
     public Draft makePick(Draft draft, Long runnerId) {
@@ -156,10 +164,7 @@ public class DraftServiceImpl implements DraftService {
         pick.setPickTime(LocalDateTime.now());
         
         draft.getPicks().add(pick);
-        
-        // Add runner to team
-        currentTeam.getRunners().add(runner);
-        
+
         // Update draft state
         updateDraftState(draft);
         

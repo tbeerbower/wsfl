@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tbeerbower.wsfl_backend.dto.MatchupCreateDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
+import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.Team;
+import org.tbeerbower.wsfl_backend.repository.DraftRepository;
 import org.tbeerbower.wsfl_backend.repository.MatchupRepository;
 import org.tbeerbower.wsfl_backend.repository.RaceRepository;
 import org.tbeerbower.wsfl_backend.repository.TeamRepository;
@@ -24,14 +26,17 @@ public class MatchupServiceImpl implements MatchupService {
     private final MatchupRepository matchupRepository;
     private final RaceRepository raceRepository;
     private final TeamRepository teamRepository;
+
+    private final DraftRepository draftRepository;
     
     @Autowired
     public MatchupServiceImpl(MatchupRepository matchupRepository,
-                            RaceRepository raceRepository,
-                            TeamRepository teamRepository) {
+                              RaceRepository raceRepository,
+                              TeamRepository teamRepository, DraftRepository draftRepository) {
         this.matchupRepository = matchupRepository;
         this.raceRepository = raceRepository;
         this.teamRepository = teamRepository;
+        this.draftRepository = draftRepository;
     }
     
     @Override
@@ -132,13 +137,18 @@ public class MatchupServiceImpl implements MatchupService {
             
         Team team2 = teamRepository.findById(createDto.getTeam2Id())
             .orElseThrow(() -> new ResourceNotFoundException("Team 2 not found with id: " + createDto.getTeam2Id()));
-        
+
+        Draft draft = draftRepository.findById(createDto.getDraftId())
+            .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + createDto.getDraftId()));
+
         Matchup matchup = new Matchup();
         matchup.setRace(race);
         matchup.setTeam1(team1);
         matchup.setTeam2(team2);
         matchup.setTeam1Score(createDto.getTeam1Score());
         matchup.setTeam2Score(createDto.getTeam2Score());
+        matchup.setDraft(draft);
+
         
         return matchupRepository.save(matchup);
     }

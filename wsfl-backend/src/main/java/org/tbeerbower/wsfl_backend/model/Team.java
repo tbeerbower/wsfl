@@ -24,15 +24,15 @@ public class Team {
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
-    
+
     @ManyToMany
     @JoinTable(
-        name = "team_runners",
-        joinColumns = @JoinColumn(name = "team_id"),
-        inverseJoinColumns = @JoinColumn(name = "runner_id")
+            name = "draft_order",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "draft_id")
     )
-    private Set<Runner> runners = new HashSet<>();
-    
+    private Set<Draft> drafts = new HashSet<>();
+
     // Default constructor
     public Team() {
     }
@@ -112,11 +112,11 @@ public class Team {
         this.league = league;
     }
 
-    public Set<Runner> getRunners() {
-        return runners;
+    public Set<Draft> getDrafts() {
+        return drafts;
     }
 
-    public void setRunners(Set<Runner> runners) {
-        this.runners = runners;
+    public void setDrafts(Set<Draft> drafts) {
+        this.drafts = drafts;
     }
 } 

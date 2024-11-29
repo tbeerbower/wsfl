@@ -12,11 +12,9 @@ public class LeagueCreateDto {
     @NotBlank(message = "League name is required")
     private String name;
 
-    @Schema(description = "Season year for the league", example = "2024", minimum = "1900", maximum = "9999")
-    @NotNull(message = "Season is required")
-    @Min(value = 1900, message = "Season year must be after 1900")
-    @Max(value = 9999, message = "Season year must be before 9999")
-    private Integer season;
+    @Schema(description = "Max number of teams in league", example = "8")
+    @NotBlank(message = "Max teams is required")
+    private Integer maxTeams;
 
     @Schema(description = "ID of the league administrator", example = "1")
     @NotNull(message = "Admin ID is required")
@@ -30,12 +28,12 @@ public class LeagueCreateDto {
         this.name = name;
     }
 
-    public Integer getSeason() {
-        return season;
+    public Integer getMaxTeams() {
+        return maxTeams;
     }
 
-    public void setSeason(Integer season) {
-        this.season = season;
+    public void setMaxTeams(Integer maxTeams) {
+        this.maxTeams = maxTeams;
     }
 
     public Long getAdminId() {

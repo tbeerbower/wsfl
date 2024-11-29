@@ -12,7 +12,6 @@ public class League {
     private Long id;
     
     private String name;
-    private Integer season;
     private Integer maxTeams;
     
     @ManyToOne
@@ -42,13 +41,6 @@ public class League {
         this.name = name;
     }
 
-    public Integer getSeason() {
-        return season;
-    }
-
-    public void setSeason(Integer season) {
-        this.season = season;
-    }
 
     public Integer getMaxTeams() {
         return maxTeams;

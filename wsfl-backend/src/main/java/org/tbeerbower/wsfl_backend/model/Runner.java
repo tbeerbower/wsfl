@@ -13,10 +13,7 @@ public class Runner {
     
     private String name;
     private String gender;
-    
-    @ManyToMany(mappedBy = "runners")
-    private Set<Team> teams = new HashSet<>();
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -40,13 +37,5 @@ public class Runner {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    public Set<Team> getTeams() {
-        return teams;
-    }
-
-    public void setTeams(Set<Team> teams) {
-        this.teams = teams;
     }
 } 

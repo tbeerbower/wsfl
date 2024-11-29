@@ -2,8 +2,9 @@
   <div class="league-admin">
     <div class="league-admin-container">
       <header class="league-header">
-        <h1>{{ league?.name || 'Loading...' }}</h1>
-        <span class="season-badge" v-if="league">Season {{ league.season }}</span>
+        <div class="header-content">
+          <h1>{{ league?.name || 'Loading...' }}</h1>
+        </div>
       </header>
 
       <div v-if="loading.league" class="loading">Loading league details...</div>
@@ -46,9 +47,6 @@
                   <div class="team-owner">
                     Owner: {{ team.owner.name }}
                   </div>
-                  <div class="team-runners" v-if="team.runners.length > 0">
-                    Runners: {{ team.runners.map(r => r.name).join(', ') }}
-                  </div>
                 </div>
               </div>
               <button 
@@ -67,11 +65,11 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
-export default {
+export default defineComponent({
   name: 'LeagueAdminView',
   setup() {
     const route = useRoute()
@@ -159,10 +157,11 @@ export default {
       availableTeams,
       loading,
       error,
-      addTeamToLeague
+      addTeamToLeague,
+      route
     }
   }
-}
+})
 </script>
 
 <style scoped>
@@ -177,9 +176,15 @@ export default {
 
 .league-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
 }
 
 .league-header h1 {
@@ -297,11 +302,6 @@ section h2 {
 
 .team-owner {
   color: #475569;
-}
-
-.team-runners {
-  color: #475569;
-  font-size: 0.8125rem;
 }
 
 .add-button {

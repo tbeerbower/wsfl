@@ -3,6 +3,7 @@ package org.tbeerbower.wsfl_backend.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
+import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Runner;
@@ -23,7 +24,7 @@ public interface DraftService {
     Page<Draft> findByLeague(Long leagueId, Pageable pageable);
     Page<Draft> findByLeagueAndSeason(Long leagueId, Integer season, Pageable pageable);
     Draft create(DraftCreateDto createDto);
-    Draft createDraft(League league, Integer numberOfRounds, Boolean snakeOrder);
+    Draft update(Long id, DraftUpdateDto updateDto);
     Draft makePick(Draft draft, Long runnerId);
     List<Runner> getAvailableRunners(Draft draft);
     Team getCurrentTeam(Draft draft);
