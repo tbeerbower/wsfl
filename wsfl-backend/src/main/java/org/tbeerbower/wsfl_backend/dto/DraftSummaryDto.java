@@ -1,6 +1,5 @@
 package org.tbeerbower.wsfl_backend.dto;
 
-import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -30,9 +29,11 @@ public class DraftSummaryDto {
     @Schema(description = "Start time of the draft")
     private LocalDateTime startTime;
 
+    @Schema(description = "Whether the draft is started")
+    private Boolean isStarted;
+
     @Schema(description = "Whether the draft is complete")
     private Boolean isComplete;
-
     @Schema(description = "Current round number")
     private Integer currentRound;
 
@@ -44,7 +45,8 @@ public class DraftSummaryDto {
 
     public DraftSummaryDto(Long id, LeagueSummaryDto league, String name, Integer season,
                           Integer numberOfRounds, Boolean snakeOrder, LocalDateTime startTime,
-                          Boolean isComplete, Integer currentRound, Integer currentPick,
+                          Boolean isStarted, Boolean isComplete,
+                          Integer currentRound, Integer currentPick,
                           List<Long> draftOrder) {
         this.id = id;
         this.league = league;
@@ -53,6 +55,7 @@ public class DraftSummaryDto {
         this.numberOfRounds = numberOfRounds;
         this.snakeOrder = snakeOrder;
         this.startTime = startTime;
+        this.isStarted = isStarted;
         this.isComplete = isComplete;
         this.currentRound = currentRound;
         this.currentPick = currentPick;
@@ -67,7 +70,8 @@ public class DraftSummaryDto {
     public Integer getNumberOfRounds() { return numberOfRounds; }
     public Boolean getSnakeOrder() { return snakeOrder; }
     public LocalDateTime getStartTime() { return startTime; }
-    public Boolean getIsComplete() { return isComplete; }
+    public Boolean isStarted() { return isStarted; }
+    public Boolean isComplete() { return isComplete; }
     public Integer getCurrentRound() { return currentRound; }
     public Integer getCurrentPick() { return currentPick; }
     public List<Long> getDraftOrder() { return draftOrder; }

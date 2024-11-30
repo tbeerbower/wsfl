@@ -23,6 +23,7 @@ public class Draft {
     private Integer numberOfRounds;
     private Boolean snakeOrder;
     private LocalDateTime startTime;
+    private Boolean isStarted;
     private Boolean isComplete;
     private Integer currentRound;
     private Integer currentPick;
@@ -62,8 +63,11 @@ public class Draft {
     
     public LocalDateTime getStartTime() { return startTime; }
     public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-    
-    public Boolean getIsComplete() { return isComplete; }
+
+    public Boolean isStarted() { return isStarted; }
+    public void setIsStarted(Boolean isStarted) { this.isStarted = isStarted; }
+
+    public Boolean isComplete() { return isComplete; }
     public void setIsComplete(Boolean isComplete) { this.isComplete = isComplete; }
     
     public Integer getCurrentRound() { return currentRound; }

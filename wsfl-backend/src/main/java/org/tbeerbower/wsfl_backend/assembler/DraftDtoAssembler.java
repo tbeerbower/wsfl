@@ -1,15 +1,11 @@
 package org.tbeerbower.wsfl_backend.assembler;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
-import org.tbeerbower.wsfl_backend.controller.DraftController;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.LeagueSummaryDto;
 import org.tbeerbower.wsfl_backend.model.Draft;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class DraftDtoAssembler {
@@ -37,7 +33,8 @@ public class DraftDtoAssembler {
             draft.getNumberOfRounds(),
             draft.getSnakeOrder(),
             draft.getStartTime(),
-            draft.getIsComplete(),
+            draft.isStarted(),
+            draft.isComplete(),
             draft.getCurrentRound(),
             draft.getCurrentPick(),
             draft.getDraftOrder()

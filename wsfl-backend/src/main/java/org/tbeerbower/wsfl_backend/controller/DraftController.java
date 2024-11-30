@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.DraftPickDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
+import org.tbeerbower.wsfl_backend.dto.DraftPatchDto;
 import org.tbeerbower.wsfl_backend.dto.DraftPickSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
@@ -123,12 +124,12 @@ public class DraftController  {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Draft updated"),
             @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
-            @ApiResponse(responseCode = "403", description = "Not authorized to start drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
+            @ApiResponse(responseCode = "403", description = "Not authorized to update drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
-    @PutMapping("/{id}/start")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DraftSummaryDto> updateDraft(
-            @Parameter(description = "ID of the draft to start", required = true)
+            @Parameter(description = "ID of the draft to update", required = true)
             @PathVariable Long id,
             @Parameter(description = "Draft update data", required = true)
             @Valid @RequestBody DraftUpdateDto updateDto) {
@@ -137,41 +138,21 @@ public class DraftController  {
         return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 
-    @Operation(summary = "Start draft", description = "Initiates the draft process for a specific draft")
+    @Operation(summary = "Patch draft", description = "Patch a specific draft")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Draft started successfully"),
-        @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
-        @ApiResponse(responseCode = "403", description = "Not authorized to start drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
+            @ApiResponse(responseCode = "200", description = "Draft patched"),
+            @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
+            @ApiResponse(responseCode = "403", description = "Not authorized to patch drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
-    @PostMapping("/{id}/start")
+    @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DraftSummaryDto> startDraft(
-            @Parameter(description = "ID of the draft to start", required = true)
-            @PathVariable Long id) {
-        
-        Draft draft = draftService.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
-        
-        draft = draftService.startDraft(draft);
-        return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
-    }
+    public ResponseEntity<DraftSummaryDto> patchDraft(
+            @Parameter(description = "ID of the draft to patch", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Draft patch data", required = true)
+            @Valid @RequestBody DraftPatchDto patchDto) {
 
-    @Operation(summary = "End draft", description = "Completes the draft process for a specific draft")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Draft ended successfully"),
-        @ApiResponse(responseCode = "404", description = "Draft not found", content = @Content(schema = @Schema(type = "string", example = "Draft not found with id: 1"))),
-        @ApiResponse(responseCode = "403", description = "Not authorized to end drafts", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
-    })
-    @PostMapping("/{id}/end")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DraftSummaryDto> endDraft(
-            @Parameter(description = "ID of the draft to end", required = true)
-            @PathVariable Long id) {
-        
-        Draft draft = draftService.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
-        
-        draft = draftService.endDraft(draft);
+        Draft draft = draftService.patch(id, patchDto);
         return ResponseEntity.ok(draftDtoAssembler.toModel(draft));
     }
 

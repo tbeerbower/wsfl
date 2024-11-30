@@ -29,6 +29,53 @@
           </div>
         </section>
 
+        <section class="drafts-section">
+          <div class="section-header">
+            <h2>Drafts</h2>
+            <router-link 
+              :to="`/leagues/${route.params.id}/add-draft`" 
+              class="add-button"
+            >
+              Add Draft
+            </router-link>
+          </div>
+          <div v-if="loading.drafts" class="loading">Loading drafts...</div>
+          <div v-else-if="error.drafts" class="error-message">{{ error.drafts }}</div>
+          <div v-else-if="drafts.length === 0" class="no-content">No drafts found for this league.</div>
+          <div v-else class="drafts-grid">
+            <div v-for="draft in drafts" :key="draft.id" class="draft-card" @click="router.push(`/drafts/${draft.id}`)">
+              <div class="draft-header">
+                <h3>{{ draft.name }}</h3>
+                <span :class="['draft-status', getDraftStatusClass(draft)]">
+                  {{ getDraftStatus(draft) }}
+                </span>
+              </div>
+              <div class="draft-details">
+                <div class="detail-item">
+                  <span class="detail-label">Season:</span>
+                  <span class="detail-value">{{ draft.season }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Rounds:</span>
+                  <span class="detail-value">{{ draft.numberOfRounds }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Draft Type:</span>
+                  <span class="detail-value">{{ draft.snakeOrder ? 'Snake' : 'Standard' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Start Time:</span>
+                  <span class="detail-value">{{ new Date(draft.startTime).toLocaleString() }}</span>
+                </div>
+                <div v-if="!draft.complete" class="detail-item">
+                  <span class="detail-label">Current Round:</span>
+                  <span class="detail-value">{{ draft.currentRound }}/{{ draft.numberOfRounds }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="add-team-section">
           <h2>Add Team to League</h2>
           <div v-if="loading.availableTeams" class="loading">Loading available teams...</div>
@@ -78,14 +125,17 @@ export default defineComponent({
 
     const league = ref(null)
     const availableTeams = ref([])
+    const drafts = ref([])
     const loading = ref({
       league: false,
       availableTeams: false,
-      addTeam: null
+      addTeam: null,
+      drafts: false
     })
     const error = ref({
       league: null,
-      availableTeams: null
+      availableTeams: null,
+      drafts: null
     })
 
     const fetchLeague = async () => {
@@ -96,7 +146,6 @@ export default defineComponent({
         league.value = response.data
       } catch (err) {
         error.value.league = 'Failed to load league details'
-        console.error('Error fetching league:', err)
       } finally {
         loading.value.league = false
       }
@@ -112,9 +161,21 @@ export default defineComponent({
           .filter(team => !team.league || team.league.id !== Number(leagueId))
       } catch (err) {
         error.value.availableTeams = 'Failed to load available teams'
-        console.error('Error fetching available teams:', err)
       } finally {
         loading.value.availableTeams = false
+      }
+    }
+
+    const fetchDrafts = async () => {
+      loading.value.drafts = true
+      error.value.drafts = null
+      try {
+        const response = await axios.get(`/api/drafts?leagueId=${leagueId}`)
+        drafts.value = response.data.content || []
+      } catch (err) {
+        error.value.drafts = 'Failed to load drafts'
+      } finally {
+        loading.value.drafts = false
       }
     }
 
@@ -134,12 +195,23 @@ export default defineComponent({
           fetchAvailableTeams()
         ])
       } catch (err) {
-        console.error('Error adding team to league:', err)
         // Show error in UI
         error.value.availableTeams = 'Failed to add team to league'
       } finally {
         loading.value.addTeam = null
       }
+    }
+
+    const getDraftStatus = (draft) => {
+      if (draft.complete === true) return 'Complete'
+      if (draft.started === true) return 'In Progress'
+      return 'Not Started'
+    }
+
+    const getDraftStatusClass = (draft) => {
+      if (draft.complete === true) return 'complete'
+      if (draft.started === true) return 'in-progress'
+      return 'not-started'
     }
 
     onMounted(() => {
@@ -150,15 +222,20 @@ export default defineComponent({
       
       fetchLeague()
       fetchAvailableTeams()
+      fetchDrafts()
     })
 
     return {
       league,
       availableTeams,
+      drafts,
       loading,
       error,
       addTeamToLeague,
-      route
+      getDraftStatus,
+      getDraftStatusClass,
+      route,
+      router
     }
   }
 })
@@ -260,6 +337,83 @@ section h2 {
   color: #1e293b;
 }
 
+.drafts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.draft-card {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.draft-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.draft-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.draft-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.draft-status {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.draft-status.complete {
+  background-color: #34c759;
+  color: white;
+}
+
+.draft-status.in-progress {
+  background-color: #f7dc6f;
+  color: #1e293b;
+}
+
+.draft-status.not-started {
+  background-color: #94a3b8;
+  color: white;
+}
+
+.draft-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-item {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
 .available-teams-list {
   display: flex;
   flex-direction: column;
@@ -339,5 +493,12 @@ section h2 {
   color: #4a5568;
   font-size: 0.875rem;
   font-style: italic;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 </style>

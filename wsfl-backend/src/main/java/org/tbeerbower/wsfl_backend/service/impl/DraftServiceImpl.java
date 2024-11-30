@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
+import org.tbeerbower.wsfl_backend.dto.DraftPatchDto;
 import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Draft;
@@ -99,19 +100,15 @@ public class DraftServiceImpl implements DraftService {
 
         Draft draft = new Draft();
         draft.setLeague(league);
+        draft.setName(createDto.getName());
         draft.setSeason(createDto.getSeason());
         draft.setNumberOfRounds(createDto.getNumberOfRounds());
         draft.setSnakeOrder(createDto.getSnakeOrder());
+        draft.setIsStarted(false);
         draft.setIsComplete(false);
         draft.setCurrentRound(1);
         draft.setCurrentPick(1);
-        
-        // Generate random draft order
-        List<Long> teamIds = league.getTeams().stream()
-                .map(Team::getId)
-                .collect(Collectors.toList());
-        Collections.shuffle(teamIds);
-        draft.setDraftOrder(teamIds);
+        draft.setStartTime(createDto.getStartTime());
         
         return draftRepository.save(draft);
     }
@@ -137,8 +134,41 @@ public class DraftServiceImpl implements DraftService {
 
     @Override
     @Transactional
+    public Draft patch(Long id, DraftPatchDto patchDto) {
+
+        Draft draft = findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft not found with id: " + id));
+
+        if (patchDto.getNumberOfRounds() != null) {
+            draft.setNumberOfRounds(patchDto.getNumberOfRounds());
+        }
+        if (patchDto.getSnakeOrder() != null) {
+            draft.setSnakeOrder(patchDto.getSnakeOrder());
+        }
+        if (patchDto.getStartTime() != null) {
+            draft.setStartTime(patchDto.getStartTime());
+        }
+        if (patchDto.isStarted() != null && patchDto.isStarted() && !draft.isStarted()) {
+            // Generate random draft order
+            List<Long> teamIds = draft.getLeague().getTeams().stream()
+                    .map(Team::getId)
+                    .collect(Collectors.toList());
+            Collections.shuffle(teamIds);
+            draft.setDraftOrder(teamIds);
+
+            draft.setStartTime(LocalDateTime.now());
+            draft.setIsStarted(true);
+        }
+        if (patchDto.isComplete() != null  && !patchDto.isComplete() && draft.isComplete()) {
+            draft.setIsComplete(true);
+        }
+        return draftRepository.save(draft);
+    }
+
+    @Override
+    @Transactional
     public Draft makePick(Draft draft, Long runnerId) {
-        if (draft.getIsComplete()) {
+        if (draft.isComplete()) {
             throw new IllegalStateException("Draft is already complete");
         }
         
@@ -187,7 +217,7 @@ public class DraftServiceImpl implements DraftService {
     
     @Override
     public Team getCurrentTeam(Draft draft) {
-        if (draft.getIsComplete()) {
+        if (draft.isComplete()) {
             return null;
         }
         
@@ -211,21 +241,7 @@ public class DraftServiceImpl implements DraftService {
         Team currentTeam = getCurrentTeam(draft);
         return currentTeam != null && currentTeam.getId().equals(team.getId());
     }
-    
-    @Override
-    @Transactional
-    public Draft startDraft(Draft draft) {
-        draft.setStartTime(LocalDateTime.now());
-        return draftRepository.save(draft);
-    }
-    
-    @Override
-    @Transactional
-    public Draft endDraft(Draft draft) {
-        draft.setIsComplete(true);
-        return save(draft);
-    }
-    
+
     @Override
     public Page<DraftPick> findDraftPicksByDraft(Draft draft, Long teamId, Pageable pageable) {
         return teamId == null ? draftPickRepository.findDraftPicksByDraft(draft, pageable) :

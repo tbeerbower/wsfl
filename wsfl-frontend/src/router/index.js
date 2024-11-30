@@ -5,6 +5,8 @@ import DashboardView from '../views/DashboardView.vue'
 import AddTeamView from '../views/AddTeamView.vue'
 import AddLeagueView from '../views/AddLeagueView.vue'
 import LeagueAdminView from '../views/LeagueAdminView.vue'
+import AddDraftView from '../views/AddDraftView.vue'
+import DraftAdminView from '../views/DraftAdminView.vue'
 
 const routes = [
   {
@@ -43,6 +45,18 @@ const routes = [
     path: '/leagues/:id',
     name: 'league-admin',
     component: LeagueAdminView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/leagues/:leagueId/add-draft',
+    name: 'add-draft',
+    component: AddDraftView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/drafts/:id',
+    name: 'draft-admin',
+    component: DraftAdminView,
     meta: { requiresAuth: true }
   }
 ]
