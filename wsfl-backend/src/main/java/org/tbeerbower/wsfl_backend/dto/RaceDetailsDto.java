@@ -22,19 +22,19 @@ public class RaceDetailsDto {
     @Schema(description = "Whether this is a playoff race", example = "false")
     private Boolean isPlayoff;
     
-    @Schema(description = "League this race belongs to")
-    private LeagueSummaryDto league;
+    @Schema(description = "Season this race belongs to")
+    private SeasonSummaryDto season;
     
     @Schema(description = "List of race results")
     private List<RaceResultSummaryDto> results;
 
     public RaceDetailsDto(Long id, String name, LocalDate date, Boolean isPlayoff, 
-                         LeagueSummaryDto league, List<RaceResultSummaryDto> results) {
+                         SeasonSummaryDto season, List<RaceResultSummaryDto> results) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.isPlayoff = isPlayoff;
-        this.league = league;
+        this.season = season;
         this.results = results;
     }
 
@@ -43,6 +43,6 @@ public class RaceDetailsDto {
     public String getName() { return name; }
     public LocalDate getDate() { return date; }
     public Boolean getIsPlayoff() { return isPlayoff; }
-    public LeagueSummaryDto getLeague() { return league; }
+    public SeasonSummaryDto getSeason() { return season; }
     public List<RaceResultSummaryDto> getResults() { return results; }
 }

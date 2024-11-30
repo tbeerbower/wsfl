@@ -27,6 +27,7 @@
             <div class="draft-info">
               <h3>{{ draft.name }}</h3>
               <div class="draft-league">{{ draft.league.name }}</div>
+              <div class="draft-season">{{ draft.season?.name || 'Unknown Season' }}</div>
               <div class="draft-status-badge" :class="getDraftStatus(draft).toLowerCase()">
                 {{ getDraftStatus(draft) }}
               </div>
@@ -429,14 +430,12 @@ export default defineComponent({
       error.value.adminLeagues = null
       try {
         const response = await axios.get(`/api/users/${user.id}/leagues`)
-        console.log('Admin leagues response:', response.data)
         
         // Fetch teams for each admin league
         const leaguesWithTeams = await Promise.all(
           response.data.content.map(async (league) => {
             try {
               const teamsResponse = await axios.get(`/api/leagues/${league.id}/teams`)
-              console.log(`Teams for league ${league.id}:`, teamsResponse.data)
               return {
                 ...league,
                 teams: teamsResponse.data.content || []
@@ -1120,5 +1119,17 @@ h3 {
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.draft-league {
+  font-size: 0.875rem;
+  color: #4B5563;
+  margin-bottom: 0.25rem;
+}
+
+.draft-season {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin-bottom: 0.5rem;
 }
 </style>

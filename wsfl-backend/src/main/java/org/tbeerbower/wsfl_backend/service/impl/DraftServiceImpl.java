@@ -13,11 +13,13 @@ import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Runner;
+import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.repository.DraftPickRepository;
 import org.tbeerbower.wsfl_backend.repository.DraftRepository;
 import org.tbeerbower.wsfl_backend.repository.LeagueRepository;
 import org.tbeerbower.wsfl_backend.repository.RunnerRepository;
+import org.tbeerbower.wsfl_backend.repository.SeasonRepository;
 import org.tbeerbower.wsfl_backend.service.DraftService;
 
 import java.time.LocalDateTime;
@@ -31,15 +33,18 @@ public class DraftServiceImpl implements DraftService {
     private final DraftPickRepository draftPickRepository;
     private final RunnerRepository runnerRepository;
     private final LeagueRepository leagueRepository;
+    private final SeasonRepository seasonRepository;
     
     @Autowired
     public DraftServiceImpl(DraftRepository draftRepository, DraftPickRepository draftPickRepository,
                             RunnerRepository runnerRepository,
-                            LeagueRepository leagueRepository) {
+                            LeagueRepository leagueRepository,
+                            SeasonRepository seasonRepository) {
         this.draftRepository = draftRepository;
         this.draftPickRepository = draftPickRepository;
         this.runnerRepository = runnerRepository;
         this.leagueRepository = leagueRepository;
+        this.seasonRepository = seasonRepository;
     }
     
     @Override
@@ -98,10 +103,13 @@ public class DraftServiceImpl implements DraftService {
         League league = leagueRepository.findById(createDto.getLeagueId())
             .orElseThrow(() -> new ResourceNotFoundException("League not found with id: " + createDto.getLeagueId()));
 
+        Season season = seasonRepository.findById(createDto.getSeasonId())
+            .orElseThrow(() -> new ResourceNotFoundException("Season not found with id: " + createDto.getSeasonId()));
+
         Draft draft = new Draft();
         draft.setLeague(league);
         draft.setName(createDto.getName());
-        draft.setSeason(createDto.getSeason());
+        draft.setSeason(season);
         draft.setNumberOfRounds(createDto.getNumberOfRounds());
         draft.setSnakeOrder(createDto.getSnakeOrder());
         draft.setIsStarted(false);

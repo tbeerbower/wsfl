@@ -13,7 +13,6 @@ public class LeagueSummaryDto {
     @Schema(description = "Name of the league")
     private String name;
 
-
     public LeagueSummaryDto(Long id, String name) {
         this.id = id;
         this.name = name;

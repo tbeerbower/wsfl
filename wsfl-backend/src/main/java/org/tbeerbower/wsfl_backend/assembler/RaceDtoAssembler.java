@@ -6,6 +6,7 @@ import org.tbeerbower.wsfl_backend.dto.RaceDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.RaceResultSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RaceSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
+import org.tbeerbower.wsfl_backend.dto.SeasonSummaryDto;
 import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.RaceResult;
 
@@ -30,9 +31,10 @@ public class RaceDtoAssembler {
     }
     
     public RaceDetailsDto toDetailedModel(Race race) {
-        LeagueSummaryDto leagueDto = new LeagueSummaryDto(
-            race.getLeague().getId(),
-            race.getLeague().getName()
+
+        SeasonSummaryDto seasonDto = new SeasonSummaryDto(
+                race.getSeason().getId(),
+                race.getSeason().getName()
         );
 
         return new RaceDetailsDto(
@@ -40,7 +42,7 @@ public class RaceDtoAssembler {
             race.getName(),
             race.getDate(),
             race.getIsPlayoff(),
-            leagueDto,
+                seasonDto,
             race.getResults().stream()
                 .map(this::toRaceResultDto)
                 .collect(Collectors.toList())

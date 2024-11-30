@@ -3,7 +3,7 @@
     <div v-if="loading.draft" class="loading">Loading draft details...</div>
     <div v-else-if="error.draft" class="error-message">{{ error.draft }}</div>
     <div v-else-if="draft" class="draft-content">
-      <div class="on-the-clock-section" :class="{ 'my-team': isMyTeamOnClock }">
+      <div v-if="draft.started && !draft.complete" class="on-the-clock-section" :class="{ 'my-team': isMyTeamOnClock }">
         <h2>On The Clock</h2>
         <div class="team-name" v-if="currentTeamOnClock">
           {{ currentTeamOnClock }}
@@ -47,7 +47,7 @@
         <div class="details-grid">
           <div class="detail-item">
             <span class="detail-label">Season</span>
-            <span class="detail-value">{{ draft.season }}</span>
+            <span class="detail-value">{{ draft.season?.name || 'Unknown Season' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">League</span>

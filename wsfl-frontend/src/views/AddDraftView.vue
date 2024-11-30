@@ -24,18 +24,21 @@
         </div>
 
         <div class="form-group">
-          <label for="season">Season Year</label>
-          <input 
+          <label for="season">Season</label>
+          <select 
             id="season"
-            v-model.number="formData.season"
-            type="number"
+            v-model="formData.seasonId"
             required
-            min="2024"
             class="form-input"
-            :class="{ 'error': validationErrors.season }"
+            :class="{ 'error': validationErrors.seasonId }"
           >
-          <span v-if="validationErrors.season" class="validation-error">
-            {{ validationErrors.season }}
+            <option value="">Select a Season</option>
+            <option v-for="season in seasons" :key="season.id" :value="season.id">
+              {{ season.name }}
+            </option>
+          </select>
+          <span v-if="validationErrors.seasonId" class="validation-error">
+            {{ validationErrors.seasonId }}
           </span>
         </div>
 
@@ -102,7 +105,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -116,7 +119,7 @@ export default defineComponent({
 
     const formData = ref({
       name: '',
-      season: new Date().getFullYear(),
+      seasonId: '',
       numberOfRounds: 6,
       startTime: '',
       snakeOrder: true
@@ -125,6 +128,22 @@ export default defineComponent({
     const loading = ref(false)
     const error = ref(null)
     const validationErrors = ref({})
+    const seasons = ref([])
+
+    const fetchSeasons = async () => {
+      try {
+        const response = await axios.get('/api/seasons')
+        seasons.value = response.data.content || []
+        
+        // If there's only one season, auto-select it
+        if (seasons.value.length === 1) {
+          formData.value.seasonId = seasons.value[0].id
+        }
+      } catch (err) {
+        error.value = 'Failed to load seasons'
+        console.error('Error fetching seasons:', err)
+      }
+    }
 
     const validateForm = () => {
       const errors = {}
@@ -133,8 +152,8 @@ export default defineComponent({
         errors.name = 'Draft name is required'
       }
       
-      if (!formData.value.season || formData.value.season < 2024) {
-        errors.season = 'Season must be 2024 or later'
+      if (!formData.value.seasonId) {
+        errors.seasonId = 'Please select a season'
       }
       
       if (!formData.value.numberOfRounds || formData.value.numberOfRounds < 1) {
@@ -176,12 +195,15 @@ export default defineComponent({
       }
     }
 
+    onMounted(fetchSeasons)
+
     return {
       formData,
       loading,
       error,
       validationErrors,
-      handleSubmit
+      handleSubmit,
+      seasons
     }
   }
 })

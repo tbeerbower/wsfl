@@ -53,7 +53,7 @@
               <div class="draft-details">
                 <div class="detail-item">
                   <span class="detail-label">Season:</span>
-                  <span class="detail-value">{{ draft.season }}</span>
+                  <span class="detail-value">{{ draft.season?.name || 'Unknown Season' }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Rounds:</span>

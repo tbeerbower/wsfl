@@ -15,10 +15,10 @@ public class Race {
     private String name;
     private LocalDate date;
     private Boolean isPlayoff;
-    
+
     @ManyToOne
-    @JoinColumn(name = "league_id")
-    private League league;
+    @JoinColumn(name = "season_id")
+    private Season season;
     
     @OneToMany(mappedBy = "race")
     private Set<RaceResult> results = new HashSet<>();
@@ -68,12 +68,12 @@ public class Race {
         this.isPlayoff = isPlayoff;
     }
 
-    public League getLeague() {
-        return league;
+    public Season getSeason() {
+        return season;
     }
 
-    public void setLeague(League league) {
-        this.league = league;
+    public void setSeason(Season season) {
+        this.season = season;
     }
 
     public Set<RaceResult> getResults() {

@@ -2,6 +2,8 @@ package org.tbeerbower.wsfl_backend.dto;
 
 import org.springframework.hateoas.server.core.Relation;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.tbeerbower.wsfl_backend.model.Season;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,11 +16,11 @@ public class DraftSummaryDto {
     @Schema(description = "League associated with the draft")
     private LeagueSummaryDto league;
 
-    @Schema(description = "Season name")
+    @Schema(description = "Draft name")
     private String name;
 
-    @Schema(description = "Season number")
-    private Integer season;
+    @Schema(description = "Season of the draft")
+    private SeasonSummaryDto season;
 
     @Schema(description = "Number of rounds in the draft")
     private Integer numberOfRounds;
@@ -43,7 +45,7 @@ public class DraftSummaryDto {
     @Schema(description = "List of team IDs in draft order")
     private List<Long> draftOrder;
 
-    public DraftSummaryDto(Long id, LeagueSummaryDto league, String name, Integer season,
+    public DraftSummaryDto(Long id, LeagueSummaryDto league, String name, SeasonSummaryDto season,
                           Integer numberOfRounds, Boolean snakeOrder, LocalDateTime startTime,
                           Boolean isStarted, Boolean isComplete,
                           Integer currentRound, Integer currentPick,
@@ -66,7 +68,7 @@ public class DraftSummaryDto {
     public Long getId() { return id; }
     public LeagueSummaryDto getLeague() { return league; }
     public String getName() { return name; }
-    public Integer getSeason() { return season; }
+    public SeasonSummaryDto getSeason() { return season; }
     public Integer getNumberOfRounds() { return numberOfRounds; }
     public Boolean getSnakeOrder() { return snakeOrder; }
     public LocalDateTime getStartTime() { return startTime; }

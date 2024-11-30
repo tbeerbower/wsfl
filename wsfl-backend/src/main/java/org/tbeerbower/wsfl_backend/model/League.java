@@ -21,9 +21,7 @@ public class League {
     @OneToMany(mappedBy = "league")
     private Set<Team> teams = new HashSet<>();
     
-    @OneToMany(mappedBy = "league")
-    private Set<Race> races = new HashSet<>();
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -64,13 +62,5 @@ public class League {
 
     public void setTeams(Set<Team> teams) {
         this.teams = teams;
-    }
-
-    public Set<Race> getRaces() {
-        return races;
-    }
-
-    public void setRaces(Set<Race> races) {
-        this.races = races;
     }
 } 

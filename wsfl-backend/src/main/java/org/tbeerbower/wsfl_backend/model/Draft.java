@@ -19,7 +19,9 @@ public class Draft {
     private League league;
 
     private String name;
-    private Integer season;
+    @ManyToOne
+    @JoinColumn(name = "season_id")
+    private Season season;
     private Integer numberOfRounds;
     private Boolean snakeOrder;
     private LocalDateTime startTime;
@@ -52,8 +54,9 @@ public class Draft {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public Integer getSeason() { return season; }
-    public void setSeason(Integer season) { this.season = season; }
+    public Season getSeason() { return season; }
+    public void setSeason(Season season) { this.season = season; }
+
     
     public Integer getNumberOfRounds() { return numberOfRounds; }
     public void setNumberOfRounds(Integer numberOfRounds) { this.numberOfRounds = numberOfRounds; }

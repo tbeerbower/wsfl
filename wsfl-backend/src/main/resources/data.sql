@@ -23,6 +23,10 @@ INSERT INTO leagues (id, name, max_teams, admin_id) VALUES
 (1, 'Summer League', 4, 1),
 (2, 'Winter League', 4, 1);
 
+INSERT INTO seasons (id, name) VALUES
+(1, 'Summer 2024'),
+(2, 'Winter 2024-2025');
+
 -- Insert Teams
 INSERT INTO teams (id, name, wins, losses, ties, total_score, owner_id, league_id) VALUES
 (1, 'Speed Demons', 2, 1, 0, 45, 1, 1),
@@ -112,15 +116,15 @@ INSERT INTO runners (id, name, gender) VALUES
 
 
 -- Insert Races
-INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
+INSERT INTO races (id, name, date, is_playoff, season_id) VALUES
 (1, 'Spring Sprint', '2024-03-15', false, 1),
 (2, 'Summer Chase', '2024-04-01', false, 1),
-(3, 'Fall Dash', '2024-04-15', false, 1),
-(4, 'Championship Run', '2024-05-01', true, 1),
+(3, 'Fall Dash', '2024-09-22', false, 1),
+(4, 'Championship Run', '2024-10-01', true, 1),
 (5, 'Winter Opener', '2024-11-01', false, 2);
 
 -- Insert 5 Additional Races with Explicit IDs
-INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
+INSERT INTO races (id, name, date, is_playoff, season_id) VALUES
 (6, 'Twilight Trail', '2024-04-22', false, 1),
 (7, 'Mountain Marathon', '2024-05-10', false, 1),
 (8, 'Frosty Frontier', '2024-11-15', false, 2),
@@ -183,10 +187,10 @@ WHERE
     results.participation_rank <= 3; -- Each runner participates in 2-3 races
 
 -- Insert Drafts
-INSERT INTO drafts (id, league_id, name, season, number_of_rounds, snake_order, start_time, is_started, is_complete, current_round, current_pick) VALUES
-(1, 1, 'Summer 2024', 2024, 6, true, '2024-03-01 10:00:00', true, true, 6, 4),  -- Completed Summer League draft
-(2, 2, 'Winter 2024', 2024, 6, true, '2024-10-15 14:00:00', true, false, 2, 1), -- In-progress Winter League draft
-(3, 1, 'Spring 2025', 2025, 8, false, '2024-10-15 14:00:00', false, false, 2, 1); -- Not started Spring League draft
+INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_order, start_time, is_started, is_complete, current_round, current_pick) VALUES
+(1, 1, 1, 'Summer 2024 Draft', 6, true, '2024-03-01 10:00:00', true, true, 6, 4),  -- Completed Summer League draft
+(2, 2, 2, 'Winter 2024 Draft', 6, true, '2024-10-15 14:00:00', true, false, 2, 1), -- In-progress Winter League draft
+(3, 1, 1, 'Spring 2025 Draft', 8, false, '2024-10-15 14:00:00', false, false, 2, 1); -- Not started Spring League draft
 
 -- Insert Draft Order for Summer League Draft
 INSERT INTO draft_order (draft_id, position, team_id) VALUES

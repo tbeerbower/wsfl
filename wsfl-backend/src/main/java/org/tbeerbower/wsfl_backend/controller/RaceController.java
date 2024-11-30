@@ -25,11 +25,13 @@ import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Race;
+import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.model.RaceResult;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
 import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.RaceResultService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
+import org.tbeerbower.wsfl_backend.service.SeasonService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,17 +46,19 @@ public class RaceController  {
     private final RaceResultService raceResultService;
     private final LeagueService leagueService;
     private final MatchupService matchupService;
+    private final SeasonService seasonService;
     private final RaceDtoAssembler raceDtoAssembler;
     private final MatchupDtoAssembler matchupDtoAssembler;
     private final RaceResultDtoAssembler raceResultDtoAssembler;
 
 
     @Autowired
-    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService, MatchupService matchupService, RaceDtoAssembler raceDtoAssembler, MatchupDtoAssembler matchupDtoAssembler, RaceResultDtoAssembler raceResultDtoAssembler) {
+    public RaceController(RaceService raceService, RaceResultService raceResultService, LeagueService leagueService, MatchupService matchupService, SeasonService seasonService, RaceDtoAssembler raceDtoAssembler, MatchupDtoAssembler matchupDtoAssembler, RaceResultDtoAssembler raceResultDtoAssembler) {
         this.raceService = raceService;
         this.raceResultService = raceResultService;
         this.leagueService = leagueService;
         this.matchupService = matchupService;
+        this.seasonService = seasonService;
         this.raceDtoAssembler = raceDtoAssembler;
         this.matchupDtoAssembler = matchupDtoAssembler;
         this.raceResultDtoAssembler = raceResultDtoAssembler;
@@ -123,15 +127,14 @@ public class RaceController  {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<RaceDetailsDto> createRace(@Valid @RequestBody RaceCreateDto raceCreateDto) {
-        League league = leagueService.findById(raceCreateDto.getLeagueId())
-                .orElseThrow(() -> new ResourceNotFoundException("League not found with id: " + raceCreateDto.getLeagueId()));
-        
+
+        Season season = seasonService.findById(raceCreateDto.getSeasonId())
+                .orElseThrow(() -> new ResourceNotFoundException("Season not found with id: " + raceCreateDto.getSeasonId()));
         Race race = new Race();
         race.setName(raceCreateDto.getName());
         race.setDate(raceCreateDto.getDate());
         race.setIsPlayoff(raceCreateDto.getIsPlayoff());
-        race.setLeague(league);
-        
+        race.setSeason(season);
         Race savedRace = raceService.save(race);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceDetailsDto(savedRace));
     }
@@ -168,10 +171,10 @@ public class RaceController  {
         race.setDate(raceUpdateDto.getDate());
         race.setIsPlayoff(raceUpdateDto.getIsPlayoff());
         
-        if (raceUpdateDto.getLeagueId() != null) {
-            League league = leagueService.findById(raceUpdateDto.getLeagueId())
-                    .orElseThrow(() -> new ResourceNotFoundException("League not found with id: " + raceUpdateDto.getLeagueId()));
-            race.setLeague(league);
+        if (raceUpdateDto.getSeasonId() != null) {
+            Season season = seasonService.findById(raceUpdateDto.getSeasonId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Season not found with id: " + raceUpdateDto.getSeasonId()));
+            race.setSeason(season);
         }
         
         Race updatedRace = raceService.save(race);

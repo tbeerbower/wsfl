@@ -12,9 +12,6 @@ public interface RaceService {
     Race save(Race race);
     Page<Race> findAll(Pageable pageable);
     Optional<Race> findById(Long id);
-    Page<Race> findByLeague(League league, Pageable pageable);
-    List<Race> findUpcomingRaces(League league, LocalDate date);
-    List<Race> findPlayoffRaces(League league);
     void deleteById(Long id);
     boolean existsById(Long id);
 }

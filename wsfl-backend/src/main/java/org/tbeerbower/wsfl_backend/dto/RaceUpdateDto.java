@@ -22,9 +22,9 @@ public class RaceUpdateDto {
     @NotNull(message = "Playoff status is required")
     private Boolean isPlayoff;
     
-    @Schema(description = "ID of the league this race belongs to", example = "1")
-    @NotNull(message = "League ID is required")
-    private Long leagueId;
+    @Schema(description = "ID of the season this race belongs to", example = "1")
+    @NotNull(message = "Season ID is required")
+    private Long seasonId;
 
     // Getters and Setters
     public String getName() { return name; }
@@ -36,6 +36,6 @@ public class RaceUpdateDto {
     public Boolean getIsPlayoff() { return isPlayoff; }
     public void setIsPlayoff(Boolean isPlayoff) { this.isPlayoff = isPlayoff; }
     
-    public Long getLeagueId() { return leagueId; }
-    public void setLeagueId(Long leagueId) { this.leagueId = leagueId; }
+    public Long getSeasonId() { return seasonId; }
+    public void setSeasonId(Long seasonId) { this.seasonId = seasonId; }
 }

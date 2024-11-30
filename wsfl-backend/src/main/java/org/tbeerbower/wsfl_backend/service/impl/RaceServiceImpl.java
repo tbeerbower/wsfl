@@ -37,22 +37,7 @@ public class RaceServiceImpl implements RaceService {
     public Optional<Race> findById(Long id) {
         return raceRepository.findById(id);
     }
-    
-    @Override
-    public Page<Race> findByLeague(League league, Pageable pageable) {
-        return raceRepository.findByLeagueOrderByDateAsc(league, pageable);
-    }
-    
-    @Override
-    public List<Race> findUpcomingRaces(League league, LocalDate date) {
-        return raceRepository.findByLeagueAndDateGreaterThanEqual(league, date);
-    }
-    
-    @Override
-    public List<Race> findPlayoffRaces(League league) {
-        return raceRepository.findByLeagueAndIsPlayoffTrue(league);
-    }
-    
+
     @Override
     public void deleteById(Long id) {
         raceRepository.deleteById(id);

@@ -16,10 +16,9 @@ public class DraftCreateDto {
     @NotNull(message = "Name is required")
     private String name;
 
-    @Schema(description = "Season number for this draft", example = "2023")
-    @NotNull(message = "Season is required")
-    @Min(value = 1, message = "Season must be greater than 0")
-    private Integer season;
+    @Schema(description = "Season id for this draft", example = "2023")
+    @NotNull(message = "Season Id is required")
+    private Long seasonId;
     
     @Schema(description = "Number of rounds in the draft", example = "15")
     @NotNull(message = "Number of rounds is required")
@@ -35,11 +34,11 @@ public class DraftCreateDto {
     private LocalDateTime startTime;
 
     // Constructor
-    public DraftCreateDto(Long leagueId, String name, Integer season, Integer numberOfRounds,
+    public DraftCreateDto(Long leagueId, String name, Long seasonId, Integer numberOfRounds,
                          Boolean snakeOrder, LocalDateTime startTime) {
         this.leagueId = leagueId;
         this.name = name;
-        this.season = season;
+        this.seasonId = seasonId;
         this.numberOfRounds = numberOfRounds;
         this.snakeOrder = snakeOrder;
         this.startTime = startTime;
@@ -48,7 +47,7 @@ public class DraftCreateDto {
     // Getters
     public Long getLeagueId() { return leagueId; }
     public String getName() { return name; }
-    public Integer getSeason() { return season; }
+    public Long getSeasonId() { return seasonId; }
     public Integer getNumberOfRounds() { return numberOfRounds; }
     public Boolean getSnakeOrder() { return snakeOrder; }
     public LocalDateTime getStartTime() { return startTime; }
