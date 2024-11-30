@@ -8,9 +8,12 @@
         <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
       </nav>
       <div class="header-right">
-        <button v-if="isAuthenticated" @click="handleLogout" class="logout-button">
-          Logout
-        </button>
+        <div v-if="isAuthenticated" class="user-section">
+          <span class="username">{{ currentUser?.name }}</span>
+          <button @click="handleLogout" class="logout-button">
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -28,6 +31,7 @@ export default defineComponent({
     const router = useRouter()
 
     const isAuthenticated = computed(() => store.getters['auth/isAuthenticated'])
+    const currentUser = computed(() => store.getters['auth/currentUser'])
 
     const handleLogout = async () => {
       await store.dispatch('auth/logout')
@@ -36,6 +40,7 @@ export default defineComponent({
 
     return {
       isAuthenticated,
+      currentUser,
       handleLogout
     }
   }
@@ -103,13 +108,24 @@ export default defineComponent({
   justify-content: flex-end;
 }
 
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.username {
+  color: white;
+  font-size: 0.9rem;
+}
+
 .logout-button {
+  padding: 0.5rem 1rem;
   background-color: transparent;
   border: 1px solid rgba(255, 255, 255, 0.5);
   color: white;
-  padding: 0.5rem 1rem;
   border-radius: 4px;
-  cursor: pointer;
+  font-size: 0.9rem;
   transition: all 0.2s;
 }
 

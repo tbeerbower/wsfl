@@ -3,10 +3,11 @@
     <div v-if="loading.draft" class="loading">Loading draft details...</div>
     <div v-else-if="error.draft" class="error-message">{{ error.draft }}</div>
     <div v-else-if="draft" class="draft-content">
-      <div class="on-the-clock-section">
+      <div class="on-the-clock-section" :class="{ 'my-team': isMyTeamOnClock }">
         <h2>On The Clock</h2>
         <div class="team-name" v-if="currentTeamOnClock">
           {{ currentTeamOnClock }}
+          <span v-if="isMyTeamOnClock" class="my-team-badge">Your Team!</span>
         </div>
         <div class="time-display">
           <div class="time">{{ elapsedTime }}</div>
@@ -15,6 +16,13 @@
         <div class="round-pick">
           Round {{ draft.currentRound }}, Pick {{ draft.currentPick }}
         </div>
+        <router-link
+          v-if="isMyTeamOnClock"
+          :to="`/drafts/${draft.id}/pick`"
+          class="make-pick-button"
+        >
+          Make Your Pick
+        </router-link>
       </div>
 
       <header class="draft-header">
@@ -137,6 +145,7 @@
 <script>
 import { defineComponent, ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axios from 'axios'
 
 export default defineComponent({
@@ -145,6 +154,7 @@ export default defineComponent({
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const store = useStore()
     const draft = ref(null)
     const draftPicks = ref([])
     const teams = ref([])
@@ -166,6 +176,7 @@ export default defineComponent({
     const elapsedTime = ref('00:00:00')
     const elapsedTimeLabel = ref('Time Elapsed')
     const timer = ref(null)
+    const userTeams = ref([])
 
     const hasMorePicks = computed(() => currentPage.value < totalPages.value - 1)
 
@@ -221,6 +232,25 @@ export default defineComponent({
       
       const teamId = draftOrder[orderIndex]
       return getTeamName(teamId)
+    })
+
+    const currentUser = computed(() => store.getters['auth/currentUser'])
+    
+    const isMyTeamOnClock = computed(() => {
+      if (!draft.value?.draftOrder || !userTeams.value.length) return false
+      
+      const pickNumber = draft.value.currentPick
+      const draftOrder = draft.value.draftOrder
+      const roundNumber = draft.value.currentRound
+      
+      // Handle snake draft order
+      const isReverseOrder = draft.value.snakeOrder && roundNumber % 2 === 0
+      const orderIndex = isReverseOrder
+        ? draftOrder.length - ((pickNumber - 1) % draftOrder.length) - 1
+        : (pickNumber - 1) % draftOrder.length
+      
+      const teamId = draftOrder[orderIndex]
+      return userTeams.value.some(team => team.id === teamId)
     })
 
     const getElapsedTime = (draft) => {
@@ -364,6 +394,16 @@ export default defineComponent({
       }
     }
 
+    const fetchUserTeams = async () => {
+      if (!currentUser.value) return
+      try {
+        const response = await axios.get(`/api/users/${currentUser.value.id}/teams`)
+        userTeams.value = response.data.content || []
+      } catch (err) {
+        console.error('Error fetching user teams:', err)
+      }
+    }
+
     // Fetch draft and picks when component mounts
     onMounted(async () => {
       if (!route.params.id) {
@@ -372,10 +412,11 @@ export default defineComponent({
       }
       
       try {
-        // Fetch draft first to get teamsPerRound
-        await fetchDraft()
-        // Then fetch picks
-        await fetchDraftPicks()
+        await Promise.all([
+          fetchDraft(),
+          fetchDraftPicks(),
+          fetchUserTeams()
+        ])
         // Only start timer if both loaded successfully
         if (draft.value && draftPicks.value) {
           startTimer()
@@ -436,7 +477,8 @@ export default defineComponent({
       currentTeamOnClock,
       elapsedTime,
       elapsedTimeLabel,
-      startDraft
+      startDraft,
+      isMyTeamOnClock,
     }
   }
 })
@@ -455,6 +497,18 @@ export default defineComponent({
   border-radius: 8px;
   text-align: center;
   margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.on-the-clock-section.my-team {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.on-the-clock-section.my-team h2,
+.on-the-clock-section.my-team .time,
+.on-the-clock-section.my-team .team-name {
+  color: white;
 }
 
 .team-name {
@@ -462,6 +516,17 @@ export default defineComponent({
   font-weight: 600;
   color: var(--color-heading);
   margin: 12px 0;
+}
+
+.my-team-badge {
+  display: inline-block;
+  background-color: #22c55e;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-left: 8px;
+  font-weight: 500;
 }
 
 .time-display {
@@ -484,6 +549,22 @@ export default defineComponent({
   font-size: 24px;
   font-weight: 500;
   color: #1e293b;
+}
+
+.make-pick-button {
+  display: inline-block;
+  background-color: #22c55e;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-top: 16px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.make-pick-button:hover {
+  background-color: #16a34a;
 }
 
 .draft-header {

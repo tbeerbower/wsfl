@@ -10,37 +10,50 @@
         <div v-if="loading.drafts">Loading drafts...</div>
         <div v-else-if="error.drafts" class="error-message">{{ error.drafts }}</div>
         <div v-else-if="myDrafts.length === 0" class="empty-state">
-          No active drafts found
+          No drafts found
         </div>
-        <div v-else class="drafts-grid">
+        <div class="drafts-grid">
           <router-link
             v-for="draft in myDrafts"
             :key="draft.id"
             :to="isMyTeamOnClock(draft) ? `/drafts/${draft.id}/pick` : `/drafts/${draft.id}`"
             class="draft-card"
-            :class="{ 'clickable': true, 'my-team': isMyTeamOnClock(draft) }"
+            :class="{
+              'my-team-turn': isMyTeamOnClock(draft),
+              'draft-complete': getDraftStatus(draft) === 'COMPLETE',
+              'draft-pending': getDraftStatus(draft) === 'PENDING'
+            }"
           >
             <div class="draft-info">
               <h3>{{ draft.name }}</h3>
               <div class="draft-league">{{ draft.league.name }}</div>
+              <div class="draft-status-badge" :class="getDraftStatus(draft).toLowerCase()">
+                {{ getDraftStatus(draft) }}
+              </div>
             </div>
             <div class="draft-status">
               <div class="status-item">
                 <span class="label">Round</span>
-                <span class="value">{{ draft.currentRound }}</span>
+                <span class="value">{{ draft.currentRound || '-' }}</span>
               </div>
               <div class="status-item">
                 <span class="label">Pick</span>
-                <span class="value">{{ draft.currentPick }}</span>
+                <span class="value">{{ draft.currentPick || '-' }}</span>
               </div>
               <div class="status-item">
                 <span class="label">Time</span>
-                <span class="value">{{ getElapsedTime(draft) }}</span>
+                <span class="value">{{ getDraftStatus(draft) === 'COMPLETE' ? 'Complete' : getElapsedTime(draft) }}</span>
               </div>
             </div>
-            <div class="on-clock-status" :class="{ 'my-team': isMyTeamOnClock(draft) }">
+            <div v-if="getDraftStatus(draft) === 'IN_PROGRESS'" class="on-clock-status" :class="{ 'my-team': isMyTeamOnClock(draft) }">
               <span class="on-clock-label">On The Clock</span>
-              <span class="on-clock-team">{{ draftTeams[getCurrentPickTeam(draft)]?.name || 'Loading...' }}</span>
+              <span class="on-clock-team">
+                {{ draftTeams[getCurrentPickTeam(draft)]?.name || 'Loading...' }}
+                <span v-if="isMyTeamOnClock(draft)" class="my-team-badge">Your Turn!</span>
+              </span>
+            </div>
+            <div v-if="isMyTeamOnClock(draft) && getDraftStatus(draft) === 'IN_PROGRESS'" class="make-pick-prompt">
+              Click to Make Your Pick
             </div>
           </router-link>
         </div>
@@ -328,6 +341,12 @@ export default defineComponent({
       return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'} ${timeStr}` : timeStr
     }
 
+    const getDraftStatus = (draft) => {
+      if (draft.complete) return 'COMPLETE'
+      if (draft.started) return 'IN_PROGRESS'
+      return 'PENDING'
+    }
+
     const fetchTeams = async () => {
       if (!user) return
       
@@ -441,52 +460,54 @@ export default defineComponent({
       }
     }
 
-    const fetchMyDrafts = async () => {
+    const fetchDrafts = async () => {
+      if (!user || !teams.value.length) return
+      
       loading.value.drafts = true
       error.value.drafts = null
       try {
-        // Ensure we have teams and admin leagues loaded first
-        if (teams.value.length === 0) {
-          await fetchTeams()
-        }
-        if (adminLeagues.value.length === 0) {
-          await fetchAdminLeagues()
-        }
-
         const response = await axios.get('/api/drafts')
-        const drafts = response.data.content.filter(draft => 
-          draft.started && !draft.complete && 
-          draft.draftOrder.some(teamId => teams.value.some(team => team.id === teamId))
+        const userTeamIds = teams.value.map(team => team.id)
+        
+        // Filter drafts where user has a team OR is league admin
+        myDrafts.value = response.data.content.filter(draft => 
+          draft.draftOrder.some(teamId => userTeamIds.includes(teamId)) || 
+          adminLeagues.value.some(league => league.id === draft.league.id)
         )
-
-        // Pre-fetch all team names for the drafts
-        await Promise.all(
-          drafts.flatMap(draft => 
-            draft.draftOrder.map(async teamId => {
-              const name = await getTeamName(teamId)
-              draftTeams.value[teamId] = { id: teamId, name }
-            })
-          )
-        )
-
-        myDrafts.value = drafts
+        
+        // Cache team names for each draft
+        for (const draft of myDrafts.value) {
+          if (draft.draftOrder) {
+            for (const teamId of draft.draftOrder) {
+              if (!draftTeams.value[teamId]) {
+                try {
+                  const teamResponse = await axios.get(`/api/teams/${teamId}`)
+                  draftTeams.value[teamId] = teamResponse.data
+                } catch (err) {
+                  console.error(`Error fetching team ${teamId}:`, err)
+                }
+              }
+            }
+          }
+        }
       } catch (err) {
         error.value.drafts = 'Failed to load drafts'
-        console.error('Error fetching drafts:', err)
+        console.error(err)
       } finally {
         loading.value.drafts = false
       }
     }
 
     onMounted(async () => {
+      // First fetch teams and admin leagues
       await Promise.all([
         fetchTeams(),
         fetchMatchups(),
         fetchAdminLeagues(),
         fetchStandings()
       ])
-      // Fetch drafts after we have teams and leagues loaded
-      await fetchMyDrafts()
+      // Then fetch drafts after we have both teams and admin leagues loaded
+      await fetchDrafts()
     })
 
     return {
@@ -506,7 +527,8 @@ export default defineComponent({
       isMyTeamOnClock,
       getTeamName,
       getMyTeamOnClock,
-      getElapsedTime
+      getElapsedTime,
+      getDraftStatus
     }
   }
 })
@@ -514,8 +536,8 @@ export default defineComponent({
 
 <style scoped>
 .dashboard-view {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 2rem;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -816,11 +838,17 @@ h3 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  transition: all 0.2s ease;
+  border: 1px solid #E2E8F0;
 }
 
 .league-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  border-color: #CBD5E1;
 }
 
 .league-header {
@@ -926,93 +954,171 @@ h3 {
 
 .draft-card {
   background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  transition: all 0.2s ease;
+  border: 1px solid #E2E8F0;
 }
 
-.draft-card.clickable:hover {
+.draft-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  border-color: #CBD5E1;
 }
 
-.draft-card.my-team {
-  border-color: #3b82f6;
-  background-color: #f8fafc;
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) {
+  background-color: white;
+  border-color: #3B82F6;  /* Blue 500 */
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
 }
 
-.draft-header {
-  margin-bottom: 1rem;
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn):hover {
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -2px rgba(59, 130, 246, 0.06);
+  border-color: #2563EB;  /* Blue 600 */
 }
 
-.draft-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #1e293b;
-  margin-bottom: 0.5rem;
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) .draft-info h3 {
+  color: #1E40AF;  /* Blue 800 */
 }
 
-.draft-league {
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) .draft-status,
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) .on-clock-status {
+  background-color: #EFF6FF;  /* Blue 50 */
+  border-color: #BFDBFE;  /* Blue 200 */
+}
+
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) .status-item .value {
+  color: #1E40AF;  /* Blue 800 */
+}
+
+.draft-card:not(.draft-complete):not(.draft-pending):not(.my-team-turn) .on-clock-team {
+  color: #1E40AF;  /* Blue 800 */
+}
+
+.draft-complete {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+.draft-complete .draft-status,
+.draft-complete .on-clock-status {
+  background-color: #F1F5F9;
+  border-color: #E2E8F0;
+}
+
+.draft-complete .status-item .value {
+  color: #64748B;
+}
+
+.draft-pending {
+  background-color: white;
+  border: 1px dashed #E2E8F0;
+}
+
+.draft-pending .draft-status,
+.draft-pending .on-clock-status {
+  background-color: #F8FAFC;
+  border: 1px dashed #E2E8F0;
+}
+
+.draft-card.my-team-turn {
+  background-color: #4F46E5;
+  color: white;
+  padding-bottom: 3.5rem;
+  border: none;
+}
+
+.draft-card.my-team-turn:hover {
+  background-color: #4338CA;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.draft-card.my-team-turn h3,
+.draft-card.my-team-turn .draft-league,
+.draft-card.my-team-turn .status-item .label,
+.draft-card.my-team-turn .status-item .value,
+.draft-card.my-team-turn .on-clock-team {
+  color: white;
+}
+
+.draft-card.my-team-turn .draft-status,
+.draft-card.my-team-turn .on-clock-status {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.make-pick-prompt {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #22C55E;
+  color: white;
+  text-align: center;
+  padding: 0.875rem;
+  font-weight: 500;
   font-size: 0.875rem;
-  color: #64748b;
+  transition: background-color 0.2s;
 }
 
-.draft-status {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background-color: #f8fafc;
-  border-radius: 6px;
+.make-pick-prompt:hover {
+  background-color: #16A34A;
 }
 
-.status-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.status-label {
+.my-team-badge {
+  display: inline-block;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
+  font-weight: 500;
+  background-color: #22C55E;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
 }
 
-.status-value {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
+.draft-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  margin-top: 0.5rem;
+  width: fit-content;
 }
 
-.on-clock-status {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.draft-status-badge.complete {
+  background-color: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
 }
 
-.on-clock-status.my-team {
-  background-color: #eff6ff;
-  padding: 1rem;
-  border-radius: 6px;
-  border: 1px solid #2563eb;
+.draft-status-badge.in_progress {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
 }
 
-.on-clock-label {
-  font-size: 0.875rem;
-  color: #64748b;
+.draft-status-badge.pending {
+  background-color: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FDE68A;
 }
 
-.on-clock-team {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
+.draft-card.my-team-turn .draft-status-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 </style>
