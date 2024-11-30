@@ -3,6 +3,8 @@ package org.tbeerbower.wsfl_backend.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.time.LocalDateTime;
+
 @Schema(description = "Summary information about a draft pick")
 @Relation(collectionRelation = "picks", itemRelation = "pick")
 public class DraftPickSummaryDto {
@@ -18,11 +20,16 @@ public class DraftPickSummaryDto {
     @Schema(description = "Runner that was picked")
     private RunnerSummaryDto runner;
 
-    public DraftPickSummaryDto(Long id, int pickNumber, TeamSummaryDto team, RunnerSummaryDto runner) {
+    @Schema(description = "Time that the pick was made")
+    private LocalDateTime pickTime;
+
+    public DraftPickSummaryDto(Long id, int pickNumber, TeamSummaryDto team,
+                               RunnerSummaryDto runner, LocalDateTime pickTime) {
         this.id = id;
         this.pickNumber = pickNumber;
         this.team = team;
         this.runner = runner;
+        this.pickTime = pickTime;
     }
 
     public Long getId() {
@@ -55,5 +62,13 @@ public class DraftPickSummaryDto {
 
     public void setRunner(RunnerSummaryDto runner) {
         this.runner = runner;
+    }
+
+    public LocalDateTime getPickTime() {
+        return pickTime;
+    }
+
+    public void setPickTime(LocalDateTime pickTime) {
+        this.pickTime = pickTime;
     }
 }

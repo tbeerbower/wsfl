@@ -20,7 +20,8 @@ public class DraftPickDtoAssembler {
             draftPick.getId(),
             draftPick.getPickNumber(),
             teamDtoAssembler.toModel(draftPick.getTeam()),
-            runnerDtoAssembler.toSummaryDto(draftPick.getRunner())
+            runnerDtoAssembler.toSummaryDto(draftPick.getRunner()),
+            draftPick.getPickTime()
         );
     }
 }

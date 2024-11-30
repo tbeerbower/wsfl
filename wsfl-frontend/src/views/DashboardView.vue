@@ -18,34 +18,29 @@
             :key="draft.id"
             :to="isMyTeamOnClock(draft) ? `/drafts/${draft.id}/pick` : `/drafts/${draft.id}`"
             class="draft-card"
-            :class="{ 'my-team-up': isMyTeamOnClock(draft) }"
+            :class="{ 'clickable': true, 'my-team': isMyTeamOnClock(draft) }"
           >
-            <div class="draft-header">
+            <div class="draft-info">
               <h3>{{ draft.name }}</h3>
               <div class="draft-league">{{ draft.league.name }}</div>
             </div>
             <div class="draft-status">
               <div class="status-item">
-                <span class="status-label">Round</span>
-                <span class="status-value">{{ draft.currentRound }}/{{ draft.numberOfRounds }}</span>
+                <span class="label">Round</span>
+                <span class="value">{{ draft.currentRound }}</span>
               </div>
               <div class="status-item">
-                <span class="status-label">Pick</span>
-                <span class="status-value">{{ draft.currentPick }}</span>
+                <span class="label">Pick</span>
+                <span class="value">{{ draft.currentPick }}</span>
+              </div>
+              <div class="status-item">
+                <span class="label">Time</span>
+                <span class="value">{{ getElapsedTime(draft) }}</span>
               </div>
             </div>
-            <div class="on-clock-info" :class="{ 'my-turn': isMyTeamOnClock(draft) }">
-              <template v-if="isMyTeamOnClock(draft)">
-                <div class="your-turn-banner">Your Turn to Pick!</div>
-                <div class="team-name">{{ getMyTeamOnClock(draft).name }}</div>
-                <div class="elapsed-time">
-                  Time Elapsed: {{ getElapsedTime(draft) }}
-                </div>
-              </template>
-              <template v-else>
-                <span class="on-clock-label">On The Clock</span>
-                <span class="on-clock-team">{{ getTeamName(getCurrentPickTeam(draft)) }}</span>
-              </template>
+            <div class="on-clock-status" :class="{ 'my-team': isMyTeamOnClock(draft) }">
+              <span class="on-clock-label">On The Clock</span>
+              <span class="on-clock-team">{{ draftTeams[getCurrentPickTeam(draft)]?.name || 'Loading...' }}</span>
             </div>
           </router-link>
         </div>
@@ -215,6 +210,7 @@ export default defineComponent({
     const adminLeagues = ref([])
     const leagueStandings = ref({})
     const myDrafts = ref([])
+    const draftTeams = ref({}) // Cache for teams from drafts
     
     const loading = ref({
       teams: false,
@@ -274,18 +270,41 @@ export default defineComponent({
       return teams.value.some(team => team.id === currentTeamId)
     }
 
-    const getTeamName = (teamId) => {
-      // First check the user's teams
-      const userTeam = teams.value.find(t => t.id === teamId)
-      if (userTeam) return userTeam.name
-
-      // Then check teams in admin leagues
-      for (const league of adminLeagues.value) {
-        const team = league.teams.find(t => t.id === teamId)
-        if (team) return team.name
-      }
+    const getTeamName = async (teamId) => {
+      console.log(`Looking up team name for ID: ${teamId}`)
       
-      return 'Unknown Team'
+      // First check the cache
+      if (draftTeams.value[teamId]) {
+        return draftTeams.value[teamId].name
+      }
+
+      // Then check user's teams
+      const userTeam = teams.value.find(t => t.id === teamId)
+      if (userTeam) {
+        return userTeam.name
+      }
+
+      // Then check admin leagues
+      for (const league of adminLeagues.value) {
+        if (league.teams) {
+          const team = league.teams.find(t => t.id === teamId)
+          if (team) {
+            return team.name
+          }
+        }
+      }
+
+      // If not found anywhere, fetch the team directly
+      try {
+        const response = await axios.get(`/api/teams/${teamId}`)
+        const team = response.data
+        // Cache the result
+        draftTeams.value[teamId] = team
+        return team.name
+      } catch (err) {
+        console.error(`Error fetching team ${teamId}:`, err)
+        return 'Unknown Team'
+      }
     }
 
     const getMyTeamOnClock = (draft) => {
@@ -391,7 +410,29 @@ export default defineComponent({
       error.value.adminLeagues = null
       try {
         const response = await axios.get(`/api/users/${user.id}/leagues`)
-        adminLeagues.value = response.data.content || []
+        console.log('Admin leagues response:', response.data)
+        
+        // Fetch teams for each admin league
+        const leaguesWithTeams = await Promise.all(
+          response.data.content.map(async (league) => {
+            try {
+              const teamsResponse = await axios.get(`/api/leagues/${league.id}/teams`)
+              console.log(`Teams for league ${league.id}:`, teamsResponse.data)
+              return {
+                ...league,
+                teams: teamsResponse.data.content || []
+              }
+            } catch (err) {
+              console.error(`Error fetching teams for league ${league.id}:`, err)
+              return {
+                ...league,
+                teams: []
+              }
+            }
+          })
+        )
+        
+        adminLeagues.value = leaguesWithTeams
       } catch (err) {
         error.value.adminLeagues = 'Failed to load leagues'
         console.error('Error fetching admin leagues:', err)
@@ -404,15 +445,34 @@ export default defineComponent({
       loading.value.drafts = true
       error.value.drafts = null
       try {
+        // Ensure we have teams and admin leagues loaded first
+        if (teams.value.length === 0) {
+          await fetchTeams()
+        }
+        if (adminLeagues.value.length === 0) {
+          await fetchAdminLeagues()
+        }
+
         const response = await axios.get('/api/drafts')
-        // Filter for drafts that are in progress and include user's teams
-        myDrafts.value = response.data.content
-          .filter(draft => 
-            draft.started && !draft.complete && 
-            draft.draftOrder.some(teamId => teams.value.some(team => team.id === teamId))
+        const drafts = response.data.content.filter(draft => 
+          draft.started && !draft.complete && 
+          draft.draftOrder.some(teamId => teams.value.some(team => team.id === teamId))
+        )
+
+        // Pre-fetch all team names for the drafts
+        await Promise.all(
+          drafts.flatMap(draft => 
+            draft.draftOrder.map(async teamId => {
+              const name = await getTeamName(teamId)
+              draftTeams.value[teamId] = { id: teamId, name }
+            })
           )
+        )
+
+        myDrafts.value = drafts
       } catch (err) {
         error.value.drafts = 'Failed to load drafts'
+        console.error('Error fetching drafts:', err)
       } finally {
         loading.value.drafts = false
       }
@@ -423,9 +483,10 @@ export default defineComponent({
         fetchTeams(),
         fetchMatchups(),
         fetchAdminLeagues(),
-        fetchStandings(),
-        fetchMyDrafts()
+        fetchStandings()
       ])
+      // Fetch drafts after we have teams and leagues loaded
+      await fetchMyDrafts()
     })
 
     return {
@@ -437,6 +498,7 @@ export default defineComponent({
       loading,
       error,
       myDrafts,
+      draftTeams,
       sortedTeams,
       calculateWinPercentage,
       isUserTeam,
@@ -863,23 +925,27 @@ h3 {
 }
 
 .draft-card {
-  background: white;
+  background-color: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
 }
 
-.draft-card:hover {
+.draft-card.clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-color: #cbd5e1;
 }
 
-.draft-card.my-team-up {
-  border: 2px solid #2563eb;
-  background-color: #eff6ff;
+.draft-card.my-team {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
 }
 
 .draft-header {
@@ -926,41 +992,27 @@ h3 {
   color: #1e293b;
 }
 
-.on-clock-info {
+.on-clock-status {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.on-clock-info.my-turn {
+.on-clock-status.my-team {
   background-color: #eff6ff;
   padding: 1rem;
   border-radius: 6px;
   border: 1px solid #2563eb;
 }
 
-.your-turn-banner {
-  background-color: #2563eb;
-  color: white;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-
-.on-clock-info.my-turn .team-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e40af;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-
-.elapsed-time {
-  font-family: monospace;
+.on-clock-label {
   font-size: 0.875rem;
   color: #64748b;
-  text-align: center;
+}
+
+.on-clock-team {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
 }
 </style>

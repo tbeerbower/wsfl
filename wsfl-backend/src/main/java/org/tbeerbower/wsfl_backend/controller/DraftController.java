@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/drafts")
 @CrossOrigin(origins = "http://localhost:8080")
+@PreAuthorize("isAuthenticated()")
 public class DraftController  {
     
     private final DraftService draftService;
@@ -208,7 +209,6 @@ public class DraftController  {
             @ApiResponse(responseCode = "403", description = "Not authorized to create draft picks", content = @Content(schema = @Schema(type = "string", example = "Access denied")))
     })
     @PostMapping("/{id}/picks")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DraftSummaryDto> createDraftPick(
             @Parameter(description = "ID of the draft to create pick for")
             @PathVariable Long id,

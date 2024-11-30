@@ -3,6 +3,20 @@
     <div v-if="loading.draft" class="loading">Loading draft details...</div>
     <div v-else-if="error.draft" class="error-message">{{ error.draft }}</div>
     <div v-else-if="draft" class="draft-content">
+      <div class="on-the-clock-section">
+        <h2>On The Clock</h2>
+        <div class="team-name" v-if="currentTeamOnClock">
+          {{ currentTeamOnClock }}
+        </div>
+        <div class="time-display">
+          <div class="time">{{ elapsedTime }}</div>
+          <div class="time-label">{{ elapsedTimeLabel }}</div>
+        </div>
+        <div class="round-pick">
+          Round {{ draft.currentRound }}, Pick {{ draft.currentPick }}
+        </div>
+      </div>
+
       <header class="draft-header">
         <h1>{{ draft.name }}</h1>
         <div class="draft-actions">
@@ -116,31 +130,6 @@
           </button>
         </div>
       </section>
-
-      <div v-if="draft.started && !draft.complete" class="draft-progress">
-        <div class="on-clock">
-          <h3>On The Clock</h3>
-          <div class="team-info">
-            <span class="team-name">{{ currentTeamOnClock }}</span>
-          </div>
-          <div class="current-status">
-            <div class="pick-info">
-              <div class="info-item">
-                <span class="info-label">Round</span>
-                <span class="info-value">{{ draft.currentRound }}/{{ draft.numberOfRounds }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Pick</span>
-                <span class="info-value">{{ draft.currentPick }}</span>
-              </div>
-            </div>
-            <div class="elapsed-time">
-              <span class="info-label">Time Elapsed</span>
-              <span class="timer">{{ elapsedTimeDisplay }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -174,6 +163,9 @@ export default defineComponent({
       teams: null,
       startDraft: null
     })
+    const elapsedTime = ref('00:00:00')
+    const elapsedTimeLabel = ref('Time Elapsed')
+    const timer = ref(null)
 
     const hasMorePicks = computed(() => currentPage.value < totalPages.value - 1)
 
@@ -215,9 +207,6 @@ export default defineComponent({
       return Array.from(rounds.values()).sort((a, b) => a.number - b.number)
     })
 
-    const elapsedTime = ref(0)
-    const timerInterval = ref(null)
-
     const currentTeamOnClock = computed(() => {
       if (!draft.value?.draftOrder || !draft.value?.currentPick) return ''
       
@@ -234,92 +223,185 @@ export default defineComponent({
       return getTeamName(teamId)
     })
 
-    const elapsedTimeDisplay = computed(() => {
-      const totalSeconds = elapsedTime.value
+    const getElapsedTime = (draft) => {
+      if (!draft) return { time: '00:00:00', label: 'Time Elapsed' }
+      
+      const now = new Date()
+      let startTime
+      let timeLabel = 'Time Elapsed'
+
+      // Only calculate elapsed time if we have all required data
+      if (!draft.teamsPerRound) {
+        return { time: '--:--:--', label: 'Loading...' }
+      }
+
+      // Only use draft start time for the very first pick
+      const isFirstPickOfDraft = draft.currentRound === 1 && draft.currentPick === 1
+      
+      // For picks after the first one, calculate time since last pick
+      if (!isFirstPickOfDraft && draftPicks.value?.length > 0) {
+        // Calculate the pick number of the last pick in the previous round
+        const currentPickNumber = ((draft.currentRound - 1) * draft.teamsPerRound) + draft.currentPick
+        const lastPickOfPreviousRound = draftPicks.value.find(p => p.pickNumber === currentPickNumber - 1)
+
+        if (lastPickOfPreviousRound?.pickTime) {
+          startTime = new Date(lastPickOfPreviousRound.pickTime)
+          timeLabel = 'Time Since Last Pick'
+        } else {
+          // If we can't find the last pick time, fall back to draft start time
+          startTime = draft.startTime ? new Date(draft.startTime) : now
+          timeLabel = 'Time Elapsed (No Last Pick Time)'
+        }
+      } else {
+        // For first pick of draft, use draft start time
+        startTime = draft.startTime ? new Date(draft.startTime) : now
+      }
+      
+      // Ensure we have a valid date
+      if (isNaN(startTime.getTime())) {
+        return { time: '--:--:--', label: 'Invalid Time' }
+      }
+
+      // Convert both times to UTC to handle timezone changes
+      const startTimeUTC = startTime.getTime() + startTime.getTimezoneOffset() * 60000
+      const nowUTC = now.getTime() + now.getTimezoneOffset() * 60000
+      
+      const totalSeconds = Math.floor((nowUTC - startTimeUTC) / 1000)
+      
       const days = Math.floor(totalSeconds / (24 * 3600))
       const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600)
       const minutes = Math.floor((totalSeconds % 3600) / 60)
       const seconds = totalSeconds % 60
 
       const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'} ${timeStr}` : timeStr
-    })
+      return {
+        time: days > 0 ? `${days}d ${timeStr}` : timeStr,
+        label: timeLabel
+      }
+    }
+
+    const updateElapsedTime = () => {
+      if (draft.value) {
+        const result = getElapsedTime(draft.value)
+        elapsedTime.value = result.time
+        elapsedTimeLabel.value = result.label
+      }
+    }
 
     const startTimer = () => {
-      if (timerInterval.value) clearInterval(timerInterval.value)
-      
-      if (draft.value?.currentPick === 1) {
-        elapsedTime.value = Math.floor((Date.now() - new Date(draft.value.startTime)) / 1000)
-      }
-      
-      timerInterval.value = setInterval(() => {
-        elapsedTime.value++
-      }, 1000)
+      stopTimer()
+      timer.value = setInterval(updateElapsedTime, 1000)
+      updateElapsedTime() // Update immediately
     }
 
     const stopTimer = () => {
-      if (timerInterval.value) {
-        clearInterval(timerInterval.value)
-        timerInterval.value = null
-      }
-    }
-
-    const fetchDraft = async () => {
-      loading.value.draft = true
-      error.value.draft = null
-      try {
-        const response = await axios.get(`/api/drafts/${route.params.id}`)
-        draft.value = response.data
-        if (draft.value.league?.id) {
-          fetchTeams(draft.value.league.id)
-        }
-      } catch (err) {
-        error.value.draft = 'Failed to load draft details'
-        console.error('Error fetching draft:', err)
-      } finally {
-        loading.value.draft = false
+      if (timer.value) {
+        clearInterval(timer.value)
+        timer.value = null
       }
     }
 
     const fetchTeams = async (leagueId) => {
-      loading.value.teams = true
-      error.value.teams = null
+      if (!leagueId) return
+      
       try {
+        loading.value.teams = true
+        error.value.teams = null
+        
         const response = await axios.get(`/api/leagues/${leagueId}/teams`)
-        teams.value = response.data.content || []
+        if (response.data.content) {
+          teams.value = response.data.content
+          if (draft.value) {
+            draft.value.teamsPerRound = teams.value.length
+          }
+        }
       } catch (err) {
-        error.value.teams = 'Failed to load teams'
         console.error('Error fetching teams:', err)
+        error.value.teams = 'Failed to load teams'
       } finally {
         loading.value.teams = false
       }
     }
 
-    const fetchDraftPicks = async (page = 0) => {
-      const isInitialLoad = page === 0
-      loading.value[isInitialLoad ? 'picks' : 'morePicks'] = true
-      error.value.picks = null
+    const fetchDraft = async () => {
+      if (!route.params.id) return
       
       try {
-        const response = await axios.get(`/api/drafts/${route.params.id}/picks?page=${page}`)
-        if (isInitialLoad) {
-          draftPicks.value = response.data.content
-        } else {
-          draftPicks.value = [...draftPicks.value, ...response.data.content]
+        loading.value.draft = true
+        error.value.draft = null
+        
+        const response = await axios.get(`/api/drafts/${route.params.id}`)
+        if (response.data) {
+          draft.value = response.data
+          if (draft.value.league?.id) {
+            await fetchTeams(draft.value.league.id)
+          }
         }
-        currentPage.value = response.data.number
-        totalPages.value = response.data.totalPages
       } catch (err) {
-        error.value.picks = 'Failed to load draft picks'
-        console.error('Error fetching draft picks:', err)
+        console.error('Error fetching draft:', err)
+        error.value.draft = 'Failed to load draft'
       } finally {
-        loading.value[isInitialLoad ? 'picks' : 'morePicks'] = false
+        loading.value.draft = false
       }
     }
 
+    const fetchDraftPicks = async () => {
+      if (!route.params.id) return
+      
+      try {
+        loading.value.picks = true
+        error.value.picks = null
+        
+        const response = await axios.get(`/api/drafts/${route.params.id}/picks`)
+        if (response.data.content) {
+          draftPicks.value = response.data.content
+        }
+      } catch (err) {
+        console.error('Error fetching draft picks:', err)
+        error.value.picks = 'Failed to load draft picks'
+      } finally {
+        loading.value.picks = false
+      }
+    }
+
+    // Fetch draft and picks when component mounts
+    onMounted(async () => {
+      if (!route.params.id) {
+        router.push('/dashboard')
+        return
+      }
+      
+      try {
+        // Fetch draft first to get teamsPerRound
+        await fetchDraft()
+        // Then fetch picks
+        await fetchDraftPicks()
+        // Only start timer if both loaded successfully
+        if (draft.value && draftPicks.value) {
+          startTimer()
+        }
+      } catch (err) {
+        console.error('Error loading draft data:', err)
+      }
+    })
+
+    // Watch for changes in draft or picks and restart timer
+    watch([() => draft.value, () => draftPicks.value], ([newDraft, newPicks]) => {
+      if (newDraft && newPicks && newPicks.length > 0) {
+        startTimer()
+      } else {
+        stopTimer()
+      }
+    })
+
+    // Clean up timer when component unmounts
+    onUnmounted(() => {
+      stopTimer()
+    })
+
     const loadMorePicks = () => {
       if (hasMorePicks.value && !loading.value.morePicks) {
-        fetchDraftPicks(currentPage.value + 1)
+        fetchDraftPicks()
       }
     }
 
@@ -339,28 +421,6 @@ export default defineComponent({
       }
     }
 
-    onMounted(() => {
-      if (!route.params.id) {
-        router.push('/dashboard')
-        return
-      }
-      
-      fetchDraft()
-      fetchDraftPicks()
-    })
-
-    onUnmounted(() => {
-      stopTimer()
-    })
-
-    watch(() => draft.value?.started, (isStarted) => {
-      if (isStarted && !draft.value?.complete) {
-        startTimer()
-      } else {
-        stopTimer()
-      }
-    })
-
     return {
       draft,
       draftPicks,
@@ -374,7 +434,8 @@ export default defineComponent({
       getTeamName,
       groupedPicks,
       currentTeamOnClock,
-      elapsedTimeDisplay,
+      elapsedTime,
+      elapsedTimeLabel,
       startDraft
     }
   }
@@ -386,6 +447,43 @@ export default defineComponent({
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.on-the-clock-section {
+  background-color: var(--color-background-soft);
+  padding: 24px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.team-name {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--color-heading);
+  margin: 12px 0;
+}
+
+.time-display {
+  margin: 16px 0;
+}
+
+.time {
+  font-size: 48px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.time-label {
+  font-size: 16px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.round-pick {
+  font-size: 24px;
+  font-weight: 500;
+  color: #1e293b;
 }
 
 .draft-header {
