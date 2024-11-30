@@ -5,6 +5,52 @@
     </header>
 
     <div class="dashboard-content">
+      <div class="dashboard-section">
+        <h2>My Drafts</h2>
+        <div v-if="loading.drafts">Loading drafts...</div>
+        <div v-else-if="error.drafts" class="error-message">{{ error.drafts }}</div>
+        <div v-else-if="myDrafts.length === 0" class="empty-state">
+          No active drafts found
+        </div>
+        <div v-else class="drafts-grid">
+          <router-link
+            v-for="draft in myDrafts"
+            :key="draft.id"
+            :to="isMyTeamOnClock(draft) ? `/drafts/${draft.id}/pick` : `/drafts/${draft.id}`"
+            class="draft-card"
+            :class="{ 'my-team-up': isMyTeamOnClock(draft) }"
+          >
+            <div class="draft-header">
+              <h3>{{ draft.name }}</h3>
+              <div class="draft-league">{{ draft.league.name }}</div>
+            </div>
+            <div class="draft-status">
+              <div class="status-item">
+                <span class="status-label">Round</span>
+                <span class="status-value">{{ draft.currentRound }}/{{ draft.numberOfRounds }}</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">Pick</span>
+                <span class="status-value">{{ draft.currentPick }}</span>
+              </div>
+            </div>
+            <div class="on-clock-info" :class="{ 'my-turn': isMyTeamOnClock(draft) }">
+              <template v-if="isMyTeamOnClock(draft)">
+                <div class="your-turn-banner">Your Turn to Pick!</div>
+                <div class="team-name">{{ getMyTeamOnClock(draft).name }}</div>
+                <div class="elapsed-time">
+                  Time Elapsed: {{ getElapsedTime(draft) }}
+                </div>
+              </template>
+              <template v-else>
+                <span class="on-clock-label">On The Clock</span>
+                <span class="on-clock-team">{{ getTeamName(getCurrentPickTeam(draft)) }}</span>
+              </template>
+            </div>
+          </router-link>
+        </div>
+      </div>
+
       <div v-if="adminLeagues.length > 0" class="dashboard-section">
         <div class="section-header">
           <h2>My Leagues (Admin)</h2>
@@ -168,19 +214,22 @@ export default defineComponent({
     const matchups = ref([])
     const adminLeagues = ref([])
     const leagueStandings = ref({})
+    const myDrafts = ref([])
     
     const loading = ref({
       teams: false,
       matchups: false,
       standings: false,
-      adminLeagues: false
+      adminLeagues: false,
+      drafts: false
     })
     
     const error = ref({
       teams: null,
       matchups: null,
       standings: null,
-      adminLeagues: null
+      adminLeagues: null,
+      drafts: null
     })
 
     const isUserTeam = (teamId) => {
@@ -203,6 +252,61 @@ export default defineComponent({
         // Use total score as tiebreaker
         return b.totalScore - a.totalScore
       })
+    }
+
+    const getCurrentPickTeam = (draft) => {
+      if (!draft?.draftOrder || !draft?.currentPick) return null
+      
+      const pickNumber = draft.currentPick
+      const draftOrder = draft.draftOrder
+      const roundNumber = draft.currentRound
+      
+      const isReverseOrder = draft.snakeOrder && roundNumber % 2 === 0
+      const orderIndex = isReverseOrder
+        ? draftOrder.length - ((pickNumber - 1) % draftOrder.length) - 1
+        : (pickNumber - 1) % draftOrder.length
+      
+      return draftOrder[orderIndex]
+    }
+
+    const isMyTeamOnClock = (draft) => {
+      const currentTeamId = getCurrentPickTeam(draft)
+      return teams.value.some(team => team.id === currentTeamId)
+    }
+
+    const getTeamName = (teamId) => {
+      // First check the user's teams
+      const userTeam = teams.value.find(t => t.id === teamId)
+      if (userTeam) return userTeam.name
+
+      // Then check teams in admin leagues
+      for (const league of adminLeagues.value) {
+        const team = league.teams.find(t => t.id === teamId)
+        if (team) return team.name
+      }
+      
+      return 'Unknown Team'
+    }
+
+    const getMyTeamOnClock = (draft) => {
+      const currentTeamId = getCurrentPickTeam(draft)
+      return teams.value.find(team => team.id === currentTeamId)
+    }
+
+    const getElapsedTime = (draft) => {
+      if (!draft.startTime) return '00:00:00'
+      
+      const now = Date.now()
+      const start = new Date(draft.startTime)
+      const totalSeconds = Math.floor((now - start) / 1000)
+      
+      const days = Math.floor(totalSeconds / (24 * 3600))
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const seconds = totalSeconds % 60
+
+      const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'} ${timeStr}` : timeStr
     }
 
     const fetchTeams = async () => {
@@ -296,12 +400,32 @@ export default defineComponent({
       }
     }
 
-    onMounted(() => {
-      fetchTeams().then(() => {
-        fetchMatchups()
-        fetchStandings()
-        fetchAdminLeagues()
-      })
+    const fetchMyDrafts = async () => {
+      loading.value.drafts = true
+      error.value.drafts = null
+      try {
+        const response = await axios.get('/api/drafts')
+        // Filter for drafts that are in progress and include user's teams
+        myDrafts.value = response.data.content
+          .filter(draft => 
+            draft.started && !draft.complete && 
+            draft.draftOrder.some(teamId => teams.value.some(team => team.id === teamId))
+          )
+      } catch (err) {
+        error.value.drafts = 'Failed to load drafts'
+      } finally {
+        loading.value.drafts = false
+      }
+    }
+
+    onMounted(async () => {
+      await Promise.all([
+        fetchTeams(),
+        fetchMatchups(),
+        fetchAdminLeagues(),
+        fetchStandings(),
+        fetchMyDrafts()
+      ])
     })
 
     return {
@@ -312,9 +436,15 @@ export default defineComponent({
       leagueStandings,
       loading,
       error,
-      isUserTeam,
+      myDrafts,
+      sortedTeams,
       calculateWinPercentage,
-      sortedTeams
+      isUserTeam,
+      getCurrentPickTeam,
+      isMyTeamOnClock,
+      getTeamName,
+      getMyTeamOnClock,
+      getElapsedTime
     }
   }
 })
@@ -723,5 +853,114 @@ h3 {
 
 .add-league-button:hover {
   background-color: #2c5282;
+}
+
+.drafts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.draft-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.draft-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.draft-card.my-team-up {
+  border: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+.draft-header {
+  margin-bottom: 1rem;
+}
+
+.draft-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.draft-league {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.draft-status {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 6px;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.status-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.on-clock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.on-clock-info.my-turn {
+  background-color: #eff6ff;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #2563eb;
+}
+
+.your-turn-banner {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.on-clock-info.my-turn .team-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e40af;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.elapsed-time {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #64748b;
+  text-align: center;
 }
 </style>

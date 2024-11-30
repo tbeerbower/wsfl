@@ -57,12 +57,4 @@ public class TeamDtoAssembler {
         );
         return teamDto;
     }
-
-    private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
-        return new RunnerSummaryDto(
-                runner.getId(),
-                runner.getName(),
-                runner.getGender()
-        );
-    }
 }

@@ -11,7 +11,10 @@ public class RunnerDtoAssembler {
         return new RunnerSummaryDto(
             runner.getId(),
             runner.getName(),
-            runner.getGender()
+            runner.getGender(),
+                runner.getAverageOverallPlace(),
+                runner.getAverageGenderPlace(),
+                runner.getNumberOfRaces()
         );
     }
 }

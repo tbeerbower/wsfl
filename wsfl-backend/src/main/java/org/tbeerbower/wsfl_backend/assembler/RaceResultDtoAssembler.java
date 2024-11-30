@@ -12,17 +12,19 @@ import java.util.stream.Collectors;
 @Component
 public class RaceResultDtoAssembler {
 
+    private final RunnerDtoAssembler runnerDtoAssembler;
+
+    public RaceResultDtoAssembler(RunnerDtoAssembler runnerDtoAssembler) {
+        this.runnerDtoAssembler = runnerDtoAssembler;
+    }
+
     public RaceResultSummaryDto toModel(RaceResult raceResult) {
         return new RaceResultSummaryDto(
             raceResult.getId(),
             raceResult.getGenderPlace(),
             raceResult.getOverallPlace(),
             raceResult.getTime(),
-            new RunnerSummaryDto(
-                raceResult.getRunner().getId(),
-                raceResult.getRunner().getName(),
-                raceResult.getRunner().getGender()
-            )
+            runnerDtoAssembler.toSummaryDto(raceResult.getRunner())
         );
     }
     
@@ -38,11 +40,7 @@ public class RaceResultDtoAssembler {
                 raceResult.getRace().getDate(),
                 raceResult.getRace().getIsPlayoff()
             ),
-            new RunnerSummaryDto(
-                raceResult.getRunner().getId(),
-                raceResult.getRunner().getName(),
-                raceResult.getRunner().getGender()
-            )
+            runnerDtoAssembler.toSummaryDto(raceResult.getRunner())
         );
     }
 }

@@ -216,12 +216,4 @@ public class TeamController  {
         teamService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
-    private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
-        return new RunnerSummaryDto(
-            runner.getId(),
-            runner.getName(),
-            runner.getGender()
-        );
-    }
 }

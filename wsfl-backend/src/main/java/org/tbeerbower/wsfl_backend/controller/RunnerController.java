@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.RunnerDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.RunnerCreateDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerPatchDto;
@@ -32,9 +33,11 @@ import java.util.stream.Collectors;
 public class RunnerController  {
     
     private final RunnerService runnerService;
+    private final RunnerDtoAssembler runnerDtoAssembler;
     
-    public RunnerController(RunnerService runnerService) {
+    public RunnerController(RunnerService runnerService, RunnerDtoAssembler runnerDtoAssembler) {
         this.runnerService = runnerService;
+        this.runnerDtoAssembler = runnerDtoAssembler;
     }
     
     @Operation(
@@ -57,7 +60,7 @@ public class RunnerController  {
                 runnerService.findAll(pageable) : runnerService.findByGender(gender, pageable);
 
         Page<RunnerSummaryDto> runnerDtos = runners.map(runner -> {
-            RunnerSummaryDto dto = convertToRunnerSummaryDto(runner);
+            RunnerSummaryDto dto = runnerDtoAssembler.toSummaryDto(runner);
             return dto;
         });
         return ResponseEntity.ok(runnerDtos);
@@ -83,7 +86,7 @@ public class RunnerController  {
         Runner runner = runnerService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Runner", "id", id));
         
-        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(runner);
+        RunnerSummaryDto runnerDto = runnerDtoAssembler.toSummaryDto(runner);
         return ResponseEntity.ok(runnerDto);
     }
     
@@ -108,7 +111,7 @@ public class RunnerController  {
             @Valid @RequestBody RunnerCreateDto createDto) {
         Runner runner = convertToRunner(createDto);
         Runner savedRunner = runnerService.save(runner);
-        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(savedRunner);
+        RunnerSummaryDto runnerDto = runnerDtoAssembler.toSummaryDto(savedRunner);
         return ResponseEntity.status(201).body(runnerDto);
     }
     
@@ -143,7 +146,7 @@ public class RunnerController  {
         Runner runner = convertToRunner(updateDto);
         runner.setId(id);
         Runner updatedRunner = runnerService.save(runner);
-        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(updatedRunner);
+        RunnerSummaryDto runnerDto = runnerDtoAssembler.toSummaryDto(updatedRunner);
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -178,7 +181,7 @@ public class RunnerController  {
         
         updateRunnerFromPatch(existingRunner, patchDto);
         Runner updatedRunner = runnerService.save(existingRunner);
-        RunnerSummaryDto runnerDto = convertToRunnerSummaryDto(updatedRunner);
+        RunnerSummaryDto runnerDto = runnerDtoAssembler.toSummaryDto(updatedRunner);
         
         return ResponseEntity.ok(runnerDto);
     }
@@ -210,14 +213,7 @@ public class RunnerController  {
     }
     
     // Helper methods for DTO conversion
-    private RunnerSummaryDto convertToRunnerSummaryDto(Runner runner) {
-        return new RunnerSummaryDto(
-            runner.getId(),
-            runner.getName(),
-            runner.getGender()
-        );
-    }
-    
+
     private Runner convertToRunner(RunnerCreateDto dto) {
         Runner runner = new Runner();
         runner.setName(dto.getName());

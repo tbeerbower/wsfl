@@ -8,6 +8,7 @@ import org.tbeerbower.wsfl_backend.model.Runner;
 import org.tbeerbower.wsfl_backend.repository.RunnerRepository;
 import org.tbeerbower.wsfl_backend.service.RunnerService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,17 @@ public class RunnerServiceImpl implements RunnerService {
     public Page<Runner> findAll(Pageable pageable) {
         return runnerRepository.findAll(pageable);
     }
-    
+
+    @Override
+    public Page<Runner> findAllIn(Collection<Long> ids, Pageable pageable) {
+        return runnerRepository.findByIdIn(ids, pageable);
+    }
+
+    @Override
+    public Page<Runner> findAllNotIn(Collection<Long> ids, Pageable pageable) {
+        return runnerRepository.findByIdNotIn(ids, pageable);
+    }
+
     @Override
     public Optional<Runner> findById(Long id) {
         return runnerRepository.findById(id);

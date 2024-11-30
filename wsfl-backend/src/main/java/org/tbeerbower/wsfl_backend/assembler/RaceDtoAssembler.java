@@ -14,6 +14,12 @@ import java.util.stream.Collectors;
 @Component
 public class RaceDtoAssembler {
 
+    private final RunnerDtoAssembler runnerDtoAssembler;
+
+    public RaceDtoAssembler(RunnerDtoAssembler runnerDtoAssembler) {
+        this.runnerDtoAssembler = runnerDtoAssembler;
+    }
+
     public RaceSummaryDto toModel(Race race) {
         return new RaceSummaryDto(
             race.getId(),
@@ -42,11 +48,7 @@ public class RaceDtoAssembler {
     }
 
     private RaceResultSummaryDto toRaceResultDto(RaceResult result) {
-        RunnerSummaryDto runnerDto = new RunnerSummaryDto(
-            result.getRunner().getId(),
-            result.getRunner().getName(),
-            result.getRunner().getGender()
-        );
+        RunnerSummaryDto runnerDto = runnerDtoAssembler.toSummaryDto(result.getRunner());
 
         return new RaceResultSummaryDto(
             result.getId(),

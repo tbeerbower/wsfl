@@ -14,6 +14,9 @@ public class Runner {
     private String name;
     private String gender;
 
+    @OneToMany(mappedBy = "runner")
+    private Set<RaceResult> results = new HashSet<>();
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -38,4 +41,30 @@ public class Runner {
     public void setGender(String gender) {
         this.gender = gender;
     }
-} 
+
+    public Set<RaceResult> getResults() {
+        return results;
+    }
+
+    public void setResults(Set<RaceResult> results) {
+        this.results = results;
+    }
+
+    public Double getAverageOverallPlace() {
+        return results.stream()
+                .mapToInt(RaceResult::getOverallPlace)
+                .average()
+                .orElse(0.0);
+    }
+
+    public Double getAverageGenderPlace() {
+        return results.stream()
+                .mapToInt(RaceResult::getGenderPlace)
+                .average()
+                .orElse(0.0);
+    }
+
+    public Integer getNumberOfRaces() {
+        return results.size();
+    }
+}
