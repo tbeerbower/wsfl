@@ -45,6 +45,72 @@ INSERT INTO runners (id, name, gender) VALUES
 (9, 'Chris Taylor', 'M'),
 (10, 'Amanda White', 'F');
 
+-- Insert 90 Additional Runners with Explicit IDs
+INSERT INTO runners (id, name, gender) VALUES
+-- Male Runners (IDs 11-40)
+(11, 'Alex Rodriguez', 'M'),
+(12, 'Brian Thompson', 'M'),
+(13, 'Carlos Martinez', 'M'),
+(14, 'Daniel Kim', 'M'),
+(15, 'Eric Johnson', 'M'),
+(16, 'Frank Williams', 'M'),
+(17, 'George Lee', 'M'),
+(18, 'Henry Chen', 'M'),
+(19, 'Ian Murphy', 'M'),
+(20, 'Jack Robinson', 'M'),
+(21, 'Kevin Brown', 'M'),
+(22, 'Liam Davis', 'M'),
+(23, 'Michael Garcia', 'M'),
+(24, 'Nathan Wright', 'M'),
+(25, 'Oscar Smith', 'M'),
+(26, 'Patrick Taylor', 'M'),
+(27, 'Quentin Harris', 'M'),
+(28, 'Ryan Martinez', 'M'),
+(29, 'Samuel Anderson', 'M'),
+(30, 'Tyler Jones', 'M'),
+(31, 'Victor Perez', 'M'),
+(32, 'William Clark', 'M'),
+(33, 'Xavier Rodriguez', 'M'),
+(34, 'Yannick Lee', 'M'),
+(35, 'Zachary Phillips', 'M'),
+(36, 'Ethan Carter', 'M'),
+(37, 'Gabriel Scott', 'M'),
+(38, 'Harrison Moore', 'M'),
+(39, 'Isaac Turner', 'M'),
+(40, 'Jason Mitchell', 'M'),
+-- Female Runners (IDs 41-70)
+(41, 'Olivia Parker', 'F'),
+(42, 'Sophia Chen', 'F'),
+(43, 'Isabella Martinez', 'F'),
+(44, 'Emma Rodriguez', 'F'),
+(45, 'Ava Johnson', 'F'),
+(46, 'Mia Williams', 'F'),
+(47, 'Charlotte Davis', 'F'),
+(48, 'Abigail Lee', 'F'),
+(49, 'Harper Thompson', 'F'),
+(50, 'Emily Garcia', 'F'),
+(51, 'Elizabeth Brown', 'F'),
+(52, 'Sofia Anderson', 'F'),
+(53, 'Madison Wilson', 'F'),
+(54, 'Avery Taylor', 'F'),
+(55, 'Ella Harris', 'F'),
+(56, 'Scarlett Martin', 'F'),
+(57, 'Grace Miller', 'F'),
+(58, 'Chloe Jones', 'F'),
+(59, 'Victoria Clark', 'F'),
+(60, 'Riley Scott', 'F'),
+(61, 'Lily Robinson', 'F'),
+(62, 'Zoe Phillips', 'F'),
+(63, 'Aubrey Nelson', 'F'),
+(64, 'Hannah Wright', 'F'),
+(65, 'Layla Murphy', 'F'),
+(66, 'Samantha Turner', 'F'),
+(67, 'Anna Mitchell', 'F'),
+(68, 'Natalie White', 'F'),
+(69, 'Lauren Kim', 'F'),
+(70, 'Julia Carter', 'F');
+
+
 -- Insert Races
 INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
 (1, 'Spring Sprint', '2024-03-15', false, 1),
@@ -52,6 +118,15 @@ INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
 (3, 'Fall Dash', '2024-04-15', false, 1),
 (4, 'Championship Run', '2024-05-01', true, 1),
 (5, 'Winter Opener', '2024-11-01', false, 2);
+
+-- Insert 5 Additional Races with Explicit IDs
+INSERT INTO races (id, name, date, is_playoff, league_id) VALUES
+(6, 'Twilight Trail', '2024-04-22', false, 1),
+(7, 'Mountain Marathon', '2024-05-10', false, 1),
+(8, 'Frosty Frontier', '2024-11-15', false, 2),
+(9, 'Arctic Challenge', '2024-12-01', false, 2),
+(10, 'Global Championship', '2024-12-15', true, 2);
+
 
 -- Insert Race Results
 INSERT INTO race_results (id, gender_place, overall_place, time, race_id, runner_id) VALUES
@@ -64,6 +139,48 @@ INSERT INTO race_results (id, gender_place, overall_place, time, race_id, runner
 (7, 2, 3, '22:32', 2, 7), -- David Miller results
 (8, 2, 4, '24:02', 2, 8); -- Rachel Green results
 
+-- Insert Race Results for New Runners
+-- We'll insert results for 2-3 races per runner to simulate participation
+WITH race_choices AS (
+    SELECT id FROM races WHERE id > 4
+)
+INSERT INTO race_results (id, gender_place, overall_place, time, race_id, runner_id)
+SELECT
+    -- Generate sequential IDs for race_results
+    (ROW_NUMBER() OVER () + (SELECT COALESCE(MAX(id), 0) FROM race_results)) AS id,
+    CASE
+        WHEN r.gender = 'M' THEN (ROW_NUMBER() OVER (PARTITION BY r.gender, ra.id ORDER BY result_time))
+        ELSE (ROW_NUMBER() OVER (PARTITION BY r.gender, ra.id ORDER BY result_time))
+    END as gender_place,
+    (ROW_NUMBER() OVER (PARTITION BY ra.id ORDER BY result_time)) as overall_place,
+    result_time,
+    ra.id as race_id,
+    r.id as runner_id
+FROM (
+    -- Generate multiple results for each runner
+    SELECT
+        runners.id AS runner_id,
+        gender,
+        race_choices.id AS race_id,
+        (
+            CASE
+                WHEN gender = 'M' THEN
+                    (INTERVAL '20 minutes' + (random() * INTERVAL '10 minutes'))::time
+                ELSE
+                    (INTERVAL '22 minutes' + (random() * INTERVAL '10 minutes'))::time
+            END
+        )::varchar as result_time,
+        DENSE_RANK() OVER (PARTITION BY runners.id ORDER BY RANDOM()) as participation_rank
+    FROM
+        runners,
+        race_choices
+    WHERE
+        runners.id > 10 -- Skip the original 10 runners
+) results
+JOIN runners r ON r.id = results.runner_id
+JOIN races ra ON ra.id = results.race_id
+WHERE
+    results.participation_rank <= 3; -- Each runner participates in 2-3 races
 
 -- Insert Drafts
 INSERT INTO drafts (id, league_id, name, season, number_of_rounds, snake_order, start_time, is_started, is_complete, current_round, current_pick) VALUES
@@ -136,4 +253,5 @@ SELECT setval('races_id_seq', (SELECT MAX(id) FROM races));
 SELECT setval('race_results_id_seq', (SELECT MAX(id) FROM race_results));
 SELECT setval('matchups_id_seq', (SELECT MAX(id) FROM matchups));
 SELECT setval('drafts_id_seq', (SELECT MAX(id) FROM drafts));
-SELECT setval('draft_picks_id_seq', (SELECT MAX(id) FROM draft_picks)); 
+SELECT setval('draft_picks_id_seq', (SELECT MAX(id) FROM draft_picks));
+
