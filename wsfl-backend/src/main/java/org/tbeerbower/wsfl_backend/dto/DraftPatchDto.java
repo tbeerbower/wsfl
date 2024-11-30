@@ -30,13 +30,13 @@ public class DraftPatchDto {
     // Constructor
     public DraftPatchDto(String name, Integer numberOfRounds,
                          Boolean snakeOrder, LocalDateTime startTime,
-                         Boolean isStarted, Boolean isComplete) {
+                         Boolean started, Boolean complete) {
         this.name = name;
         this.numberOfRounds = numberOfRounds;
         this.snakeOrder = snakeOrder;
         this.startTime = startTime;
-        this.isStarted = isStarted;
-        this.isComplete = isComplete;
+        this.isStarted = started;
+        this.isComplete = complete;
     }
 
     // Getters

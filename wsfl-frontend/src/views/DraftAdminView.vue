@@ -5,9 +5,19 @@
     <div v-else-if="draft" class="draft-content">
       <header class="draft-header">
         <h1>{{ draft.name }}</h1>
-        <span :class="['draft-status', getDraftStatusClass(draft)]">
-          {{ getDraftStatus(draft) }}
-        </span>
+        <div class="draft-actions">
+          <button 
+            v-if="!draft.started && !draft.complete"
+            @click="startDraft"
+            class="start-button"
+            :disabled="loading.startDraft"
+          >
+            {{ loading.startDraft ? 'Starting...' : 'Start Draft' }}
+          </button>
+          <div class="draft-status" :class="getDraftStatusClass(draft)">
+            {{ getDraftStatus(draft) }}
+          </div>
+        </div>
       </header>
 
       <section class="draft-details">
@@ -155,12 +165,14 @@ export default defineComponent({
       draft: false,
       picks: false,
       morePicks: false,
-      teams: false
+      teams: false,
+      startDraft: false
     })
     const error = ref({
       draft: null,
       picks: null,
-      teams: null
+      teams: null,
+      startDraft: null
     })
 
     const hasMorePicks = computed(() => currentPage.value < totalPages.value - 1)
@@ -311,6 +323,22 @@ export default defineComponent({
       }
     }
 
+    const startDraft = async () => {
+      loading.value.startDraft = true
+      error.value.startDraft = null
+      try {
+        await axios.patch(`/api/drafts/${route.params.id}`, {
+          started: true
+        })
+        await fetchDraft()
+      } catch (err) {
+        error.value.startDraft = 'Failed to start draft'
+        console.error('Error starting draft:', err)
+      } finally {
+        loading.value.startDraft = false
+      }
+    }
+
     onMounted(() => {
       if (!route.params.id) {
         router.push('/dashboard')
@@ -346,7 +374,8 @@ export default defineComponent({
       getTeamName,
       groupedPicks,
       currentTeamOnClock,
-      elapsedTimeDisplay
+      elapsedTimeDisplay,
+      startDraft
     }
   }
 })
@@ -361,15 +390,35 @@ export default defineComponent({
 
 .draft-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 2rem;
 }
 
-.draft-header h1 {
-  margin: 0;
-  font-size: 1.875rem;
-  color: #1e293b;
+.draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.start-button {
+  background-color: #16a34a;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.start-button:hover {
+  background-color: #15803d;
+}
+
+.start-button:disabled {
+  background-color: #86efac;
+  cursor: not-allowed;
 }
 
 .draft-status {
