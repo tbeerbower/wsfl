@@ -38,12 +38,12 @@ public class RunnerServiceImpl implements RunnerService {
     }
 
     @Override
-    public Page<Runner> findAllIn(Collection<Long> ids, Pageable pageable) {
+    public Page<Runner> findAllIdIn(Collection<Long> ids, Pageable pageable) {
         return runnerRepository.findByIdIn(ids, pageable);
     }
 
     @Override
-    public Page<Runner> findAllNotIn(Collection<Long> ids, Pageable pageable) {
+    public Page<Runner> findAllIdNotIn(Collection<Long> ids, Pageable pageable) {
         return runnerRepository.findByIdNotIn(ids, pageable);
     }
 

@@ -264,9 +264,11 @@ public class DraftController  {
                 .map(Runner::getId)
                 .collect(Collectors.toSet());
 
+        draftedRunnerIds.add(-1L); // Add a dummy ID to prevent empty set
+
         Page<Runner> runners = status.equalsIgnoreCase("available") ?
-                runnerService.findAllNotIn(draftedRunnerIds, pageable) :
-                runnerService.findAllIn(draftedRunnerIds, pageable);
+                runnerService.findAllIdNotIn(draftedRunnerIds, pageable) :
+                runnerService.findAllIdIn(draftedRunnerIds, pageable);
 
         return ResponseEntity.ok(runners.map(runnerDtoAssembler::toSummaryDto));
     }

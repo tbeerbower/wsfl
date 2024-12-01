@@ -1,8 +1,18 @@
 import axios from 'axios'
 
+const getUserFromStorage = () => {
+  try {
+    const userData = localStorage.getItem('user')
+    return userData ? JSON.parse(userData) : null
+  } catch (error) {
+    console.error('Error parsing user data:', error)
+    return null
+  }
+}
+
 const state = {
   token: localStorage.getItem('token') || null,
-  user: JSON.parse(localStorage.getItem('user')) || null
+  user: getUserFromStorage()
 }
 
 const getters = {
@@ -24,17 +34,9 @@ const actions = {
     return true
   },
 
-  async register({ commit }, userData) {
+  async register(_, userData) {
     const response = await axios.post('/api/auth/register', userData)
-    const { token, user } = response.data
-    
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(user))
-    
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    
-    commit('SET_AUTH', { token, user })
-    return true
+    return response.data
   },
 
   logout({ commit }) {

@@ -12,8 +12,8 @@ public interface RunnerService {
     Runner save(Runner runner);
     List<Runner> findAll();
     Page<Runner> findAll(Pageable pageable);
-    Page<Runner> findAllIn(Collection<Long> ids, Pageable pageable);
-    Page<Runner> findAllNotIn(Collection<Long> ids, Pageable pageable);
+    Page<Runner> findAllIdIn(Collection<Long> ids, Pageable pageable);
+    Page<Runner> findAllIdNotIn(Collection<Long> ids, Pageable pageable);
     Optional<Runner> findById(Long id);
     List<Runner> findByGender(String gender);
     Page<Runner> findByGender(String gender, Pageable pageable);

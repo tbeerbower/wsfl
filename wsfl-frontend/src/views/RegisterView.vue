@@ -115,7 +115,7 @@ export default {
           password: password.value
         })
         
-        router.push('/dashboard')
+        router.push('/login')
       } catch (err) {
         error.value = err.response?.data?.message || 'Registration failed. Please try again.'
       } finally {
