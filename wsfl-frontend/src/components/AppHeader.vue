@@ -6,6 +6,7 @@
       </div>
       <nav class="main-nav">
         <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+        <router-link to="/drafts" class="nav-link">Drafts</router-link>
       </nav>
       <div class="header-right">
         <div v-if="isAuthenticated" class="user-section">

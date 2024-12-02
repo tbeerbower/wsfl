@@ -1,5 +1,5 @@
 -- Clear existing data
-TRUNCATE TABLE users, leagues, teams, runners, races, race_results, matchups, team_runners, user_roles, drafts, draft_order, draft_picks CASCADE;
+TRUNCATE TABLE users, leagues, teams, runners, races, race_results, matchups, seasons, user_roles, drafts, draft_order, draft_picks CASCADE;
 
 -- Insert Users with hashed passwords (password is 'password')
 INSERT INTO users (id, email, name, picture, active, password) VALUES

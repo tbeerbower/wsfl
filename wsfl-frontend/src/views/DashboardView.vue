@@ -6,57 +6,28 @@
 
     <div class="dashboard-content">
       <div class="dashboard-section">
-        <h2>My Drafts</h2>
+        <div class="section-header">
+          <h2>In Progress Drafts</h2>
+          <router-link to="/drafts" class="view-all-button">
+            View All Drafts
+          </router-link>
+        </div>
         <div v-if="loading.drafts">Loading drafts...</div>
         <div v-else-if="error.drafts" class="error-message">{{ error.drafts }}</div>
-        <div v-else-if="myDrafts.length === 0" class="empty-state">
-          No drafts found
+        <div v-else-if="inProgressDrafts.length === 0" class="empty-state">
+          No drafts in progress
         </div>
-        <div class="drafts-grid">
-          <router-link
-            v-for="draft in myDrafts"
+        <div v-else class="drafts-grid">
+          <DraftCard
+            v-for="draft in inProgressDrafts"
             :key="draft.id"
-            :to="isMyTeamOnClock(draft) ? `/drafts/${draft.id}/pick` : `/drafts/${draft.id}`"
-            class="draft-card"
-            :class="{
-              'my-team-turn': isMyTeamOnClock(draft),
-              'draft-complete': getDraftStatus(draft) === 'COMPLETE',
-              'draft-pending': getDraftStatus(draft) === 'PENDING'
-            }"
-          >
-            <div class="draft-info">
-              <h3>{{ draft.name }}</h3>
-              <div class="draft-league">{{ draft.league.name }}</div>
-              <div class="draft-season">{{ draft.season?.name || 'Unknown Season' }}</div>
-              <div class="draft-status-badge" :class="getDraftStatus(draft).toLowerCase()">
-                {{ getDraftStatus(draft) }}
-              </div>
-            </div>
-            <div class="draft-status">
-              <div class="status-item">
-                <span class="label">Round</span>
-                <span class="value">{{ draft.currentRound || '-' }}</span>
-              </div>
-              <div class="status-item">
-                <span class="label">Pick</span>
-                <span class="value">{{ draft.currentPick || '-' }}</span>
-              </div>
-              <div class="status-item">
-                <span class="label">Time</span>
-                <span class="value">{{ getDraftStatus(draft) === 'COMPLETE' ? 'Complete' : getElapsedTime(draft) }}</span>
-              </div>
-            </div>
-            <div v-if="getDraftStatus(draft) === 'IN_PROGRESS'" class="on-clock-status" :class="{ 'my-team': isMyTeamOnClock(draft) }">
-              <span class="on-clock-label">On The Clock</span>
-              <span class="on-clock-team">
-                {{ draftTeams[getCurrentPickTeam(draft)]?.name || 'Loading...' }}
-                <span v-if="isMyTeamOnClock(draft)" class="my-team-badge">Your Turn!</span>
-              </span>
-            </div>
-            <div v-if="isMyTeamOnClock(draft) && getDraftStatus(draft) === 'IN_PROGRESS'" class="make-pick-prompt">
-              Click to Make Your Pick
-            </div>
-          </router-link>
+            :draft="{ ...draft, teams: draftTeams[draft.id] }"
+            :is-my-team-on-clock="isMyTeamOnClock(draft)"
+            @mounted="() => console.log(`DraftCard mounted for draft ${draft.id}`, {
+              teams: draftTeams[draft.id],
+              draft: draft
+            })"
+          />
         </div>
       </div>
 
@@ -70,27 +41,20 @@
         <div v-if="loading.adminLeagues">Loading leagues...</div>
         <div v-else-if="error.adminLeagues" class="error-message">{{ error.adminLeagues }}</div>
         <div class="leagues-grid">
-          <div v-for="league in adminLeagues" :key="league.id" class="league-card" @click="$router.push(`/leagues/${league.id}`)">
-            <div class="league-header">
-              <h3>{{ league.name }}</h3>
-            </div>
+          <router-link
+            v-for="league in adminLeagues"
+            :key="league.id"
+            :to="`/leagues/${league.id}`"
+            class="league-card"
+          >
+            <h3>{{ league.name }}</h3>
             <div class="league-stats">
               <div class="stat-item">
                 <span class="stat-label">Teams</span>
-                <span class="stat-value">{{ league.teams.length }}</span>
+                <span class="stat-value">{{ league.teams?.length || 0 }}</span>
               </div>
             </div>
-            <div class="teams-list">
-              <h4>Teams</h4>
-              <div class="team-standings">
-                <div v-for="team in sortedTeams(league.teams)" :key="team.id" class="team-row">
-                  <span class="team-name">{{ team.name }}</span>
-                  <span class="team-record">{{ team.wins }}-{{ team.losses }}-{{ team.ties }}</span>
-                  <span class="team-score">{{ team.totalScore }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          </router-link>
         </div>
       </div>
 
@@ -129,121 +93,101 @@
           </div>
         </div>
       </div>
-
-      <div class="dashboard-section">
-        <h2>Current Matchups</h2>
-        <div v-if="loading.matchups">Loading matchups...</div>
-        <div v-else-if="error.matchups" class="error-message">{{ error.matchups }}</div>
-        <div v-else-if="matchups.length === 0" class="empty-state">
-          No current matchups.
-        </div>
-        <div v-else class="matchups-list">
-          <div v-for="matchup in matchups" :key="matchup.id" class="matchup-card">
-            <div class="matchup-header">
-              <span class="race-label">Race #{{ matchup.raceId }}</span>
-            </div>
-            <div class="matchup-teams">
-              <div class="team-column" :class="{ 'winner': matchup.team1Score < matchup.team2Score }">
-                <h4>{{ matchup.team1?.name }}</h4>
-                <div class="team-record">
-                  {{ matchup.team1?.wins || 0 }}W - {{ matchup.team1?.losses || 0 }}L - {{ matchup.team1?.ties || 0 }}T
-                </div>
-                <div class="team-score" v-if="matchup.team1Score !== null">
-                  Score: {{ matchup.team1Score }}
-                </div>
-              </div>
-              <div class="vs-badge">VS</div>
-              <div class="team-column" :class="{ 'winner': matchup.team2Score < matchup.team1Score }">
-                <h4>{{ matchup.team2?.name }}</h4>
-                <div class="team-record">
-                  {{ matchup.team2?.wins || 0 }}W - {{ matchup.team2?.losses || 0 }}L - {{ matchup.team2?.ties || 0 }}T
-                </div>
-                <div class="team-score" v-if="matchup.team2Score !== null">
-                  Score: {{ matchup.team2Score }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-section">
-        <h2>League Standings</h2>
-        <div v-if="loading.standings">Loading standings...</div>
-        <div v-else-if="error.standings" class="error-message">{{ error.standings }}</div>
-        <div v-else-if="Object.keys(leagueStandings).length === 0" class="empty-state">
-          No standings available.
-        </div>
-        <div v-else class="leagues-container">
-          <div v-for="(league, leagueId) in leagueStandings" :key="leagueId" class="league-section">
-            <h3>{{ league.name }}</h3>
-            <div class="standings-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th class="text-left">Team</th>
-                    <th class="text-center">W</th>
-                    <th class="text-center">L</th>
-                    <th class="text-center">T</th>
-                    <th class="text-center">PCT</th>
-                    <th class="text-right">Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="team in league.teams" :key="team.id" :class="{ 'user-team': isUserTeam(team.id) }">
-                    <td class="text-left">{{ team.name }}</td>
-                    <td class="text-center">{{ team.wins }}</td>
-                    <td class="text-center">{{ team.losses }}</td>
-                    <td class="text-center">{{ team.ties }}</td>
-                    <td class="text-center">{{ calculateWinPercentage(team) }}</td>
-                    <td class="text-right">{{ team.totalScore }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, defineComponent } from 'vue'
+import { ref, onMounted, defineComponent, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import axios from 'axios'
+import DraftCard from '@/components/DraftCard.vue'
 
 export default defineComponent({
   name: 'DashboardView',
+  components: {
+    DraftCard
+  },
   setup() {
     const store = useStore()
     const user = store.getters['auth/currentUser']
 
     const teams = ref([])
-    const matchups = ref([])
     const adminLeagues = ref([])
-    const leagueStandings = ref({})
     const myDrafts = ref([])
-    const draftTeams = ref({}) // Cache for teams from drafts
+    const draftTeams = ref({})
     
     const loading = ref({
       teams: false,
-      matchups: false,
-      standings: false,
       adminLeagues: false,
       drafts: false
     })
     
     const error = ref({
       teams: null,
-      matchups: null,
-      standings: null,
       adminLeagues: null,
       drafts: null
     })
 
-    const isUserTeam = (teamId) => {
-      return teams.value.some(team => team.id === teamId)
+    const getDraftStatus = (draft) => {
+      if (draft.complete) return 'COMPLETE'
+      if (draft.started) return 'IN_PROGRESS'
+      return 'PENDING'
+    }
+
+    const debugDraftTeams = computed(() => {
+      console.log('Current draftTeams state:', JSON.stringify(draftTeams.value, null, 2))
+      return draftTeams.value
+    })
+
+    const getCurrentPickTeam = (draft) => {
+      if (!draft?.draftOrder || !draft?.currentPick) return null
+      
+      const pickNumber = draft.currentPick
+      const draftOrder = draft.draftOrder
+      const roundNumber = draft.currentRound
+      
+      const isReverseOrder = draft.snakeOrder && roundNumber % 2 === 0
+      const orderIndex = isReverseOrder
+        ? draftOrder.length - ((pickNumber - 1) % draftOrder.length) - 1
+        : (pickNumber - 1) % draftOrder.length
+      
+      return draftOrder[orderIndex]
+    }
+
+    const inProgressDrafts = computed(() => {
+      console.log('Computing inProgressDrafts')
+      console.log('All drafts:', JSON.stringify(myDrafts.value, null, 2))
+      const filtered = myDrafts.value.filter(draft => {
+        const status = getDraftStatus(draft)
+        console.log(`Draft ${draft.id} status:`, status)
+        return status === 'IN_PROGRESS'
+      }).map(draft => ({
+        ...draft,
+        currentTeamId: getCurrentPickTeam(draft)
+      }))
+      console.log('Filtered in-progress drafts:', JSON.stringify(filtered, null, 2))
+      return filtered
+    })
+
+    watch(draftTeams, (newVal) => {
+      console.log('draftTeams changed:', JSON.stringify(newVal, null, 2))
+    }, { deep: true })
+
+    const isMyTeamOnClock = (draft) => {
+      if (!draft || !draft.currentTeamId) return false
+      
+      // Check if the current team belongs to the user
+      console.log('Checking team on clock:', {
+        draftId: draft.id,
+        currentTeamId: draft.currentTeamId,
+        draftTeams: draftTeams.value[draft.id],
+        userId: user.id
+      })
+      
+      const currentTeam = draftTeams.value[draft.id]?.find(team => team.id === draft.currentTeamId)
+      console.log('Found current team:', currentTeam)
+      return currentTeam?.owner?.id === user.id
     }
 
     const calculateWinPercentage = (team) => {
@@ -262,26 +206,6 @@ export default defineComponent({
         // Use total score as tiebreaker
         return b.totalScore - a.totalScore
       })
-    }
-
-    const getCurrentPickTeam = (draft) => {
-      if (!draft?.draftOrder || !draft?.currentPick) return null
-      
-      const pickNumber = draft.currentPick
-      const draftOrder = draft.draftOrder
-      const roundNumber = draft.currentRound
-      
-      const isReverseOrder = draft.snakeOrder && roundNumber % 2 === 0
-      const orderIndex = isReverseOrder
-        ? draftOrder.length - ((pickNumber - 1) % draftOrder.length) - 1
-        : (pickNumber - 1) % draftOrder.length
-      
-      return draftOrder[orderIndex]
-    }
-
-    const isMyTeamOnClock = (draft) => {
-      const currentTeamId = getCurrentPickTeam(draft)
-      return teams.value.some(team => team.id === currentTeamId)
     }
 
     const getTeamName = async (teamId) => {
@@ -342,12 +266,6 @@ export default defineComponent({
       return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'} ${timeStr}` : timeStr
     }
 
-    const getDraftStatus = (draft) => {
-      if (draft.complete) return 'COMPLETE'
-      if (draft.started) return 'IN_PROGRESS'
-      return 'PENDING'
-    }
-
     const fetchTeams = async () => {
       if (!user) return
       
@@ -361,65 +279,6 @@ export default defineComponent({
         console.error(err)
       } finally {
         loading.value.teams = false
-      }
-    }
-
-    const fetchMatchups = async () => {
-      if (!user) return
-      
-      loading.value.matchups = true
-      error.value.matchups = null
-      try {
-        const response = await axios.get('/api/matchups', {
-          params: { userId: user.id }
-        })
-        matchups.value = response.data.content || []
-      } catch (err) {
-        error.value.matchups = 'Failed to load matchups'
-        console.error(err)
-      } finally {
-        loading.value.matchups = false
-      }
-    }
-
-    const fetchStandings = async () => {
-      if (!user) return
-      
-      loading.value.standings = true
-      error.value.standings = null
-      try {
-        // Get user's teams to find league IDs
-        const userTeamsResponse = await axios.get(`/api/users/${user.id}/teams`)
-        const userTeams = userTeamsResponse.data.content || []
-        
-        // Get unique leagues with their names
-        const leagues = userTeams.reduce((acc, team) => {
-          if (team.league && !acc[team.league.id]) {
-            acc[team.league.id] = {
-              id: team.league.id,
-              name: team.league.name,
-              teams: []
-            }
-          }
-          return acc
-        }, {})
-
-        // Fetch standings for each league
-        await Promise.all(
-          Object.values(leagues).map(async (league) => {
-            const response = await axios.get(`/api/leagues/${league.id}/teams`, {
-              params: { standings: true }
-            })
-            league.teams = response.data.content || []
-          })
-        )
-
-        leagueStandings.value = leagues
-      } catch (err) {
-        error.value.standings = 'Failed to load standings'
-        console.error(err)
-      } finally {
-        loading.value.standings = false
       }
     }
 
@@ -460,38 +319,62 @@ export default defineComponent({
     }
 
     const fetchDrafts = async () => {
-      if (!user || !teams.value.length) return
+      console.log('Starting fetchDrafts')
+      if (!user || !teams.value.length) {
+        console.log('Skipping fetchDrafts - no user or teams:', { user, teamsLength: teams.value.length })
+        return
+      }
       
       loading.value.drafts = true
       error.value.drafts = null
       try {
+        console.log('Fetching drafts from API...')
         const response = await axios.get('/api/drafts')
+        console.log('Drafts API response:', JSON.stringify(response.data, null, 2))
+        
         const userTeamIds = teams.value.map(team => team.id)
+        console.log('User team IDs:', userTeamIds)
         
         // Filter drafts where user has a team OR is league admin
-        myDrafts.value = response.data.content.filter(draft => 
-          draft.draftOrder.some(teamId => userTeamIds.includes(teamId)) || 
-          adminLeagues.value.some(league => league.id === draft.league.id)
-        )
+        myDrafts.value = response.data.content.filter(draft => {
+          const hasTeam = draft.draftOrder.some(teamId => userTeamIds.includes(teamId))
+          const isAdmin = adminLeagues.value.some(league => league.id === draft.league.id)
+          console.log(`Draft ${draft.id} - hasTeam: ${hasTeam}, isAdmin: ${isAdmin}`)
+          return hasTeam || isAdmin
+        })
+        
+        console.log('Filtered myDrafts:', JSON.stringify(myDrafts.value, null, 2))
+        
+        // Initialize draftTeams for each draft
+        const newDraftTeams = {}
         
         // Cache team names for each draft
         for (const draft of myDrafts.value) {
+          console.log(`Processing draft ${draft.id}`)
           if (draft.draftOrder) {
+            const draftTeamsList = []
+            console.log(`Fetching teams for draft ${draft.id}:`, draft.draftOrder)
             for (const teamId of draft.draftOrder) {
-              if (!draftTeams.value[teamId]) {
-                try {
-                  const teamResponse = await axios.get(`/api/teams/${teamId}`)
-                  draftTeams.value[teamId] = teamResponse.data
-                } catch (err) {
-                  console.error(`Error fetching team ${teamId}:`, err)
-                }
+              try {
+                console.log(`Fetching team ${teamId}...`)
+                const teamResponse = await axios.get(`/api/teams/${teamId}`)
+                console.log(`Team ${teamId} data:`, JSON.stringify(teamResponse.data, null, 2))
+                draftTeamsList.push(teamResponse.data)
+              } catch (err) {
+                console.error(`Error fetching team ${teamId}:`, err)
               }
             }
+            console.log(`Setting teams for draft ${draft.id}:`, JSON.stringify(draftTeamsList, null, 2))
+            newDraftTeams[draft.id] = draftTeamsList
           }
         }
+        
+        console.log('Setting final draftTeams:', JSON.stringify(newDraftTeams, null, 2))
+        draftTeams.value = newDraftTeams
+        
       } catch (err) {
         error.value.drafts = 'Failed to load drafts'
-        console.error(err)
+        console.error('Error in fetchDrafts:', err)
       } finally {
         loading.value.drafts = false
       }
@@ -501,9 +384,7 @@ export default defineComponent({
       // First fetch teams and admin leagues
       await Promise.all([
         fetchTeams(),
-        fetchMatchups(),
-        fetchAdminLeagues(),
-        fetchStandings()
+        fetchAdminLeagues()
       ])
       // Then fetch drafts after we have both teams and admin leagues loaded
       await fetchDrafts()
@@ -512,22 +393,20 @@ export default defineComponent({
     return {
       user,
       teams,
-      matchups,
       adminLeagues,
-      leagueStandings,
       loading,
       error,
       myDrafts,
       draftTeams,
       sortedTeams,
       calculateWinPercentage,
-      isUserTeam,
-      getCurrentPickTeam,
       isMyTeamOnClock,
       getTeamName,
       getMyTeamOnClock,
       getElapsedTime,
-      getDraftStatus
+      getDraftStatus,
+      inProgressDrafts,
+      debugDraftTeams
     }
   }
 })
@@ -621,220 +500,18 @@ export default defineComponent({
   color: #2c3e50;
 }
 
-.matchup-card {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.matchup-header {
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.race-label {
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
-.matchup-teams {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.team-column {
-  flex: 1;
-  text-align: center;
-  padding: 15px;
-  border-radius: 6px;
-  background-color: #f8f9fa;
-  transition: background-color 0.2s;
-}
-
-.team-column.winner {
-  background-color: #e3f2fd;
-  border: 1px solid #90caf9;
-}
-
-.vs-badge {
-  font-weight: bold;
-  color: #666;
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-radius: 50%;
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-h4 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  color: #2196F3;
-}
-
-.team-record {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.team-score {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.matchups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.leagues-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.league-section {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-}
-
-.league-section h3 {
-  margin: 0 0 1rem 0;
-  color: #2c3e50;
-  font-size: 1.2rem;
-}
-
-.standings-table {
-  margin-top: 1rem;
-  overflow-x: auto;
-}
-
-.standings-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.standings-table th, .standings-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
-}
-
-.standings-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #666;
-  white-space: nowrap;
-}
-
-.standings-table .text-left {
-  text-align: left;
-}
-
-.standings-table .text-center {
-  text-align: center;
-}
-
-.standings-table .text-right {
-  text-align: right;
-}
-
-.standings-table tbody tr {
-  transition: background-color 0.2s;
-}
-
-.standings-table tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-.standings-table .user-team {
-  background-color: #e3f2fd;
-}
-
-.standings-table .user-team:hover {
-  background-color: #bbdefb;
-}
-
-.standings-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.error-message {
-  color: #f44336;
-  margin-top: 10px;
-}
-
-.empty-state {
-  color: #666;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-h2 {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-}
-
-h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #2196F3;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.add-team-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  background-color: #3182ce;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.add-team-button:hover {
-  background-color: #2c5282;
-}
-
 .leagues-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  margin-top: 1rem;
 }
 
 .league-card {
   background-color: white;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
@@ -1131,5 +808,73 @@ h3 {
   font-size: 0.875rem;
   color: #6B7280;
   margin-bottom: 0.5rem;
+}
+
+.add-team-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.add-team-button:hover {
+  background-color: #2c5282;
+}
+
+.error-message {
+  color: #f44336;
+  margin-top: 10px;
+}
+
+.empty-state {
+  color: #666;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+h2 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+}
+
+h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #2196F3;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.view-all-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #E5E7EB;
+  color: #374151;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.view-all-button:hover {
+  background-color: #D1D5DB;
 }
 </style>
