@@ -2,28 +2,32 @@ package org.tbeerbower.wsfl_backend.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+
 @Entity
 @Table(name = "matchups")
 public class Matchup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne
     @JoinColumn(name = "race_id")
     private Race race;
-    
+
     @ManyToOne
     @JoinColumn(name = "team1_id")
     private Team team1;
-    
+
     @ManyToOne
     @JoinColumn(name = "team2_id")
     private Team team2;
-    
+
     @Column(name = "team1score")
     private Integer team1Score;
-    
+
     @Column(name = "team2score")
     private Integer team2Score;
 
@@ -34,7 +38,7 @@ public class Matchup {
     // Default constructor
     public Matchup() {
     }
-    
+
     // Constructor for DTO conversion
     public Matchup(Long id, Race race, Team team1, Team team2, Integer team1Score, Integer team2Score, Draft draft) {
         this.id = id;
@@ -45,7 +49,7 @@ public class Matchup {
         this.team2Score = team2Score;
         this.draft = draft;
     }
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -80,7 +84,8 @@ public class Matchup {
     }
 
     public Integer getTeam1Score() {
-        return team1Score;
+      //  return team1Score;
+        return getTeamScore(team1);
     }
 
     public void setTeam1Score(Integer team1Score) {
@@ -88,7 +93,8 @@ public class Matchup {
     }
 
     public Integer getTeam2Score() {
-        return team2Score;
+        return getTeamScore(team2);
+     //   return team2Score;
     }
 
     public void setTeam2Score(Integer team2Score) {
@@ -101,5 +107,27 @@ public class Matchup {
 
     public void setDraft(Draft draft) {
         this.draft = draft;
+    }
+
+    public Boolean isComplete() {
+        return !race.getResults().isEmpty();
+    }
+
+
+
+    // TODO: move to service layer
+    private Integer getTeamScore(Team team) {
+        List<Long> teamRunnerIds = draft.getPicks().stream()
+                .filter(pick -> pick.getTeam().getId().equals(team.getId()))
+                .map(pick -> pick.getRunner().getId())
+                .toList();
+
+        Integer score = 0;
+        for (RaceResult result : race.getResults()) {
+            if (teamRunnerIds.contains(result.getRunner().getId())) {
+                score += result.getGenderPlace();
+            }
+        }
+        return score;
     }
 }

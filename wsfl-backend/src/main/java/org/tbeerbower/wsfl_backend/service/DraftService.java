@@ -13,6 +13,7 @@ import org.tbeerbower.wsfl_backend.model.Team;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface DraftService {
     List<Draft> findAll();
@@ -25,6 +26,7 @@ public interface DraftService {
     List<Draft> findByLeague(League league);
     Page<Draft> findByLeague(Long leagueId, Pageable pageable);
     Page<Draft> findByLeagueAndSeason(Long leagueId, Integer season, Pageable pageable);
+    public Page<Draft> findByTeams(Set<Team> teams, Pageable pageable);
     Draft create(DraftCreateDto createDto);
     Draft update(Long id, DraftUpdateDto updateDto);
     Draft patch(Long id, DraftPatchDto patchDto);

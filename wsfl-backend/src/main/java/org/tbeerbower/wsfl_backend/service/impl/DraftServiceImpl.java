@@ -86,6 +86,7 @@ public class DraftServiceImpl implements DraftService {
     public List<Draft> findByLeague(League league) {
         return draftRepository.findByLeague(league);
     }
+
     
     @Override
     public Page<Draft> findByLeague(Long leagueId, Pageable pageable) {
@@ -96,7 +97,12 @@ public class DraftServiceImpl implements DraftService {
     public Page<Draft> findByLeagueAndSeason(Long leagueId, Integer season, Pageable pageable) {
         return draftRepository.findByLeagueIdAndSeason(leagueId, season, pageable);
     }
-    
+
+    @Override
+    public Page<Draft> findByTeams(Set<Team> teams, Pageable pageable) {
+        return draftRepository.findByTeamsIn(teams, pageable);
+    }
+
     @Override
     @Transactional
     public Draft create(DraftCreateDto createDto) {

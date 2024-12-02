@@ -16,18 +16,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.LeagueDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.TeamDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.UserDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
+import org.tbeerbower.wsfl_backend.service.DraftService;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
+import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -39,19 +44,30 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class UserController  {
 
     private final UserService userService;
+    private final MatchupService matchupService;
+    private final DraftService draftService;
     private final TeamService teamService;
     private final LeagueService leagueService;
     private final PasswordEncoder passwordEncoder;
+
+    private final DraftDtoAssembler draftDtoAssembler;
+    private final MatchupDtoAssembler matchupDtoAssembler;
     private final TeamDtoAssembler teamDtoAssembler;
     private final LeagueDtoAssembler leagueDtoAssembler;
+    private final UserDtoAssembler userDtoAssembler;
 
-    public UserController(UserService userService, TeamService teamService, LeagueService leagueService, PasswordEncoder passwordEncoder, TeamDtoAssembler teamDtoAssembler, LeagueDtoAssembler leagueDtoAssembler) {
+    public UserController(UserService userService, MatchupService matchupService, DraftService draftService, TeamService teamService, LeagueService leagueService, PasswordEncoder passwordEncoder, DraftDtoAssembler draftDtoAssembler, MatchupDtoAssembler matchupDtoAssembler, TeamDtoAssembler teamDtoAssembler, LeagueDtoAssembler leagueDtoAssembler, UserDtoAssembler userDtoAssembler) {
         this.userService = userService;
+        this.matchupService = matchupService;
+        this.draftService = draftService;
         this.teamService = teamService;
         this.leagueService = leagueService;
         this.passwordEncoder = passwordEncoder;
+        this.draftDtoAssembler = draftDtoAssembler;
+        this.matchupDtoAssembler = matchupDtoAssembler;
         this.teamDtoAssembler = teamDtoAssembler;
         this.leagueDtoAssembler = leagueDtoAssembler;
+        this.userDtoAssembler = userDtoAssembler;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,7 +82,7 @@ public class UserController  {
     @GetMapping
     public ResponseEntity<Page<UserDetailsDto>> getAllUsers(Pageable pageable) {
         Page<User> users = userService.findAll(pageable);
-        Page<UserDetailsDto> userDtos = users.map(this::convertToUserDetailsDto);
+        Page<UserDetailsDto> userDtos = users.map(userDtoAssembler::toDetailedModel);
         
         return ResponseEntity.ok(userDtos);
     }
@@ -92,7 +108,7 @@ public class UserController  {
         User user = userService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        UserDetailsDto userDto = convertToUserDetailsDto(user);
+        UserDetailsDto userDto = userDtoAssembler.toDetailedModel(user);
 
         return ResponseEntity.ok(userDto);
     }
@@ -138,6 +154,49 @@ public class UserController  {
     }
 
     @Operation(
+            summary = "Get matchups for user teams",
+            description = "Retrieves all matchups for a specific user's teams"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved matchups"
+    )
+    @GetMapping("/{id}/matchups")
+    public ResponseEntity<Page<MatchupSummaryDto>> getUserMatchups(@PathVariable Long id,
+                                                                 @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        Set<Long> teamIds = user.getTeams().stream().map(Team::getId).collect(Collectors.toSet());
+
+        Page<MatchupSummaryDto> teams = matchupService.findByTeamIn(teamIds, teamIds, pageable)
+                .map(matchupDtoAssembler::toModel);
+
+        return ResponseEntity.ok(teams);
+    }
+
+    @Operation(
+            summary = "Get drafts for user teams",
+            description = "Retrieves all drafts for a specific user's teams"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved drafts"
+    )
+    @GetMapping("/{id}/drafts")
+    public ResponseEntity<Page<DraftSummaryDto>> getUserDrafts(
+            @PathVariable Long id,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        Page<DraftSummaryDto> teams = draftService.findByTeams(user.getTeams(), pageable)
+                .map(draftDtoAssembler::toModel);
+
+        return ResponseEntity.ok(teams);
+    }
+
+    @Operation(
         summary = "Create a new user",
         description = "Creates a new user with the provided information"
     )
@@ -162,7 +221,7 @@ public class UserController  {
         User user = convertToUser(createDto);
         user.setPassword(passwordEncoder.encode(createDto.getPassword()));
         User savedUser = userService.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToUserDetailsDto(savedUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDtoAssembler.toDetailedModel(savedUser));
 
     }
 
@@ -198,7 +257,7 @@ public class UserController  {
         user.setId(id);
         user.setPassword(passwordEncoder.encode(updateDto.getPassword()));
         User updatedUser = userService.save(user);
-        return ResponseEntity.ok(convertToUserDetailsDto(updatedUser));
+        return ResponseEntity.ok(userDtoAssembler.toDetailedModel(updatedUser));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -246,7 +305,7 @@ public class UserController  {
             user.setActive(patchDto.isActive());
         }
         User updatedUser = userService.save(user);
-        return ResponseEntity.ok(convertToUserDetailsDto(updatedUser));
+        return ResponseEntity.ok(userDtoAssembler.toDetailedModel(updatedUser));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -275,41 +334,6 @@ public class UserController  {
     }
 
     // Helper methods for DTO conversion
-    private UserDetailsDto convertToUserDetailsDto(User user) {
-        List<TeamSummaryDto> teamSummaries = user.getTeams().stream()
-                .map(this::convertToTeamSummaryDto)
-                .collect(Collectors.toList());
-
-        return new UserDetailsDto(
-            user.getId(),
-            user.getEmail(),
-            user.getName(),
-            user.getPicture(),
-            user.isActive(),
-            user.getRoles(),
-            teamSummaries
-        );
-    }
-
-    private UserSummaryDto convertToUserSummaryDto(User user) {
-        return new UserSummaryDto(
-            user.getId(),
-            user.getName(),
-            user.getEmail()
-        );
-    }
-
-    private TeamSummaryDto convertToTeamSummaryDto(Team team) {
-        return new TeamSummaryDto(
-            team.getId(),
-            team.getName(),
-            team.getWins(),
-            team.getLosses(),
-            team.getTies(),
-            team.getTotalScore()
-        );
-    }
-
     private User convertToUser(UserCreateDto dto) {
         User user = new User();
         user.setName(dto.getName());

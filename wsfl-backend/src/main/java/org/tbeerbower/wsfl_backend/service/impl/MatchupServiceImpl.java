@@ -17,6 +17,7 @@ import org.tbeerbower.wsfl_backend.repository.RaceRepository;
 import org.tbeerbower.wsfl_backend.repository.TeamRepository;
 import org.tbeerbower.wsfl_backend.service.MatchupService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,7 +88,12 @@ public class MatchupServiceImpl implements MatchupService {
     public Page<Matchup> findByTeam(Long teamId, Pageable pageable) {
         return matchupRepository.findByTeam1IdOrTeam2Id(teamId, teamId, pageable);
     }
-    
+
+    @Override
+    public Page<Matchup> findByTeamIn(Collection<Long> team1Ids, Collection<Long> team2Ids, Pageable pageable) {
+        return matchupRepository.findByTeam1IdInOrTeam2IdIn(team1Ids, team2Ids, pageable);
+    }
+
     @Override
     public Page<Matchup> findByRaceAndTeam(Long raceId, Long teamId, Pageable pageable) {
         // Verify race exists
