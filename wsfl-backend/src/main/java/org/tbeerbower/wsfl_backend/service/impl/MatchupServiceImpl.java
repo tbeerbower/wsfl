@@ -115,21 +115,21 @@ public class MatchupServiceImpl implements MatchupService {
         Team team1 = matchup.getTeam1();
         Team team2 = matchup.getTeam2();
         
-        if (matchup.getTeam1Score() != null && matchup.getTeam2Score() != null) {
-            if (matchup.getTeam1Score() < matchup.getTeam2Score()) {
-                team1.setWins(team1.getWins() + 1);
-                team2.setLosses(team2.getLosses() + 1);
-            } else if (matchup.getTeam2Score() < matchup.getTeam1Score()) {
-                team2.setWins(team2.getWins() + 1);
-                team1.setLosses(team1.getLosses() + 1);
-            } else {
-                team1.setTies(team1.getTies() + 1);
-                team2.setTies(team2.getTies() + 1);
-            }
-            
-            team1.setTotalScore(team1.getTotalScore() + matchup.getTeam1Score());
-            team2.setTotalScore(team2.getTotalScore() + matchup.getTeam2Score());
-        }
+//        if (matchup.getTeam1Score() != null && matchup.getTeam2Score() != null) {
+//            if (matchup.getTeam1Score() < matchup.getTeam2Score()) {
+//                team1.setWins(team1.getWins() + 1);
+//                team2.setLosses(team2.getLosses() + 1);
+//            } else if (matchup.getTeam2Score() < matchup.getTeam1Score()) {
+//                team2.setWins(team2.getWins() + 1);
+//                team1.setLosses(team1.getLosses() + 1);
+//            } else {
+//                team1.setTies(team1.getTies() + 1);
+//                team2.setTies(team2.getTies() + 1);
+//            }
+//
+//            team1.setTotalScore(team1.getTotalScore() + matchup.getTeam1Score());
+//            team2.setTotalScore(team2.getTotalScore() + matchup.getTeam2Score());
+//        }
     }
     
     @Override
@@ -151,8 +151,6 @@ public class MatchupServiceImpl implements MatchupService {
         matchup.setRace(race);
         matchup.setTeam1(team1);
         matchup.setTeam2(team2);
-        matchup.setTeam1Score(createDto.getTeam1Score());
-        matchup.setTeam2Score(createDto.getTeam2Score());
         matchup.setDraft(draft);
 
         
@@ -179,9 +177,6 @@ public class MatchupServiceImpl implements MatchupService {
     public Matchup updateScores(Long id, Integer team1Score, Integer team2Score) {
         Matchup matchup = findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Matchup not found with id: " + id));
-        
-        matchup.setTeam1Score(team1Score);
-        matchup.setTeam2Score(team2Score);
         
         Matchup updatedMatchup = save(matchup);
         updateMatchupResults(updatedMatchup);

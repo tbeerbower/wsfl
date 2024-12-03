@@ -25,12 +25,6 @@ public class Matchup {
     @JoinColumn(name = "team2_id")
     private Team team2;
 
-    @Column(name = "team1score")
-    private Integer team1Score;
-
-    @Column(name = "team2score")
-    private Integer team2Score;
-
     @ManyToOne
     @JoinColumn(name = "draft_id")
     private Draft draft;
@@ -40,13 +34,11 @@ public class Matchup {
     }
 
     // Constructor for DTO conversion
-    public Matchup(Long id, Race race, Team team1, Team team2, Integer team1Score, Integer team2Score, Draft draft) {
+    public Matchup(Long id, Race race, Team team1, Team team2, Draft draft) {
         this.id = id;
         this.race = race;
         this.team1 = team1;
         this.team2 = team2;
-        this.team1Score = team1Score;
-        this.team2Score = team2Score;
         this.draft = draft;
     }
 
@@ -83,22 +75,14 @@ public class Matchup {
         this.team2 = team2;
     }
 
+    @Transient
     public Integer getTeam1Score() {
-      //  return team1Score;
         return getTeamScore(team1);
     }
 
-    public void setTeam1Score(Integer team1Score) {
-        this.team1Score = team1Score;
-    }
-
+    @Transient
     public Integer getTeam2Score() {
         return getTeamScore(team2);
-     //   return team2Score;
-    }
-
-    public void setTeam2Score(Integer team2Score) {
-        this.team2Score = team2Score;
     }
 
     public Draft getDraft() {
@@ -109,6 +93,7 @@ public class Matchup {
         this.draft = draft;
     }
 
+    @Transient
     public Boolean isComplete() {
         return !race.getResults().isEmpty();
     }

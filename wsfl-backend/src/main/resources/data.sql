@@ -28,13 +28,13 @@ INSERT INTO seasons (id, name) VALUES
 (2, 'Winter 2024-2025');
 
 -- Insert Teams
-INSERT INTO teams (id, name, wins, losses, ties, total_score, owner_id, league_id) VALUES
-(1, 'Speed Demons', 2, 1, 0, 45, 1, 1),
-(2, 'Trail Blazers', 1, 2, 0, 52, 2, 1),
-(3, 'Road Warriors', 2, 0, 1, 38, 3, 1),
-(4, 'Hill Climbers', 0, 2, 1, 58, 4, 1),
-(5, 'Winter Runners', 0, 0, 0, 0, 1, 2),
-(6, 'Snow Striders', 0, 0, 0, 0, 2, 2);
+INSERT INTO teams (id, name, owner_id, league_id) VALUES
+(1, 'Speed Demons', 1, 1),
+(2, 'Trail Blazers', 2, 1),
+(3, 'Road Warriors', 3, 1),
+(4, 'Hill Climbers', 4, 1),
+(5, 'Winter Runners', 1, 2),
+(6, 'Snow Striders', 2, 2);
 
 -- Insert Runners
 INSERT INTO runners (id, name, gender) VALUES
@@ -242,11 +242,11 @@ INSERT INTO draft_picks (id, draft_id, team_id, runner_id, round, pick_number, p
 
 
 -- Insert Matchups
-INSERT INTO matchups (id, race_id, team1_id, team2_id, team1score, team2score, draft_id) VALUES
-(1, 1, 1, 2, 20, 25, 1), -- Speed Demons vs Trail Blazers
-(2, 1, 3, 4, 18, 28, 1), -- Road Warriors vs Hill Climbers
-(3, 2, 1, 3, 25, 20, 1), -- Speed Demons vs Road Warriors
-(4, 2, 2, 4, 27, 30, 1); -- Trail Blazers vs Hill Climbers
+INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
+(1, 1, 1, 2, 1), -- Speed Demons vs Trail Blazers
+(2, 1, 3, 4, 1), -- Road Warriors vs Hill Climbers
+(3, 2, 1, 3, 1), -- Speed Demons vs Road Warriors
+(4, 2, 2, 4, 1); -- Trail Blazers vs Hill Climbers
 
 -- Reset sequence values
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
