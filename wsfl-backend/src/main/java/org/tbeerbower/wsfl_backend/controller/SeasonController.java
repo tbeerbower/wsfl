@@ -46,7 +46,7 @@ import org.tbeerbower.wsfl_backend.service.SeasonService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
-@Tag(name = "League", description = "Season management APIs for organizing teams and seasons")
+@Tag(name = "Season", description = "Season management APIs for organizing teams and seasons")
 @RestController
 @RequestMapping("/api/seasons")
 @CrossOrigin(origins = "http://localhost:8080")

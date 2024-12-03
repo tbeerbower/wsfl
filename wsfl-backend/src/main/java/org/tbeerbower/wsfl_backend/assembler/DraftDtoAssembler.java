@@ -12,22 +12,23 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class DraftDtoAssembler {
 
     private final LeagueDtoAssembler leagueDtoAssembler;
-    private final SeasonDtoAssembler seasonDtoAssembler;
 
-    public DraftDtoAssembler(LeagueDtoAssembler leagueDtoAssembler, SeasonDtoAssembler seasonDtoAssembler) {
+    public DraftDtoAssembler(LeagueDtoAssembler leagueDtoAssembler) {
         this.leagueDtoAssembler = leagueDtoAssembler;
-        this.seasonDtoAssembler = seasonDtoAssembler;
     }
 
     public DraftSummaryDto toModel(Draft draft) {
         DraftSummaryDto dto = createDraftSummaryDto(draft);
-
         return dto;
     }
 
     private DraftSummaryDto createDraftSummaryDto(Draft draft) {
         LeagueSummaryDto leagueDto = leagueDtoAssembler.toSummaryDto(draft.getLeague());
-        SeasonSummaryDto seasonDto = seasonDtoAssembler.toModel(draft.getSeason());
+
+        SeasonSummaryDto seasonDto = new SeasonSummaryDto(
+                draft.getSeason().getId(),
+                draft.getSeason().getName()
+        );
 
         return new DraftSummaryDto(
             draft.getId(),

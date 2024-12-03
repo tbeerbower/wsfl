@@ -13,16 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.LeagueDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.SeasonDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
+import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.League;
+import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
@@ -30,6 +31,7 @@ import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -44,13 +46,15 @@ public class LeagueController  {
     private final TeamService teamService;
     private final UserService userService;
     private final LeagueDtoAssembler leagueDtoAssembler;
+    private final SeasonDtoAssembler seasonDtoAssembler;
 
     @Autowired
-    public LeagueController(LeagueService leagueService, TeamService teamService, UserService userService, LeagueDtoAssembler leagueDtoAssembler) {
+    public LeagueController(LeagueService leagueService, TeamService teamService, UserService userService, LeagueDtoAssembler leagueDtoAssembler, SeasonDtoAssembler seasonDtoAssembler) {
         this.leagueService = leagueService;
         this.teamService = teamService;
         this.userService = userService;
         this.leagueDtoAssembler = leagueDtoAssembler;
+        this.seasonDtoAssembler = seasonDtoAssembler;
     }
 
     @Operation(
@@ -97,6 +101,43 @@ public class LeagueController  {
 
         return ResponseEntity.ok(leagueDto);
     }
+
+    @Operation(
+            summary = "Get league seasons by ID",
+            description = "Retrieves summary information about a specific league's seasons"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "League seasons found"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "League not found",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "string", example = "League not found with id: 123"))
+            )
+    })
+    @GetMapping("/{id}/seasons")
+    public ResponseEntity<Page<SeasonDetailDto>> getLeagueSeasonById(
+            @PathVariable Long id,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        League league = leagueService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("League", "id", id));
+
+        Set<Draft> drafts = league.getDrafts();
+
+        Set<Season> seasonSet = drafts.stream()
+                .map(draft -> draft.getSeason())
+                .collect(Collectors.toUnmodifiableSet());
+
+        List<SeasonDetailDto> seasonDtos = seasonSet.stream()
+                .map(seasonDtoAssembler::toDetailModel)
+                .toList();
+
+        return ResponseEntity.ok(ControllerUtils.getPaginatedEntities(seasonDtos, pageable));
+    }
+
 
     @Operation(
         summary = "Create new league",

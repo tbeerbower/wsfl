@@ -5,11 +5,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "drafts")
-public class Draft {
+public class Draft extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -66,12 +67,10 @@ public class Draft {
 
     public Boolean isStarted() {
         return !draftOrder.isEmpty();
-        //return isStarted;
     }
 
     public Boolean isComplete() {
-        return picks.size() / teams.size() >= numberOfRounds;
-        //return isComplete;
+        return isStarted() && picks.size() / teams.size() >= numberOfRounds;
     }
 
     public String getStatus() {
@@ -85,13 +84,11 @@ public class Draft {
     }
 
     public Integer getCurrentRound() {
-//        return currentRound;
-        return isComplete() ? numberOfRounds : picks.size() / teams.size() + 1;
+        return isStarted() ? (isComplete() ? numberOfRounds : picks.size() / teams.size() + 1) : 0;
     }
 
     public Integer getCurrentPick() {
-        return isComplete() ? teams.size() : picks.size() % teams.size() + 1;
-       // return currentPick;
+        return isStarted() ? (isComplete() ? teams.size() : picks.size() % teams.size() + 1) : 0;
     }
 
     public List<DraftPick> getPicks() { return picks; }
@@ -102,4 +99,5 @@ public class Draft {
 
     public Set<Team> getTeams() { return teams; }
     public void setTeams(Set<Team> teams) { this.teams = teams; }
-} 
+
+}

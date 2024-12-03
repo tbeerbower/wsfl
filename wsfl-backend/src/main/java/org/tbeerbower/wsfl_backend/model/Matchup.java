@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "matchups")
-public class Matchup {
+public class Matchup extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

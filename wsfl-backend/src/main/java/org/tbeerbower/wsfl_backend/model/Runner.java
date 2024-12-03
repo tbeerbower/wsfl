@@ -6,7 +6,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "runners")
-public class Runner {
+public class Runner extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -24,7 +24,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "seasons")
-public class Season {
+public class Season extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

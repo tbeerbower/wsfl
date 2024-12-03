@@ -5,7 +5,7 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "race_results")
-public class RaceResult {
+public class RaceResult extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
