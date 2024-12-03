@@ -118,10 +118,6 @@ public class DraftServiceImpl implements DraftService {
         draft.setSeason(season);
         draft.setNumberOfRounds(createDto.getNumberOfRounds());
         draft.setSnakeOrder(createDto.getSnakeOrder());
-        draft.setIsStarted(false);
-        draft.setIsComplete(false);
-        draft.setCurrentRound(1);
-        draft.setCurrentPick(1);
         draft.setStartTime(createDto.getStartTime());
         
         return draftRepository.save(draft);
@@ -171,10 +167,9 @@ public class DraftServiceImpl implements DraftService {
             draft.setDraftOrder(teamIds);
 
             draft.setStartTime(LocalDateTime.now());
-            draft.setIsStarted(true);
         }
         if (patchDto.isComplete() != null  && !patchDto.isComplete() && draft.isComplete()) {
-            draft.setIsComplete(true);
+// complete draft
         }
         return draftRepository.save(draft);
     }
@@ -270,17 +265,17 @@ public class DraftServiceImpl implements DraftService {
         int teamsCount = draft.getLeague().getTeams().size();
         
         // Increment pick number
-        draft.setCurrentPick(draft.getCurrentPick() + 1);
-        
-        // If we've reached the end of the round
-        if (draft.getCurrentPick() > teamsCount) {
-            draft.setCurrentRound(draft.getCurrentRound() + 1);
-            draft.setCurrentPick(1);
-            
-            // If we've completed all rounds
-            if (draft.getCurrentRound() > draft.getNumberOfRounds()) {
-                draft.setIsComplete(true);
-            }
-        }
+//        draft.setCurrentPick(draft.getCurrentPick() + 1);
+//
+//        // If we've reached the end of the round
+//        if (draft.getCurrentPick() > teamsCount) {
+//            draft.setCurrentRound(draft.getCurrentRound() + 1);
+//            draft.setCurrentPick(1);
+//
+//            // If we've completed all rounds
+//            if (draft.getCurrentRound() > draft.getNumberOfRounds()) {
+//                draft.setIsComplete(true);
+//            }
+//        }
     }
 } 

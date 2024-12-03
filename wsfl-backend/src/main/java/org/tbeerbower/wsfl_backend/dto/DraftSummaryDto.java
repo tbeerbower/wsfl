@@ -36,6 +36,10 @@ public class DraftSummaryDto {
 
     @Schema(description = "Whether the draft is complete")
     private Boolean isComplete;
+
+    @Schema(description = "Draft status")
+    private String status;
+
     @Schema(description = "Current round number")
     private Integer currentRound;
 
@@ -47,7 +51,7 @@ public class DraftSummaryDto {
 
     public DraftSummaryDto(Long id, LeagueSummaryDto league, String name, SeasonSummaryDto season,
                           Integer numberOfRounds, Boolean snakeOrder, LocalDateTime startTime,
-                          Boolean isStarted, Boolean isComplete,
+                          Boolean isStarted, Boolean isComplete, String status,
                           Integer currentRound, Integer currentPick,
                           List<Long> draftOrder) {
         this.id = id;
@@ -58,6 +62,7 @@ public class DraftSummaryDto {
         this.snakeOrder = snakeOrder;
         this.startTime = startTime;
         this.isStarted = isStarted;
+        this.status = status;
         this.isComplete = isComplete;
         this.currentRound = currentRound;
         this.currentPick = currentPick;
@@ -74,6 +79,7 @@ public class DraftSummaryDto {
     public LocalDateTime getStartTime() { return startTime; }
     public Boolean isStarted() { return isStarted; }
     public Boolean isComplete() { return isComplete; }
+    public String getStatus() { return status; }
     public Integer getCurrentRound() { return currentRound; }
     public Integer getCurrentPick() { return currentPick; }
     public List<Long> getDraftOrder() { return draftOrder; }

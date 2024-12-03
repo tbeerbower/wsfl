@@ -39,6 +39,7 @@ public class DraftDtoAssembler {
             draft.getStartTime(),
             draft.isStarted(),
             draft.isComplete(),
+            draft.getStatus(),
             draft.getCurrentRound(),
             draft.getCurrentPick(),
             draft.getDraftOrder()

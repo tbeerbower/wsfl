@@ -187,10 +187,10 @@ WHERE
     results.participation_rank <= 3; -- Each runner participates in 2-3 races
 
 -- Insert Drafts
-INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_order, start_time, is_started, is_complete, current_round, current_pick) VALUES
-(1, 1, 1, 'Summer 2024 Draft', 6, true, '2024-03-01 10:00:00', true, true, 6, 4),  -- Completed Summer League draft
-(2, 2, 2, 'Winter 2024 Draft', 6, true, '2024-10-15 14:00:00', true, false, 2, 1), -- In-progress Winter League draft
-(3, 1, 1, 'Spring 2025 Draft', 8, false, '2024-10-15 14:00:00', false, false, 2, 1); -- Not started Spring League draft
+INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_order, start_time) VALUES
+(1, 1, 1, 'Summer 2024 Draft', 6, true, '2024-03-01 10:00:00'),  -- Completed Summer League draft
+(2, 2, 2, 'Winter 2024 Draft', 6, true, '2024-10-15 14:00:00'), -- In-progress Winter League draft
+(3, 1, 1, 'Spring 2025 Draft', 8, false, '2024-10-15 14:00:00'); -- Not started Spring League draft
 
 -- Insert Draft Order for Summer League Draft
 INSERT INTO draft_order (draft_id, position, team_id) VALUES

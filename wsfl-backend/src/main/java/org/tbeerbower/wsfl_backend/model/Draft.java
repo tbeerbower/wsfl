@@ -25,10 +25,7 @@ public class Draft {
     private Integer numberOfRounds;
     private Boolean snakeOrder;
     private LocalDateTime startTime;
-    private Boolean isStarted;
-    private Boolean isComplete;
-    private Integer currentRound;
-    private Integer currentPick;
+
     
     @OneToMany(mappedBy = "draft", cascade = CascadeType.ALL)
     @OrderBy("pickNumber")
@@ -67,18 +64,36 @@ public class Draft {
     public LocalDateTime getStartTime() { return startTime; }
     public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
 
-    public Boolean isStarted() { return isStarted; }
-    public void setIsStarted(Boolean isStarted) { this.isStarted = isStarted; }
+    public Boolean isStarted() {
+        return !draftOrder.isEmpty();
+        //return isStarted;
+    }
 
-    public Boolean isComplete() { return isComplete; }
-    public void setIsComplete(Boolean isComplete) { this.isComplete = isComplete; }
-    
-    public Integer getCurrentRound() { return currentRound; }
-    public void setCurrentRound(Integer currentRound) { this.currentRound = currentRound; }
-    
-    public Integer getCurrentPick() { return currentPick; }
-    public void setCurrentPick(Integer currentPick) { this.currentPick = currentPick; }
-    
+    public Boolean isComplete() {
+        return picks.size() / teams.size() >= numberOfRounds;
+        //return isComplete;
+    }
+
+    public String getStatus() {
+        if (isComplete()) {
+            return "Complete";
+        } else if (isStarted()) {
+            return "In Progress";
+        } else {
+            return "Not Started";
+        }
+    }
+
+    public Integer getCurrentRound() {
+//        return currentRound;
+        return isComplete() ? numberOfRounds : picks.size() / teams.size() + 1;
+    }
+
+    public Integer getCurrentPick() {
+        return isComplete() ? teams.size() : picks.size() % teams.size() + 1;
+       // return currentPick;
+    }
+
     public List<DraftPick> getPicks() { return picks; }
     public void setPicks(List<DraftPick> picks) { this.picks = picks; }
     
