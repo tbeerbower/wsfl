@@ -20,11 +20,17 @@ public class LeagueDetailsDto {
     @Schema(description = "List of teams participating in the league")
     private List<TeamSummaryDto> teams;
 
-    public LeagueDetailsDto(Long id, String name, UserSummaryDto admin, List<TeamSummaryDto> teams) {
+    @Schema(description = "List of seasons for the league")
+    private List<SeasonSummaryDto> seasons;
+
+    public LeagueDetailsDto(Long id, String name, UserSummaryDto admin,
+                            List<TeamSummaryDto> teams,
+                            List<SeasonSummaryDto> seasons) {
         this.id = id;
         this.name = name;
         this.admin = admin;
         this.teams = teams;
+        this.seasons = seasons;
     }
 
     // Getters only for immutability
@@ -32,4 +38,5 @@ public class LeagueDetailsDto {
     public String getName() { return name; }
     public UserSummaryDto getAdmin() { return admin; }
     public List<TeamSummaryDto> getTeams() { return teams; }
+    public List<SeasonSummaryDto> getSeasons() { return seasons; }
 }

@@ -5,12 +5,17 @@ import org.springframework.stereotype.Component;
 import org.tbeerbower.wsfl_backend.controller.LeagueController;
 import org.tbeerbower.wsfl_backend.dto.LeagueDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.LeagueSummaryDto;
+import org.tbeerbower.wsfl_backend.dto.SeasonDetailDto;
+import org.tbeerbower.wsfl_backend.dto.SeasonSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.TeamSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.UserSummaryDto;
+import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.League;
+import org.tbeerbower.wsfl_backend.model.Season;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -18,7 +23,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class LeagueDtoAssembler  {
-
 
     public LeagueSummaryDto toModel(League league) {
         LeagueSummaryDto dto = createLeagueSummaryDto(league);
@@ -37,11 +41,22 @@ public class LeagueDtoAssembler  {
                 ))
                 .collect(Collectors.toList());
 
+        Set<Draft> drafts = league.getDrafts();
+
+        Set<Season> seasonSet = drafts.stream()
+                .map(draft -> draft.getSeason())
+                .collect(Collectors.toUnmodifiableSet());
+
+        List<SeasonSummaryDto> seasonDtos = seasonSet.stream()
+                .map(this::createSeasonSummaryDto)
+                .toList();
+
         LeagueDetailsDto dto = new LeagueDetailsDto(
                 league.getId(),
                 league.getName(),
                 new UserSummaryDto(league.getAdmin().getId(), league.getAdmin().getName(), league.getAdmin().getEmail()),
-                teamDtos
+                teamDtos,
+                seasonDtos
         );
 
         return dto;
@@ -57,5 +72,14 @@ public class LeagueDtoAssembler  {
             league.getId(),
             league.getName()
         );
+    }
+
+    private SeasonSummaryDto createSeasonSummaryDto(Season season) {
+
+        SeasonSummaryDto dto = new SeasonSummaryDto(
+                season.getId(),
+                season.getName()
+        );
+        return dto;
     }
 }
