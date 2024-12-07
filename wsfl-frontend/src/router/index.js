@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginForm from '@/components/LoginForm.vue';
 import RegisterForm from '@/components/RegisterForm.vue';
 import store from '@/store';
+import DraftView from '@/views/DraftView.vue';
 
 const routes = [
   {
@@ -38,6 +39,12 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/DashboardView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/draft/:draftId',
+    name: 'draft',
+    component: DraftView,
     meta: { requiresAuth: true }
   }
 ];

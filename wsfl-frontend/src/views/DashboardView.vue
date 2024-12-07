@@ -21,7 +21,15 @@
           
           <div v-for="draft in league.drafts" :key="draft.id" class="draft-section">
             <div class="draft-header">
-              <h4>{{ draft.name }}</h4>
+              <div class="draft-title">
+                <h4>{{ draft.name }}</h4>
+                <router-link 
+                  :to="{ name: 'draft', params: { draftId: draft.id }}" 
+                  class="draft-button"
+                >
+                  Go to draft
+                </router-link>
+              </div>
               <div class="draft-status" :class="{
                 'not-started': draft.status === 'Not Started',
                 'in-progress': draft.status === 'In Progress',
@@ -236,6 +244,12 @@ export default {
   margin-bottom: var(--spacing-md);
 }
 
+.draft-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .draft-status {
   display: inline-flex;
   align-items: center;
@@ -264,6 +278,25 @@ export default {
   background-color: var(--accent-success);
   color: var(--bg-primary);
   border: 1px solid var(--accent-success);
+}
+
+.draft-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid var(--accent-primary);
+}
+
+.draft-button:hover {
+  background-color: var(--bg-primary);
+  color: var(--accent-primary);
 }
 
 h2 {
