@@ -30,6 +30,9 @@ INSERT INTO seasons (id, name) VALUES
 INSERT INTO seasons (id, name) VALUES
 (2, 'Spring 2025');
 
+INSERT INTO seasons (id, name) VALUES
+(3, 'Summer 2025');
+
 -- Insert Teams
 INSERT INTO teams (id, name, owner_id, league_id) VALUES
 (1, 'Speed Demons', 1, 1),
@@ -130,7 +133,12 @@ INSERT INTO races (id, name, date, is_playoff, is_canceled, season_id) VALUES
 (11, 'Spring Fling', '2025-04-15', false, false, 2),
 (12, 'Spring Break', '2025-05-16', false, false, 2),
 (13, 'Bloomin Run', '2025-06-17', false, false, 2),
-(14, 'Forth 5K', '2025-07-04', true, false, 2);
+(14, 'Forth 5K', '2025-07-04', true, false, 2),
+
+(15, 'Summer Sizzle', '2025-08-15', false, false, 3),
+(16, 'Dog Days', '2025-09-16', false, false, 3),
+(17, 'Fall Foliage', '2025-10-17', false, false, 3),
+(18, 'Turkey Trot', '2025-11-04', true, false, 3);
 
 -- Insert Race Results for New Runners
 -- We'll insert results for 2-9 races per runner to simulate participation
@@ -180,6 +188,8 @@ INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_orde
 INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_order, start_time) VALUES
 (2, 1, 2, 'Spring 2025 Draft', 6, true, '2025-03-01 10:00:00');
 
+INSERT INTO drafts (id, league_id, season_id, name, number_of_rounds, snake_order, start_time) VALUES
+(3, 1, 3, 'Summer 2025 Draft', 4, false, '2025-06-01 10:00:00');
 
 -- Insert Draft Order
 INSERT INTO draft_order (draft_id, position, team_id) VALUES
@@ -251,7 +261,7 @@ INSERT INTO draft_picks (id, draft_id, team_id, runner_id, round, pick_number, p
 
 -- Insert Matchups for all 10 races
 INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
--- Race 1 (already provided)
+-- Race 1
 (1, 1, 1, 2, 1), -- Speed Demons vs Trail Blazers
 (2, 1, 3, 4, 1), -- Road Warriors vs Hill Climbers
 (3, 1, 5, 6, 1), -- Winter Runners vs Snow Striders
@@ -302,26 +312,26 @@ INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
 (30, 10, 4, 5, 1); -- Hill Climbers vs Winter Runners
 
 -- Insert Matchups for all 4 spring races
-INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
--- Race 1 (already provided)
-(31, 11, 1, 2, 2), -- Speed Demons vs Trail Blazers
-(32, 11, 3, 4, 2), -- Road Warriors vs Hill Climbers
-(33, 11, 5, 6, 2), -- Winter Runners vs Snow Striders
-
--- Race 2
-(34, 12, 1, 3, 2), -- Speed Demons vs Road Warriors
-(35, 12, 2, 5, 2), -- Trail Blazers vs Winter Runners
-(36, 12, 4, 6, 2), -- Hill Climbers vs Snow Striders
-
--- Race 3
-(37, 13, 1, 4, 2), -- Speed Demons vs Hill Climbers
-(38, 13, 2, 6, 2), -- Trail Blazers vs Snow Striders
-(39, 13, 3, 5, 2), -- Road Warriors vs Winter Runners
-
--- Race 4
-(40, 14, 1, 5, 2), -- Speed Demons vs Winter Runners
-(41, 14, 2, 4, 2), -- Trail Blazers vs Hill Climbers
-(42, 14, 3, 6, 2); -- Road Warriors vs Snow Striders
+--INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
+---- Race 1
+--(31, 11, 1, 2, 2), -- Speed Demons vs Trail Blazers
+--(32, 11, 3, 4, 2), -- Road Warriors vs Hill Climbers
+--(33, 11, 5, 6, 2), -- Winter Runners vs Snow Striders
+--
+---- Race 2
+--(34, 12, 1, 3, 2), -- Speed Demons vs Road Warriors
+--(35, 12, 2, 5, 2), -- Trail Blazers vs Winter Runners
+--(36, 12, 4, 6, 2), -- Hill Climbers vs Snow Striders
+--
+---- Race 3
+--(37, 13, 1, 4, 2), -- Speed Demons vs Hill Climbers
+--(38, 13, 2, 6, 2), -- Trail Blazers vs Snow Striders
+--(39, 13, 3, 5, 2), -- Road Warriors vs Winter Runners
+--
+---- Race 4
+--(40, 14, 1, 5, 2), -- Speed Demons vs Winter Runners
+--(41, 14, 2, 4, 2), -- Trail Blazers vs Hill Climbers
+--(42, 14, 3, 6, 2); -- Road Warriors vs Snow Striders
 
 
 -- Reset sequence values

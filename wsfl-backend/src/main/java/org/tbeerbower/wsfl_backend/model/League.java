@@ -89,6 +89,10 @@ public class League extends BaseEntity{
     public static Map<Team, Standing> getTeamStandingMap(Draft draft) {
         Map<Team, Standing> teamStandings = new HashMap<>();
 
+        for (Team team : draft.getTeams()) {
+            teamStandings.put(team, new Standing(team, 0, 0, 0, 0));
+        }
+
         for( Matchup matchup : draft.getMatchups()) {
 
             if (matchup.isComplete()) {

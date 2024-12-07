@@ -77,7 +77,7 @@ public class LeagueDtoAssembler  {
         Set<Draft> drafts = league.getDrafts();
 
         List<UserDraftDetailsDto> seasonDtos = drafts.stream().
-                filter(draft -> draft.includes(user))
+                filter(draft -> draft.includes(user) || draft.getLeague().getAdmin().equals(user))
                 .map(draft1 -> createUserDraftDetailsDto(draft1, user))
                 .toList();
 
@@ -121,20 +121,15 @@ public class LeagueDtoAssembler  {
                 draft.getSeason().isComplete()
         );
 
-        List<Team> teams = new java.util.ArrayList<>(draft.getMatchups().stream()
-                .map(Matchup::getTeam1)
+        Set<Team> teams = draft.getTeams().stream()
                 .filter(team -> team.getOwner().equals(user))
-                .toList());
-        teams.addAll(draft.getMatchups().stream()
-                .map(Matchup::getTeam2)
-                .filter(team -> team.getOwner().equals(user))
-                .toList());
+                .collect(Collectors.toSet());
 
         List<UserTeamMatchupsDetailsDto> teamMatchups = new ArrayList<>();
 
         Map<Team, Standing> teamStandingMap = League.getTeamStandingMap(draft);
 
-        for (Team team : new HashSet<>(teams)) {
+        for (Team team : teams) {
             Standing teamStanding = teamStandingMap.get(team);
             teamMatchups.add(new UserTeamMatchupsDetailsDto(
                     team.getId(),
