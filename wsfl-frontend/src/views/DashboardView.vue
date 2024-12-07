@@ -22,9 +22,13 @@
           <div v-for="draft in league.drafts" :key="draft.id" class="draft-section">
             <div class="draft-header">
               <h4>{{ draft.name }}</h4>
-              <span class="draft-status" :class="draft.status.toLowerCase()">
+              <div class="draft-status" :class="{
+                'not-started': draft.status === 'Not Started',
+                'in-progress': draft.status === 'In Progress',
+                'complete': draft.status === 'Complete'
+              }">
                 {{ draft.status }}
-              </span>
+              </div>
             </div>
 
             <div class="standings-section">
@@ -39,13 +43,9 @@
                   <div class="team-header">
                     <h5>{{ team.name }}</h5>
                     <div class="team-record">
-                      {{ team.wins }}-{{ team.losses }}-{{ team.ties }}
-                    </div>
-                  </div>
-                  <div class="team-stats">
-                    <div class="stat">
-                      <span class="stat-label">Total Score</span>
-                      <span class="stat-value">{{ team.totalScore }}</span>
+                      <span>{{ team.wins }}-{{ team.losses }}-{{ team.ties }}</span>
+                      <span class="record-divider">•</span>
+                      <span>{{ team.totalScore }} pts</span>
                     </div>
                   </div>
                   <div class="team-matchups">
@@ -163,22 +163,6 @@ export default {
   box-shadow: var(--shadow-md);
 }
 
-.team-stats {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 0;
-}
-
-.team-header h5 {
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
 .team-record {
   display: flex;
   align-items: center;
@@ -186,32 +170,34 @@ export default {
   font-size: 0.875rem;
   color: var(--text-primary);
   background-color: var(--bg-tertiary);
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-secondary);
   font-weight: 500;
 }
 
-.stat {
+.record-divider {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.team-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md);
-  background-color: var(--bg-tertiary);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
 }
 
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.stat-value {
+.team-header h5 {
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
 }
 
 .team-matchups {
@@ -238,7 +224,7 @@ export default {
 .draft-section h4 {
   color: var(--text-primary);
   font-size: 1.125rem;
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -250,6 +236,36 @@ export default {
   margin-bottom: var(--spacing-md);
 }
 
+.draft-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.draft-status.not-started {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-secondary);
+}
+
+.draft-status.in-progress {
+  background-color: var(--accent-warning);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-warning);
+}
+
+.draft-status.complete {
+  background-color: var(--accent-success);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-success);
+}
+
 h2 {
   color: var(--text-primary);
   font-size: 1.875rem;
@@ -258,22 +274,10 @@ h2 {
   letter-spacing: 0.5px;
 }
 
-.draft-status.complete {
-  background-color: var(--accent-success);
-  color: var(--bg-primary);
-  font-weight: 600;
-}
-
-.draft-status.in-progress {
-  background-color: var(--accent-warning);
-  color: var(--bg-primary);
-  font-weight: 600;
-}
-
-.draft-status.pending {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-weight: 500;
+h5.section-title {
+  margin-top: .75em;
+  font-size: 1em;
+  color: lightslategray;
 }
 
 @media (max-width: 768px) {
@@ -288,14 +292,6 @@ h2 {
   .team-card {
     padding: var(--spacing-sm);
   }
-  
-  .team-stats {
-    grid-template-columns: 1fr;
-  }
-  
-  .stat {
-    padding: var(--spacing-xs);
-  }
 }
 
 @media (max-width: 480px) {
@@ -305,10 +301,6 @@ h2 {
   
   .team-card {
     padding: var(--spacing-xs);
-  }
-  
-  .team-stats {
-    gap: var(--spacing-xs);
   }
 }
 </style>

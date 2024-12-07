@@ -82,6 +82,11 @@ public class League extends BaseEntity{
 
     public List<Standing> getStandings(Draft draft) {
 
+        Map<Team, Standing> teamStandings = getTeamStandingMap(draft);
+        return teamStandings.values().stream().sorted().toList();
+    }
+
+    public static Map<Team, Standing> getTeamStandingMap(Draft draft) {
         Map<Team, Standing> teamStandings = new HashMap<>();
 
         for( Matchup matchup : draft.getMatchups()) {
@@ -93,8 +98,10 @@ public class League extends BaseEntity{
                 team2Standing.setTotalScore(team2Standing.getTotalScore() + matchup.getTeam2Score());
 
                 if (matchup.getTeam1Score().equals(matchup.getTeam2Score())) {
-                    team1Standing.setTies(team1Standing.getTies() + 1);
-                    team2Standing.setTies(team2Standing.getTies() + 1);
+                    if (matchup.getTeam1Score() > 0) {
+                        team1Standing.setTies(team1Standing.getTies() + 1);
+                        team2Standing.setTies(team2Standing.getTies() + 1);
+                    }
                 } else if (matchup.getTeam1Score() < matchup.getTeam2Score()) {
                     team1Standing.setWins(team1Standing.getWins() + 1);
                     team2Standing.setLosses(team2Standing.getLosses() + 1);
@@ -104,6 +111,6 @@ public class League extends BaseEntity{
                 }
             }
         }
-        return teamStandings.values().stream().sorted().toList();
+        return teamStandings;
     }
 } 

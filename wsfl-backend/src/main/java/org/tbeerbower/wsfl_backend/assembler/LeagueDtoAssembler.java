@@ -18,12 +18,14 @@ import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Season;
+import org.tbeerbower.wsfl_backend.model.Standing;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -130,14 +132,17 @@ public class LeagueDtoAssembler  {
 
         List<UserTeamMatchupsDetailsDto> teamMatchups = new ArrayList<>();
 
+        Map<Team, Standing> teamStandingMap = League.getTeamStandingMap(draft);
+
         for (Team team : new HashSet<>(teams)) {
+            Standing teamStanding = teamStandingMap.get(team);
             teamMatchups.add(new UserTeamMatchupsDetailsDto(
                     team.getId(),
                     team.getName(),
-                    team.getWins(),
-                    team.getLosses(),
-                    team.getTies(),
-                    team.getTotalScore(),
+                    teamStanding.getWins(),
+                    teamStanding.getLosses(),
+                    teamStanding.getTies(),
+                    teamStanding.getTotalScore(),
                     draft.getMatchups().stream()
                             .filter(matchup -> matchup.includes(user) && (matchup.includes(team)))
                             .map(this::createUserMatchupDetailsDto)

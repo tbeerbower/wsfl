@@ -22,12 +22,12 @@
         </div>
 
         <div class="teams-info">
-          <div class="team-row" :class="{ winner: matchup.team1Score > matchup.team2Score }">
+          <div class="team-row" :class="{ winner: matchup.team1Score < matchup.team2Score }">
             <span class="team-name">{{ matchup.team1.name }}</span>
             <span class="team-score">{{ matchup.team1Score }}</span>
           </div>
           
-          <div class="team-row" :class="{ winner: matchup.team2Score > matchup.team1Score }">
+          <div class="team-row" :class="{ winner: matchup.team2Score < matchup.team1Score }">
             <span class="team-name">{{ matchup.team2.name }}</span>
             <span class="team-score">{{ matchup.team2Score }}</span>
           </div>
@@ -201,13 +201,17 @@ export default {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   background-color: var(--bg-secondary);
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .team-row.winner {
   background-color: var(--accent-success);
   color: var(--bg-primary);
   font-weight: 600;
+  border-color: var(--accent-success);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .team-name {
@@ -218,6 +222,13 @@ export default {
 .team-score {
   color: var(--text-primary);
   font-weight: 600;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.winner .team-name,
+.winner .team-score {
+  color: var(--bg-primary);
 }
 
 .nav-button {
