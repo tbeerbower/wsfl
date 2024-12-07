@@ -4,10 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tbeerbower.wsfl_backend.dto.RaceResultDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.RaceResultSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RaceSummaryDto;
-import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.model.RaceResult;
-
-import java.util.stream.Collectors;
 
 @Component
 public class RaceResultDtoAssembler {
@@ -38,7 +35,8 @@ public class RaceResultDtoAssembler {
                 raceResult.getRace().getId(),
                 raceResult.getRace().getName(),
                 raceResult.getRace().getDate(),
-                raceResult.getRace().getIsPlayoff()
+                raceResult.getRace().isCanceled(),
+                raceResult.getRace().isPlayoff()
             ),
             runnerDtoAssembler.toSummaryDto(raceResult.getRunner())
         );

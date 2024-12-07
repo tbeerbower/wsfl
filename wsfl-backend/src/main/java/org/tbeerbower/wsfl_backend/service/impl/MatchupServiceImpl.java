@@ -95,6 +95,11 @@ public class MatchupServiceImpl implements MatchupService {
     }
 
     @Override
+    public List<Matchup> findByTeamIn(Collection<Long> team1Ids, Collection<Long> team2Ids) {
+        return matchupRepository.findByTeam1IdInOrTeam2IdIn(team1Ids, team2Ids);
+    }
+
+    @Override
     public Page<Matchup> findByRaceAndTeam(Long raceId, Long teamId, Pageable pageable) {
         // Verify race exists
         if (!raceRepository.existsById(raceId)) {

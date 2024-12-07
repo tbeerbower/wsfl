@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.User;
-import org.tbeerbower.wsfl_backend.model.Runner;
 import org.tbeerbower.wsfl_backend.repository.TeamRepository;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 
@@ -61,7 +60,7 @@ public class TeamServiceImpl implements TeamService {
     
     @Override
     public Page<Team> getLeagueStandings(League league, Pageable pageable) {
-        return teamRepository.findByLeagueOrderByWinsDescTotalScoreAsc(league, pageable);
+        return teamRepository.findByLeague(league, pageable);
     }
 
     @Override

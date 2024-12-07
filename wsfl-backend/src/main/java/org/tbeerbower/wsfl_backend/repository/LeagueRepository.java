@@ -12,4 +12,5 @@ import java.util.List;
 @Repository
 public interface LeagueRepository extends JpaRepository<League, Long> {
     Page<League> findByAdmin(User admin, Pageable pageable);
-} 
+    List<League> findByAdmin(User admin);
+}

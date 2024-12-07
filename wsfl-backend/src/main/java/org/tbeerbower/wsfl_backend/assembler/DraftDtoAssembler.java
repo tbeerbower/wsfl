@@ -27,7 +27,8 @@ public class DraftDtoAssembler {
 
         SeasonSummaryDto seasonDto = new SeasonSummaryDto(
                 draft.getSeason().getId(),
-                draft.getSeason().getName()
+                draft.getSeason().getName(),
+                draft.getSeason().isComplete()
         );
 
         return new DraftSummaryDto(

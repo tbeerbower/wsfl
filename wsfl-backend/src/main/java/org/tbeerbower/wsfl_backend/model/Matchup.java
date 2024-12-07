@@ -75,6 +75,13 @@ public class Matchup extends BaseEntity{
         this.team2 = team2;
     }
 
+    public boolean includes(Team team) {
+        return team1.equals(team) || team2.equals(team);
+    }
+    public boolean includes(User user) {
+        return team1.getOwner().equals(user) || team2.getOwner().equals(user);
+    }
+
     @Transient
     public Integer getTeam1Score() {
         return getTeamScore(team1);

@@ -40,8 +40,8 @@ export default {
 
 <style scoped>
 .header {
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 1rem;
   position: fixed;
   top: 0;
@@ -71,11 +71,11 @@ export default {
 
 .user-name {
   font-weight: 600;
-  color: var(--color-text);
+  color: #333;
 }
 
 .logout-button {
-  background-color: var(--color-error);
+  background-color: #dc3545;
   color: white;
   border: none;
   padding: 0.5rem 1rem;

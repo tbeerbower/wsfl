@@ -22,7 +22,6 @@ import org.tbeerbower.wsfl_backend.assembler.RaceDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.RaceResultDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
-import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.Season;
@@ -32,9 +31,6 @@ import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.RaceResultService;
 import org.tbeerbower.wsfl_backend.service.RaceService;
 import org.tbeerbower.wsfl_backend.service.SeasonService;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Tag(name = "Race", description = "Race management APIs for scheduling and managing races")
 @RestController
@@ -169,8 +165,9 @@ public class RaceController  {
         
         race.setName(raceUpdateDto.getName());
         race.setDate(raceUpdateDto.getDate());
-        race.setIsPlayoff(raceUpdateDto.getIsPlayoff());
-        
+        race.setIsPlayoff(raceUpdateDto.isPlayoff());
+        race.setIsCanceled(raceUpdateDto.isCanceled());
+
         if (raceUpdateDto.getSeasonId() != null) {
             Season season = seasonService.findById(raceUpdateDto.getSeasonId())
                     .orElseThrow(() -> new ResourceNotFoundException("Season not found with id: " + raceUpdateDto.getSeasonId()));

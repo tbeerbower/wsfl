@@ -1,7 +1,6 @@
 package org.tbeerbower.wsfl_backend.assembler;
 
 import org.springframework.stereotype.Component;
-import org.tbeerbower.wsfl_backend.dto.LeagueSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RaceDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.RaceResultSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.RaceSummaryDto;
@@ -26,7 +25,8 @@ public class RaceDtoAssembler {
             race.getId(),
             race.getName(),
             race.getDate(),
-            race.getIsPlayoff()
+            race.isCanceled(),
+            race.isPlayoff()
         );
     }
     
@@ -34,14 +34,15 @@ public class RaceDtoAssembler {
 
         SeasonSummaryDto seasonDto = new SeasonSummaryDto(
                 race.getSeason().getId(),
-                race.getSeason().getName()
+                race.getSeason().getName(),
+                race.getSeason().isComplete()
         );
 
         return new RaceDetailsDto(
             race.getId(),
             race.getName(),
             race.getDate(),
-            race.getIsPlayoff(),
+            race.isPlayoff(),
                 seasonDto,
             race.getResults().stream()
                 .map(this::toRaceResultDto)

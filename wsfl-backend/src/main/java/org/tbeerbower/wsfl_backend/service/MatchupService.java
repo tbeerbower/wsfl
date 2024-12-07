@@ -22,6 +22,7 @@ public interface MatchupService {
     List<Matchup> findByTeam(Team team);
     Page<Matchup> findByTeam(Long teamId, Pageable pageable);
     Page<Matchup> findByTeamIn(Collection<Long> team1Ids, Collection<Long> team2Ids, Pageable pageable);
+    List<Matchup> findByTeamIn(Collection<Long> team1Ids, Collection<Long> team2Ids);
     Page<Matchup> findByRaceAndTeam(Long raceId, Long teamId, Pageable pageable);
     Matchup create(MatchupCreateDto createDto);
     Matchup update(Matchup matchup);

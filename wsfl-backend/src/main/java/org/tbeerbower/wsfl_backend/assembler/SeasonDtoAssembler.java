@@ -30,7 +30,8 @@ public class SeasonDtoAssembler {
 
         SeasonSummaryDto dto = new SeasonSummaryDto(
                 season.getId(),
-                season.getName()
+                season.getName(),
+                season.isComplete()
         );
         return dto;
     }
@@ -48,6 +49,7 @@ public class SeasonDtoAssembler {
         SeasonDetailDto dto = new SeasonDetailDto(
                 season.getId(),
                 season.getName(),
+                season.isComplete(),
                 drafts,
                 races
         );

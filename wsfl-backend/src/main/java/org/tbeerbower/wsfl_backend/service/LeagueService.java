@@ -14,6 +14,7 @@ public interface LeagueService {
     List<League> findAll();
     Page<League> findAll(Pageable pageable);
     Page<League> findByAdmin(User admin, Pageable pageable);
+    List<League> findByAdmin(User admin);
     Optional<League> findById(Long id);
     boolean addTeam(League league, Team team);
     void deleteById(Long id);

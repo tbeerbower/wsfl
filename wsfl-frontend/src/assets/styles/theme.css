@@ -1,0 +1,40 @@
+:root {
+  /* Base Colors */
+  --bg-primary: #0f172a;    /* Darker navy background */
+  --bg-secondary: #1e293b;  /* Slightly lighter navy */
+  --bg-tertiary: #334155;   /* Mid-tone for interactive elements */
+  
+  /* Accent Colors */
+  --accent-primary: #a78bfa;    /* Bright Purple */
+  --accent-secondary: #60a5fa;  /* Bright Blue */
+  --accent-success: #4ade80;    /* Bright Green */
+  --accent-warning: #fbbf24;    /* Bright Yellow */
+  --accent-danger: #f87171;     /* Bright Red */
+  
+  /* Text Colors */
+  --text-primary: #f1f5f9;      /* Very light gray, almost white */
+  --text-secondary: #cbd5e1;    /* Light gray */
+  --text-muted: #94a3b8;        /* Mid gray */
+  
+  /* Border Colors */
+  --border-primary: #475569;    /* More visible border */
+  --border-secondary: #64748b;  /* Highlighted border */
+  
+  /* Shadow */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+}

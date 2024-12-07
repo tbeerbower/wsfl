@@ -24,6 +24,9 @@ import org.tbeerbower.wsfl_backend.assembler.UserDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.*;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.exception.ValidationException;
+import org.tbeerbower.wsfl_backend.model.Draft;
+import org.tbeerbower.wsfl_backend.model.League;
+import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Team;
 import org.tbeerbower.wsfl_backend.model.User;
 import org.tbeerbower.wsfl_backend.service.DraftService;
@@ -32,6 +35,8 @@ import org.tbeerbower.wsfl_backend.service.MatchupService;
 import org.tbeerbower.wsfl_backend.service.TeamService;
 import org.tbeerbower.wsfl_backend.service.UserService;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -134,23 +139,38 @@ public class UserController  {
     }
 
     @Operation(
-            summary = "Get leagues administered by user",
-            description = "Retrieves all leagues administered by a specific user"
+            summary = "Get leagues associated with the user",
+            description = "Retrieves all leagues associated with a specific user"
     )
     @ApiResponse(
             responseCode = "200",
             description = "Successfully retrieved leagues"
     )
     @GetMapping("/{id}/leagues")
-    public ResponseEntity<Page<LeagueDetailsDto>> getUserLeagues(@PathVariable Long id,
+    public ResponseEntity<Page<UserLeagueDetailsDto>> getUserLeagues(@PathVariable Long id,
                                                              @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         User user = userService.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
-        Page<LeagueDetailsDto> teams = leagueService.findByAdmin(user, pageable)
-                .map(leagueDtoAssembler::toDetailsDto);
+        List<League> leagues = leagueService.findByAdmin(user);
 
-        return ResponseEntity.ok(teams);
+        Set<Long> teamIds = user.getTeams().stream().map(Team::getId).collect(Collectors.toSet());
+
+        List<Matchup> matchups = matchupService.findByTeamIn(teamIds, teamIds);
+
+        leagues.addAll( matchups.stream()
+                .map(Matchup::getDraft)
+                .map(Draft::getLeague)
+                .distinct()
+                .toList());
+
+        Set<League> leagueSet = new HashSet<>(leagues);
+
+        List<UserLeagueDetailsDto> leagueDtos = leagueSet.stream()
+                .map(league -> leagueDtoAssembler.toUserLeagueDetailsDto(league, user))
+                .toList();
+
+        return ResponseEntity.ok(ControllerUtils.getPaginatedEntities(leagueDtos, pageable));
     }
 
     @Operation(

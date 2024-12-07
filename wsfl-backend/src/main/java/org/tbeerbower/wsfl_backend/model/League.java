@@ -3,8 +3,10 @@ package org.tbeerbower.wsfl_backend.model;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -76,5 +78,32 @@ public class League extends BaseEntity{
 
     public void setDrafts(Set<Draft> drafts) {
         this.drafts = drafts;
+    }
+
+    public List<Standing> getStandings(Draft draft) {
+
+        Map<Team, Standing> teamStandings = new HashMap<>();
+
+        for( Matchup matchup : draft.getMatchups()) {
+
+            if (matchup.isComplete()) {
+                Standing team1Standing = teamStandings.computeIfAbsent(matchup.getTeam1(), k -> new Standing(matchup.getTeam1(), 0, 0, 0, 0));
+                Standing team2Standing = teamStandings.computeIfAbsent(matchup.getTeam2(), k -> new Standing(matchup.getTeam2(), 0, 0, 0, 0));
+                team1Standing.setTotalScore(team1Standing.getTotalScore() + matchup.getTeam1Score());
+                team2Standing.setTotalScore(team2Standing.getTotalScore() + matchup.getTeam2Score());
+
+                if (matchup.getTeam1Score().equals(matchup.getTeam2Score())) {
+                    team1Standing.setTies(team1Standing.getTies() + 1);
+                    team2Standing.setTies(team2Standing.getTies() + 1);
+                } else if (matchup.getTeam1Score() < matchup.getTeam2Score()) {
+                    team1Standing.setWins(team1Standing.getWins() + 1);
+                    team2Standing.setLosses(team2Standing.getLosses() + 1);
+                } else {
+                    team1Standing.setLosses(team1Standing.getLosses() + 1);
+                    team2Standing.setWins(team2Standing.getWins() + 1);
+                }
+            }
+        }
+        return teamStandings.values().stream().sorted().toList();
     }
 } 

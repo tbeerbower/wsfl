@@ -21,10 +21,15 @@ public class RaceSummaryDto {
     @Schema(description = "Whether this is a playoff race", example = "false")
     private Boolean isPlayoff;
 
-    public RaceSummaryDto(Long id, String name, LocalDate date, Boolean isPlayoff) {
+    @Schema(description = "Whether this race is canceled", example = "false")
+    private Boolean isCanceled;
+
+
+    public RaceSummaryDto(Long id, String name, LocalDate date, Boolean isCanceled, Boolean isPlayoff) {
         this.id = id;
         this.name = name;
         this.date = date;
+        this.isCanceled = isCanceled;
         this.isPlayoff = isPlayoff;
     }
 
@@ -33,4 +38,5 @@ public class RaceSummaryDto {
     public String getName() { return name; }
     public LocalDate getDate() { return date; }
     public Boolean getIsPlayoff() { return isPlayoff; }
+    public Boolean getIsCanceled() { return isCanceled; }
 }

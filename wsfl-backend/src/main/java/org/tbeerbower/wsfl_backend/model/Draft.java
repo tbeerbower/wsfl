@@ -31,6 +31,9 @@ public class Draft extends BaseEntity{
     @OneToMany(mappedBy = "draft", cascade = CascadeType.ALL)
     @OrderBy("pickNumber")
     private List<DraftPick> picks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "draft", cascade = CascadeType.ALL)
+    private List<Matchup> matchups = new ArrayList<>();
     
     @ElementCollection
     @CollectionTable(name = "draft_order", 
@@ -83,6 +86,10 @@ public class Draft extends BaseEntity{
         }
     }
 
+    public boolean includes(User user) {
+        return teams.stream().anyMatch(team -> team.getOwner().equals(user));
+    }
+
     public Integer getCurrentRound() {
         return isStarted() ? (isComplete() ? numberOfRounds : picks.size() / teams.size() + 1) : 0;
     }
@@ -93,6 +100,9 @@ public class Draft extends BaseEntity{
 
     public List<DraftPick> getPicks() { return picks; }
     public void setPicks(List<DraftPick> picks) { this.picks = picks; }
+
+    public List<Matchup> getMatchups() { return matchups; }
+    public void setMatchups(List<Matchup> matchups) { this.matchups = matchups; }
     
     public List<Long> getDraftOrder() { return draftOrder; }
     public void setDraftOrder(List<Long> draftOrder) { this.draftOrder = draftOrder; }

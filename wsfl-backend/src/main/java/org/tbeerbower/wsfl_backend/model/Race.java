@@ -14,6 +14,7 @@ public class Race extends BaseEntity{
     
     private String name;
     private LocalDate date;
+    private Boolean isCanceled;
     private Boolean isPlayoff;
 
     @ManyToOne
@@ -28,10 +29,11 @@ public class Race extends BaseEntity{
     }
     
     // Constructor for DTO conversion
-    public Race(Long id, String name, LocalDate date, Boolean isPlayoff) {
+    public Race(Long id, String name, LocalDate date, Boolean isCancelled, Boolean isPlayoff) {
         this.id = id;
         this.name = name;
         this.date = date;
+        this.isCanceled = isCancelled;
         this.isPlayoff = isPlayoff;
     }
     
@@ -60,7 +62,7 @@ public class Race extends BaseEntity{
         this.date = date;
     }
 
-    public Boolean getIsPlayoff() {
+    public Boolean isPlayoff() {
         return isPlayoff;
     }
 
@@ -82,5 +84,13 @@ public class Race extends BaseEntity{
 
     public void setResults(Set<RaceResult> results) {
         this.results = results;
+    }
+
+    public Boolean isCanceled() {
+        return isCanceled;
+    }
+
+    public void setIsCanceled(Boolean isCanceled) {
+        this.isCanceled = isCanceled;
     }
 } 

@@ -21,6 +21,10 @@ public class RaceUpdateDto {
     @Schema(description = "Whether this is a playoff race", example = "false")
     @NotNull(message = "Playoff status is required")
     private Boolean isPlayoff;
+
+    @Schema(description = "Whether this race is canceled", example = "false")
+    @NotNull(message = "Canceled status is required")
+    private Boolean isCanceled;
     
     @Schema(description = "ID of the season this race belongs to", example = "1")
     @NotNull(message = "Season ID is required")
@@ -33,9 +37,12 @@ public class RaceUpdateDto {
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
     
-    public Boolean getIsPlayoff() { return isPlayoff; }
+    public Boolean isPlayoff() { return isPlayoff; }
     public void setIsPlayoff(Boolean isPlayoff) { this.isPlayoff = isPlayoff; }
     
     public Long getSeasonId() { return seasonId; }
     public void setSeasonId(Long seasonId) { this.seasonId = seasonId; }
+
+    public Boolean isCanceled() { return isCanceled; }
+    public void setIsCanceled(Boolean isCanceled) { this.isCanceled = isCanceled; }
 }

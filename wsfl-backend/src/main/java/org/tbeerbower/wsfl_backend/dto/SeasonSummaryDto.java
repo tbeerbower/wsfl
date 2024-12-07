@@ -18,12 +18,17 @@ public class SeasonSummaryDto {
     @Schema(description = "Name of the season")
     private String name;
 
-    public SeasonSummaryDto(Long id, String name) {
+    @Schema(description = "Is the season complete")
+    private boolean isComplete;
+
+    public SeasonSummaryDto(Long id, String name, boolean isComplete) {
         this.id = id;
         this.name = name;
+        this.isComplete = isComplete;
     }
 
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
+    public boolean isComplete() { return isComplete; }
 }

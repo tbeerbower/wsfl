@@ -18,5 +18,6 @@ public interface MatchupRepository extends JpaRepository<Matchup, Long> {
     List<Matchup> findByTeam1OrTeam2(Team team1, Team team2);
     Page<Matchup> findByTeam1IdOrTeam2Id(Long team1Id, Long team2Id, Pageable pageable);
     Page<Matchup> findByTeam1IdInOrTeam2IdIn(Collection<Long> team1Ids, Collection<Long> team2Ids,Pageable pageable);
+    List<Matchup> findByTeam1IdInOrTeam2IdIn(Collection<Long> team1Ids, Collection<Long> team2Ids);
     Page<Matchup> findByRaceIdAndTeam1IdOrRaceIdAndTeam2Id(Long raceId, Long team1Id, Long raceId2, Long team2Id, Pageable pageable);
 }

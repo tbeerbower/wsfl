@@ -55,6 +55,10 @@
             "description": "Team management APIs for managing teams and their rosters"
         },
         {
+            "name": "Season",
+            "description": "Season management APIs for organizing teams and seasons"
+        },
+        {
             "name": "Matchup",
             "description": "Matchup management APIs for creating and managing team matchups"
         }
@@ -1494,6 +1498,116 @@
                 }
             }
         },
+        "/api/seasons": {
+            "get": {
+                "tags": [
+                    "Season"
+                ],
+                "summary": "Get all seasons",
+                "description": "Retrieves a paginated list of all seasons in the system",
+                "operationId": "getAllSeasons",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved seasons",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageSeasonSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Season"
+                ],
+                "summary": "Create new season",
+                "description": "Creates a new season with the provided information",
+                "operationId": "createSeason",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SeasonCreateDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Season created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeasonSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Invalid input data"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to create season",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/runners": {
             "get": {
                 "tags": [
@@ -2702,13 +2816,80 @@
                 }
             }
         },
+        "/api/users/{id}/matchups": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get matchups for user teams",
+                "description": "Retrieves all matchups for a specific user's teams",
+                "operationId": "getUserMatchups",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved matchups",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageMatchupSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/{id}/leagues": {
             "get": {
                 "tags": [
                     "User"
                 ],
-                "summary": "Get leagues administered by user",
-                "description": "Retrieves all leagues administered by a specific user",
+                "summary": "Get leagues associated with the user",
+                "description": "Retrieves all leagues associated with a specific user",
                 "operationId": "getUserLeagues",
                 "parameters": [
                     {
@@ -2761,7 +2942,118 @@
                         "content": {
                             "*/*": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PageLeagueDetailsDto"
+                                    "$ref": "#/components/schemas/PageUserLeagueDetailsDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/drafts": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get drafts for user teams",
+                "description": "Retrieves all drafts for a specific user's teams",
+                "operationId": "getUserDrafts",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved drafts",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDraftSummaryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/seasons/{id}": {
+            "get": {
+                "tags": [
+                    "Season"
+                ],
+                "summary": "Get season by ID",
+                "description": "Retrieves detailed information about a specific season",
+                "operationId": "getSeasonById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Season found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeasonSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Season not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Season not found with id: 123"
                                 }
                             }
                         }
@@ -2993,6 +3285,84 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PageTeamSummaryDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "League not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "League not found with id: 123"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/leagues/{id}/seasons": {
+            "get": {
+                "tags": [
+                    "League"
+                ],
+                "summary": "Get league seasons by ID",
+                "description": "Retrieves summary information about a specific league's seasons",
+                "operationId": "getLeagueSeasonById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "League seasons found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageSeasonDetailDto"
                                 }
                             }
                         }
@@ -3515,6 +3885,11 @@
                         "type": "boolean",
                         "description": "Whether this is a playoff race",
                         "example": false
+                    },
+                    "isCanceled": {
+                        "type": "boolean",
+                        "description": "Whether this race is canceled",
+                        "example": false
                     }
                 },
                 "description": "Summary representation of a race"
@@ -3522,7 +3897,6 @@
             "RaceUpdateDto": {
                 "required": [
                     "date",
-                    "isPlayoff",
                     "name",
                     "seasonId"
                 ],
@@ -3541,14 +3915,23 @@
                     },
                     "isPlayoff": {
                         "type": "boolean",
-                        "description": "Whether this is a playoff race",
-                        "example": false
+                        "writeOnly": true
+                    },
+                    "isCanceled": {
+                        "type": "boolean",
+                        "writeOnly": true
                     },
                     "seasonId": {
                         "type": "integer",
                         "description": "ID of the season this race belongs to",
                         "format": "int64",
                         "example": 1
+                    },
+                    "playoff": {
+                        "type": "boolean"
+                    },
+                    "canceled": {
+                        "type": "boolean"
                     }
                 },
                 "description": "Data transfer object for updating a race"
@@ -3634,6 +4017,9 @@
                     "name": {
                         "type": "string",
                         "description": "Name of the season"
+                    },
+                    "complete": {
+                        "type": "boolean"
                     }
                 },
                 "description": "Summary information about a season"
@@ -3689,6 +4075,13 @@
                         "items": {
                             "$ref": "#/components/schemas/TeamSummaryDto"
                         }
+                    },
+                    "seasons": {
+                        "type": "array",
+                        "description": "List of seasons for the league",
+                        "items": {
+                            "$ref": "#/components/schemas/SeasonSummaryDto"
+                        }
                     }
                 },
                 "description": "Detailed representation of a league"
@@ -3727,107 +4120,6 @@
                 },
                 "description": "Draft update data"
             },
-            "Draft": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "league": {
-                        "$ref": "#/components/schemas/League"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "season": {
-                        "$ref": "#/components/schemas/Season"
-                    },
-                    "numberOfRounds": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "snakeOrder": {
-                        "type": "boolean"
-                    },
-                    "startTime": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "isStarted": {
-                        "type": "boolean",
-                        "writeOnly": true
-                    },
-                    "isComplete": {
-                        "type": "boolean",
-                        "writeOnly": true
-                    },
-                    "currentRound": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "currentPick": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "picks": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/DraftPick"
-                        }
-                    },
-                    "draftOrder": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    },
-                    "teams": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Team"
-                        }
-                    },
-                    "started": {
-                        "type": "boolean"
-                    },
-                    "complete": {
-                        "type": "boolean"
-                    }
-                }
-            },
-            "DraftPick": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "draft": {
-                        "$ref": "#/components/schemas/Draft"
-                    },
-                    "team": {
-                        "$ref": "#/components/schemas/Team"
-                    },
-                    "runner": {
-                        "$ref": "#/components/schemas/Runner"
-                    },
-                    "round": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "pickNumber": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "pickTime": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            },
             "DraftSummaryDto": {
                 "type": "object",
                 "properties": {
@@ -3844,7 +4136,7 @@
                         "description": "Draft name"
                     },
                     "season": {
-                        "$ref": "#/components/schemas/Season"
+                        "$ref": "#/components/schemas/SeasonSummaryDto"
                     },
                     "numberOfRounds": {
                         "type": "integer",
@@ -3859,6 +4151,10 @@
                         "type": "string",
                         "description": "Start time of the draft",
                         "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Draft status"
                     },
                     "currentRound": {
                         "type": "integer",
@@ -3887,226 +4183,6 @@
                     }
                 },
                 "description": "Summary information about a draft"
-            },
-            "League": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "maxTeams": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "admin": {
-                        "$ref": "#/components/schemas/User"
-                    },
-                    "teams": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Team"
-                        }
-                    }
-                }
-            },
-            "Race": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "date": {
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "isPlayoff": {
-                        "type": "boolean"
-                    },
-                    "season": {
-                        "$ref": "#/components/schemas/Season"
-                    },
-                    "results": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/RaceResult"
-                        }
-                    }
-                }
-            },
-            "RaceResult": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "genderPlace": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "overallPlace": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "time": {
-                        "type": "string"
-                    },
-                    "race": {
-                        "$ref": "#/components/schemas/Race"
-                    },
-                    "runner": {
-                        "$ref": "#/components/schemas/Runner"
-                    }
-                }
-            },
-            "Runner": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "gender": {
-                        "type": "string"
-                    },
-                    "results": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/RaceResult"
-                        }
-                    },
-                    "numberOfRaces": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "averageOverallPlace": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "averageGenderPlace": {
-                        "type": "number",
-                        "format": "double"
-                    }
-                }
-            },
-            "Season": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "drafts": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Draft"
-                        }
-                    },
-                    "races": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Race"
-                        }
-                    }
-                },
-                "description": "Season of the draft"
-            },
-            "Team": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "wins": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "losses": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "ties": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "totalScore": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "owner": {
-                        "$ref": "#/components/schemas/User"
-                    },
-                    "league": {
-                        "$ref": "#/components/schemas/League"
-                    },
-                    "drafts": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Draft"
-                        }
-                    }
-                }
-            },
-            "User": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "picture": {
-                        "type": "string"
-                    },
-                    "active": {
-                        "type": "boolean"
-                    },
-                    "password": {
-                        "type": "string",
-                        "writeOnly": true
-                    },
-                    "roles": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "teams": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Team"
-                        }
-                    }
-                }
             },
             "TeamCreateDto": {
                 "required": [
@@ -4137,6 +4213,20 @@
                     }
                 },
                 "description": "Team creation details"
+            },
+            "SeasonCreateDto": {
+                "required": [
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the season",
+                        "example": "Winter 2024-2025"
+                    }
+                },
+                "description": "League creation details"
             },
             "RaceResultCreateDto": {
                 "required": [
@@ -4617,6 +4707,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "unpaged": {
+                        "type": "boolean"
+                    },
                     "pageNumber": {
                         "type": "integer",
                         "format": "int32"
@@ -4624,12 +4720,6 @@
                     "pageSize": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "paged": {
-                        "type": "boolean"
-                    },
-                    "unpaged": {
-                        "type": "boolean"
                     }
                 }
             },
@@ -4639,10 +4729,10 @@
                     "empty": {
                         "type": "boolean"
                     },
-                    "unsorted": {
+                    "sorted": {
                         "type": "boolean"
                     },
-                    "sorted": {
+                    "unsorted": {
                         "type": "boolean"
                     }
                 }
@@ -4693,7 +4783,39 @@
                     }
                 }
             },
-            "PageLeagueDetailsDto": {
+            "MatchupSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the matchup",
+                        "format": "int64"
+                    },
+                    "raceId": {
+                        "type": "integer",
+                        "description": "ID of the race this matchup belongs to",
+                        "format": "int64"
+                    },
+                    "team1": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team2": {
+                        "$ref": "#/components/schemas/TeamSummaryDto"
+                    },
+                    "team1Score": {
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32"
+                    },
+                    "team2Score": {
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32"
+                    }
+                },
+                "description": "Summary information about a matchup"
+            },
+            "PageMatchupSummaryDto": {
                 "type": "object",
                 "properties": {
                     "totalElements": {
@@ -4711,7 +4833,372 @@
                     "content": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/LeagueDetailsDto"
+                            "$ref": "#/components/schemas/MatchupSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageUserLeagueDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserLeagueDetailsDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "UserDraftDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the draft",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Draft name"
+                    },
+                    "season": {
+                        "$ref": "#/components/schemas/UserSeasonDetailsDto"
+                    },
+                    "numberOfRounds": {
+                        "type": "integer",
+                        "description": "Number of rounds in the draft",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Draft status"
+                    },
+                    "currentRound": {
+                        "type": "integer",
+                        "description": "Current round number",
+                        "format": "int32"
+                    },
+                    "currentPick": {
+                        "type": "integer",
+                        "description": "Current pick number within the round",
+                        "format": "int32"
+                    },
+                    "standings": {
+                        "type": "array",
+                        "description": "List of standings for the draft",
+                        "items": {
+                            "$ref": "#/components/schemas/UserStandingDto"
+                        }
+                    },
+                    "teams": {
+                        "type": "array",
+                        "description": "List of matchups for the draft",
+                        "items": {
+                            "$ref": "#/components/schemas/UserTeamMatchupsDetailsDto"
+                        }
+                    }
+                },
+                "description": "Summary information about a draft"
+            },
+            "UserLeagueDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the league",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the league",
+                        "example": "Fantasy Premier League 2024"
+                    },
+                    "admin": {
+                        "$ref": "#/components/schemas/UserSummaryDto"
+                    },
+                    "drafts": {
+                        "type": "array",
+                        "description": "List of drafts for the league",
+                        "items": {
+                            "$ref": "#/components/schemas/UserDraftDetailsDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a league"
+            },
+            "UserMatchupDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the matchup",
+                        "format": "int64"
+                    },
+                    "race": {
+                        "$ref": "#/components/schemas/RaceSummaryDto"
+                    },
+                    "team1": {
+                        "$ref": "#/components/schemas/UserTeamDetailsDto"
+                    },
+                    "team2": {
+                        "$ref": "#/components/schemas/UserTeamDetailsDto"
+                    },
+                    "team1Score": {
+                        "type": "integer",
+                        "description": "Score of the first team",
+                        "format": "int32"
+                    },
+                    "team2Score": {
+                        "type": "integer",
+                        "description": "Score of the second team",
+                        "format": "int32"
+                    }
+                },
+                "description": "Detailed information about a matchup"
+            },
+            "UserSeasonDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the season",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the season"
+                    },
+                    "complete": {
+                        "type": "boolean"
+                    }
+                },
+                "description": "Summary information about a season"
+            },
+            "UserStandingDto": {
+                "type": "object",
+                "properties": {
+                    "team": {
+                        "$ref": "#/components/schemas/UserTeamDetailsDto"
+                    },
+                    "wins": {
+                        "type": "integer",
+                        "description": "Number of wins",
+                        "format": "int32"
+                    },
+                    "losses": {
+                        "type": "integer",
+                        "description": "Number of losses",
+                        "format": "int32"
+                    },
+                    "ties": {
+                        "type": "integer",
+                        "description": "Number of ties",
+                        "format": "int32"
+                    },
+                    "totalScore": {
+                        "type": "integer",
+                        "description": "Total score",
+                        "format": "int32"
+                    }
+                },
+                "description": "Detailed representation of a standing"
+            },
+            "UserTeamDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the team",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the team",
+                        "example": "Speed Demons"
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/UserSummaryDto"
+                    }
+                },
+                "description": "Detailed representation of a team"
+            },
+            "UserTeamMatchupsDetailsDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the team",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the team",
+                        "example": "Speed Demons"
+                    },
+                    "wins": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches won",
+                        "format": "int32",
+                        "example": 5
+                    },
+                    "losses": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches lost",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "ties": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Number of matches tied",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "totalScore": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Total score accumulated by the team",
+                        "format": "int32",
+                        "example": 450
+                    },
+                    "matchups": {
+                        "type": "array",
+                        "description": "List of matchups for the draft",
+                        "items": {
+                            "$ref": "#/components/schemas/UserMatchupDetailsDto"
+                        }
+                    }
+                },
+                "description": "Detailed representation of a team"
+            },
+            "PageDraftSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftSummaryDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageSeasonSummaryDto": {
+                "type": "object",
+                "properties": {
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SeasonSummaryDto"
                         }
                     },
                     "number": {
@@ -4923,84 +5410,6 @@
                     }
                 }
             },
-            "MatchupSummaryDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "description": "Unique identifier of the matchup",
-                        "format": "int64"
-                    },
-                    "raceId": {
-                        "type": "integer",
-                        "description": "ID of the race this matchup belongs to",
-                        "format": "int64"
-                    },
-                    "team1": {
-                        "$ref": "#/components/schemas/TeamSummaryDto"
-                    },
-                    "team2": {
-                        "$ref": "#/components/schemas/TeamSummaryDto"
-                    },
-                    "team1Score": {
-                        "type": "integer",
-                        "description": "Score of the first team",
-                        "format": "int32"
-                    },
-                    "team2Score": {
-                        "type": "integer",
-                        "description": "Score of the second team",
-                        "format": "int32"
-                    }
-                },
-                "description": "Summary information about a matchup"
-            },
-            "PageMatchupSummaryDto": {
-                "type": "object",
-                "properties": {
-                    "totalElements": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "totalPages": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "size": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MatchupSummaryDto"
-                        }
-                    },
-                    "number": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "sort": {
-                        "$ref": "#/components/schemas/SortObject"
-                    },
-                    "first": {
-                        "type": "boolean"
-                    },
-                    "last": {
-                        "type": "boolean"
-                    },
-                    "numberOfElements": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
-                    "empty": {
-                        "type": "boolean"
-                    }
-                }
-            },
             "PageLeagueSummaryDto": {
                 "type": "object",
                 "properties": {
@@ -5093,7 +5502,7 @@
                     }
                 }
             },
-            "PageDraftSummaryDto": {
+            "PageSeasonDetailDto": {
                 "type": "object",
                 "properties": {
                     "totalElements": {
@@ -5111,7 +5520,7 @@
                     "content": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/DraftSummaryDto"
+                            "$ref": "#/components/schemas/SeasonDetailDto"
                         }
                     },
                     "number": {
@@ -5138,6 +5547,38 @@
                         "type": "boolean"
                     }
                 }
+            },
+            "SeasonDetailDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the season",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the season"
+                    },
+                    "drafts": {
+                        "type": "array",
+                        "description": "The season drafts",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftSummaryDto"
+                        }
+                    },
+                    "races": {
+                        "type": "array",
+                        "description": "The season races",
+                        "items": {
+                            "$ref": "#/components/schemas/RaceSummaryDto"
+                        }
+                    },
+                    "complete": {
+                        "type": "boolean"
+                    }
+                },
+                "description": "Summary information about a season"
             },
             "DraftPickSummaryDto": {
                 "type": "object",

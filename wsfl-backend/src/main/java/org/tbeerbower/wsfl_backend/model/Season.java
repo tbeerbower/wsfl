@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,5 +54,16 @@ public class Season extends BaseEntity{
 
     public void setRaces(List<Race> races) {
         this.races = races;
+    }
+
+    @Transient
+    public Boolean isComplete() {
+        Boolean complete = !races.isEmpty();
+        for (Race race : races) {
+            if (!race.isCanceled() && race.getResults().isEmpty()) {
+                return false;
+            }
+        }
+        return complete;
     }
 }

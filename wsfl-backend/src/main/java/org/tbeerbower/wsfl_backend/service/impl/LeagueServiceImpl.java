@@ -39,6 +39,11 @@ public class LeagueServiceImpl implements LeagueService {
     }
 
     @Override
+    public List<League> findByAdmin(User admin) {
+        return leagueRepository.findByAdmin(admin);
+    }
+
+    @Override
     public Page<League> findAll(Pageable pageable) {
         return leagueRepository.findAll(pageable);
     }

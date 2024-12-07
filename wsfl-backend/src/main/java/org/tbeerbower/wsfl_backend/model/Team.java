@@ -67,6 +67,7 @@ public class Team extends BaseEntity{
         this.name = name;
     }
 
+    @Transient
     public Integer getWins() {
         int wins = 0;
         for (Matchup matchup : getAllMatchups()) {
@@ -84,6 +85,7 @@ public class Team extends BaseEntity{
         return wins;
     }
 
+    @Transient
     public Integer getLosses() {
         int losses = 0;
         for (Matchup matchup : getAllMatchups()) {
@@ -101,6 +103,7 @@ public class Team extends BaseEntity{
         return losses;
     }
 
+    @Transient
     public Integer getTies() {
         int ties = 0;
         for (Matchup matchup : getAllMatchups()) {
@@ -113,6 +116,7 @@ public class Team extends BaseEntity{
         return ties;
     }
 
+    @Transient
     public Integer getTotalScore() {
         int totalScore = 0;
         for (Matchup matchup : getAllMatchups()) {
