@@ -17,26 +17,21 @@ public class RaceSummaryDto {
     
     @Schema(description = "Date of the race", example = "2024-06-15")
     private LocalDate date;
-    
-    @Schema(description = "Whether this is a playoff race", example = "false")
-    private Boolean isPlayoff;
 
     @Schema(description = "Whether this race is canceled", example = "false")
     private Boolean isCanceled;
 
 
-    public RaceSummaryDto(Long id, String name, LocalDate date, Boolean isCanceled, Boolean isPlayoff) {
+    public RaceSummaryDto(Long id, String name, LocalDate date, Boolean isCanceled) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.isCanceled = isCanceled;
-        this.isPlayoff = isPlayoff;
     }
 
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
     public LocalDate getDate() { return date; }
-    public Boolean getIsPlayoff() { return isPlayoff; }
     public Boolean getIsCanceled() { return isCanceled; }
 }

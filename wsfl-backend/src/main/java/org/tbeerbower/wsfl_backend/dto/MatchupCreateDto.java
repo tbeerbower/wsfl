@@ -30,17 +30,26 @@ public class MatchupCreateDto {
     @NotNull(message = "Draft ID is required")
     private Long draftId;
 
+    @Schema(description = "Whether this is a playoff race", example = "false")
+    private Boolean isPlayoff;
+
+    @Schema(description = "Whether this is a championship race", example = "false")
+    private Boolean isChampionship;
+
     public MatchupCreateDto() {
     }
 
     public MatchupCreateDto(Long raceId, Long team1Id, Long team2Id, 
-                          Integer team1Score, Integer team2Score, Long draftId) {
+                          Integer team1Score, Integer team2Score, Long draftId,
+                            Boolean isPlayoff, Boolean isChampionship) {
         this.raceId = raceId;
         this.team1Id = team1Id;
         this.team2Id = team2Id;
         this.team1Score = team1Score;
         this.team2Score = team2Score;
         this.draftId = draftId;
+        this.isPlayoff = isPlayoff;
+        this.isChampionship = isChampionship;
     }
 
     // Getters and Setters
@@ -61,4 +70,11 @@ public class MatchupCreateDto {
 
     public Long getDraftId() { return draftId; }
     public void setDraftId(Long draftId) { this.draftId = draftId; }
+
+    public Boolean isPlayoff() { return isPlayoff; }
+    public void setPlayoff(Boolean isPlayoff) { this.isPlayoff = isPlayoff; }
+
+    public Boolean isChampionship() { return isChampionship; }
+    public void setChampionship(Boolean isChampionship) { this.isChampionship = isChampionship; }
+
 }

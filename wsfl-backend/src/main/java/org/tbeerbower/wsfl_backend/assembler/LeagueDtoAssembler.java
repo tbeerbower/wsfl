@@ -17,6 +17,7 @@ import org.tbeerbower.wsfl_backend.dto.UserTeamMatchupsDetailsDto;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.League;
 import org.tbeerbower.wsfl_backend.model.Matchup;
+import org.tbeerbower.wsfl_backend.model.Race;
 import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.model.Standing;
 import org.tbeerbower.wsfl_backend.model.Team;
@@ -114,11 +115,32 @@ public class LeagueDtoAssembler  {
     }
 
     private UserDraftDetailsDto createUserDraftDetailsDto(Draft draft, User user) {
+        String seasonStatus = "Season pending";
+
+        List<Race> races = draft.getSeason().getRaces();
+        List<Matchup> matchups = draft.getMatchups();
+
+        if (!races.isEmpty()) {
+            if (!matchups.isEmpty()) {
+                boolean matchupsComplete = matchups.stream().allMatch(Matchup::isComplete);
+                boolean hasPlayoffs = matchups.stream().anyMatch(Matchup::isPlayoff);
+                boolean hasChampionship = matchups.stream().anyMatch(Matchup::isPlayoff);
+
+                if (hasChampionship) {
+                    seasonStatus = matchupsComplete ? "Season complete": "Championship active";
+                } else if (hasPlayoffs) {
+                    seasonStatus = matchupsComplete ? "Championship pending" : "Playoff active";
+                } else {
+                    seasonStatus = matchupsComplete ? "Playoff pending": "Season active";
+                }
+            }
+        }
 
         UserSeasonDetailsDto seasonDto = new UserSeasonDetailsDto(
                 draft.getSeason().getId(),
                 draft.getSeason().getName(),
-                draft.getSeason().isComplete()
+                draft.getSeason().isComplete(),
+                seasonStatus
         );
 
         Set<Team> teams = draft.getTeams().stream()
@@ -175,8 +197,7 @@ public class LeagueDtoAssembler  {
                 matchup.getRace().getId(),
                 matchup.getRace().getName(),
                 matchup.getRace().getDate(),
-                matchup.getRace().isCanceled(),
-                matchup.getRace().isPlayoff()
+                matchup.getRace().isCanceled()
         );
 
         Team team1 = matchup.getTeam1();
@@ -191,7 +212,9 @@ public class LeagueDtoAssembler  {
                 team1Dto,
                 team2Dto,
                 matchup.getTeam1Score(),
-                matchup.getTeam2Score()
+                matchup.getTeam2Score(),
+                matchup.isPlayoff(),
+                matchup.isChampionship()
         );
     }
 

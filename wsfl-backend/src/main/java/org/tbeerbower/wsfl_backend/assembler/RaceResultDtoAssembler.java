@@ -35,8 +35,7 @@ public class RaceResultDtoAssembler {
                 raceResult.getRace().getId(),
                 raceResult.getRace().getName(),
                 raceResult.getRace().getDate(),
-                raceResult.getRace().isCanceled(),
-                raceResult.getRace().isPlayoff()
+                raceResult.getRace().isCanceled()
             ),
             runnerDtoAssembler.toSummaryDto(raceResult.getRunner())
         );

@@ -25,8 +25,7 @@ public class RaceDtoAssembler {
             race.getId(),
             race.getName(),
             race.getDate(),
-            race.isCanceled(),
-            race.isPlayoff()
+            race.isCanceled()
         );
     }
     
@@ -42,7 +41,6 @@ public class RaceDtoAssembler {
             race.getId(),
             race.getName(),
             race.getDate(),
-            race.isPlayoff(),
                 seasonDto,
             race.getResults().stream()
                 .map(this::toRaceResultDto)

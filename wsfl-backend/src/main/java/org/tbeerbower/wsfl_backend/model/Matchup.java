@@ -13,6 +13,9 @@ public class Matchup extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private boolean isPlayoff;
+    private boolean isChampionship;
+
     @ManyToOne
     @JoinColumn(name = "race_id")
     private Race race;
@@ -34,12 +37,14 @@ public class Matchup extends BaseEntity {
     }
 
     // Constructor for DTO conversion
-    public Matchup(Long id, Race race, Team team1, Team team2, Draft draft) {
+    public Matchup(Long id, Race race, Team team1, Team team2, Draft draft, boolean isPlayoff, boolean isChampionship) {
         this.id = id;
         this.race = race;
         this.team1 = team1;
         this.team2 = team2;
         this.draft = draft;
+        this.isPlayoff = isPlayoff;
+        this.isChampionship = isChampionship;
     }
 
     // Getters and Setters
@@ -99,6 +104,22 @@ public class Matchup extends BaseEntity {
 
     public void setDraft(Draft draft) {
         this.draft = draft;
+    }
+
+    public boolean isPlayoff() {
+        return isPlayoff;
+    }
+
+    public void setPlayoff(boolean playoff) {
+        isPlayoff = playoff;
+    }
+
+    public boolean isChampionship() {
+        return isChampionship;
+    }
+
+    public void setChampionship(boolean championship) {
+        isChampionship = championship;
     }
 
     @Transient

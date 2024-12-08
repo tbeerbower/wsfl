@@ -63,7 +63,14 @@
             </div>
             
             <div class="teams-section">
-              <h5 class="section-title">My Teams</h5>
+              <div class="section-header">
+                <h5 class="section-title">My Teams</h5>
+                <div v-if="draft.season?.status" 
+                     class="season-status" 
+                     :class="draft.season.status.toLowerCase().replace(' ', '-')">
+                  {{ draft.season.status }}
+                </div>
+              </div>
               <div class="teams-container">
                 <div v-for="team in draft.teams" :key="team.id" class="team-card">
                   <div class="team-header">
@@ -397,6 +404,67 @@ h5.section-title {
   margin-top: .75em;
   font-size: 1em;
   color: lightslategray;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.season-status {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+}
+
+.season-status.season-pending {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.season-status.season-active {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.season-status.playoff-pending {
+  background-color: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+
+.season-status.playoff-active {
+  background-color: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+
+.season-status.championship-pending {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.season-status.championship-active {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.season-status.season-complete {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.section-title {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
 }
 
 @media (max-width: 768px) {

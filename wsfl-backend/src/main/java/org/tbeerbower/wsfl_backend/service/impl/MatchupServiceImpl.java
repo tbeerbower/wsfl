@@ -157,6 +157,8 @@ public class MatchupServiceImpl implements MatchupService {
         matchup.setTeam1(team1);
         matchup.setTeam2(team2);
         matchup.setDraft(draft);
+        matchup.setPlayoff(createDto.isPlayoff());
+        matchup.setChampionship(createDto.isChampionship());
 
         
         return matchupRepository.save(matchup);

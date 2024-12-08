@@ -129,7 +129,6 @@ public class RaceController  {
         Race race = new Race();
         race.setName(raceCreateDto.getName());
         race.setDate(raceCreateDto.getDate());
-        race.setIsPlayoff(raceCreateDto.getIsPlayoff());
         race.setSeason(season);
         Race savedRace = raceService.save(race);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToRaceDetailsDto(savedRace));
@@ -165,7 +164,6 @@ public class RaceController  {
         
         race.setName(raceUpdateDto.getName());
         race.setDate(raceUpdateDto.getDate());
-        race.setIsPlayoff(raceUpdateDto.isPlayoff());
         race.setIsCanceled(raceUpdateDto.isCanceled());
 
         if (raceUpdateDto.getSeasonId() != null) {

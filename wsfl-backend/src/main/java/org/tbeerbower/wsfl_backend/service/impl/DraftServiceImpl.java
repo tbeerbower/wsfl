@@ -314,6 +314,8 @@ public class DraftServiceImpl implements DraftService {
                 matchup.setTeam1(team1);
                 matchup.setTeam2(team2);
                 matchup.setRace(race);
+                matchup.setPlayoff(false);
+                matchup.setChampionship(false);
                 matchups.add(matchup);
             }
 
@@ -342,6 +344,8 @@ public class DraftServiceImpl implements DraftService {
         matchup.setTeam1(standings.get(0).getTeam());
         matchup.setTeam2(standings.get(3).getTeam());
         matchup.setRace(race);
+        matchup.setPlayoff(true);
+        matchup.setChampionship(false);
         matchups.add(matchup);
 
 
@@ -349,6 +353,8 @@ public class DraftServiceImpl implements DraftService {
         matchup.setDraft(draft);
         matchup.setTeam1(standings.get(1).getTeam());
         matchup.setTeam2(standings.get(2).getTeam());
+        matchup.setPlayoff(true);
+        matchup.setChampionship(false);
         matchup.setRace(race);
         matchups.add(matchup);
 
@@ -372,6 +378,8 @@ public class DraftServiceImpl implements DraftService {
         matchup.setDraft(draft);
         matchup.setTeam1(playoff1.getWinner(false));
         matchup.setTeam2(playoff2.getWinner(false));
+        matchup.setPlayoff(false);
+        matchup.setChampionship(true);
         matchup.setRace(race);
 
         draft.getMatchups().add(matchup);

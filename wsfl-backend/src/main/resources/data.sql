@@ -118,27 +118,27 @@ INSERT INTO runners (id, name, gender) VALUES
 
 
 -- Insert Races
-INSERT INTO races (id, name, date, is_playoff, is_canceled, season_id) VALUES
-(1, 'Covered Bridge', '2024-12-15', false, false, 1),
-(2, 'Jingle Bell', '2024-12-22', false, false, 1),
-(3, 'Cham-Pain', '2025-01-01', false, false, 1),
-(4, 'Tyler Challenge', '2025-01-05', false, false, 1),
-(5, 'Wild Card', '2025-01-12', false, false, 1),
-(6, 'Polar Bear', '2025-01-19', false, false, 1),
-(7, 'Honest Abe', '2025-01-26', false, false, 1),
-(8, 'Terrible Tyler', '2025-02-02', false, false, 1),
-(9, 'Pick Your Way', '2025-02-09', true, false, 1),
-(10, 'Eenie-Meanie-Minie-Moe', '2025-02-16', true, false, 1),
+INSERT INTO races (id, name, date, is_canceled, season_id) VALUES
+(1, 'Covered Bridge', '2024-12-15', false, 1),
+(2, 'Jingle Bell', '2024-12-22', false, 1),
+(3, 'Cham-Pain', '2025-01-01', false, 1),
+(4, 'Tyler Challenge', '2025-01-05', false, 1),
+(5, 'Wild Card', '2025-01-12', false, 1),
+(6, 'Polar Bear', '2025-01-19', false, 1),
+(7, 'Honest Abe', '2025-01-26', false, 1),
+(8, 'Terrible Tyler', '2025-02-02', false, 1),
+(9, 'Pick Your Way', '2025-02-09', false, 1),
+(10, 'Eenie-Meanie-Minie-Moe', '2025-02-16', false, 1),
 
-(11, 'Spring Fling', '2025-04-15', false, false, 2),
-(12, 'Spring Break', '2025-05-16', false, false, 2),
-(13, 'Bloomin Run', '2025-06-17', false, false, 2),
-(14, 'Forth 5K', '2025-07-04', true, false, 2),
+(11, 'Spring Fling', '2025-04-15', false, 2),
+(12, 'Spring Break', '2025-05-16', false, 2),
+(13, 'Bloomin Run', '2025-06-17', false, 2),
+(14, 'Forth 5K', '2025-07-04', false, 2),
 
-(15, 'Summer Sizzle', '2025-08-15', false, false, 3),
-(16, 'Dog Days', '2025-09-16', false, false, 3),
-(17, 'Fall Foliage', '2025-10-17', false, false, 3),
-(18, 'Turkey Trot', '2025-11-04', true, false, 3);
+(15, 'Summer Sizzle', '2025-08-15', false, 3),
+(16, 'Dog Days', '2025-09-16', false, 3),
+(17, 'Fall Foliage', '2025-10-17', false, 3),
+(18, 'Turkey Trot', '2025-11-04', false, 3);
 
 -- Insert Race Results for New Runners
 -- We'll insert results for 2-9 races per runner to simulate participation
@@ -260,78 +260,78 @@ INSERT INTO draft_picks (id, draft_id, team_id, runner_id, round, pick_number, p
 
 
 ---- Insert Matchups for all 10 races
---INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
+--INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id, is_playoff, is_championship) VALUES
 ---- Race 1
---(1, 1, 1, 2, 1), -- Speed Demons vs Trail Blazers
---(2, 1, 3, 4, 1), -- Road Warriors vs Hill Climbers
---(3, 1, 5, 6, 1), -- Winter Runners vs Snow Striders
+--(1, 1, 1, 2, 1, false, false), -- Speed Demons vs Trail Blazers
+--(2, 1, 3, 4, 1, false, false), -- Road Warriors vs Hill Climbers
+--(3, 1, 5, 6, 1, false, false), -- Winter Runners vs Snow Striders
 --
 ---- Race 2
---(4, 2, 1, 3, 1), -- Speed Demons vs Road Warriors
---(5, 2, 2, 5, 1), -- Trail Blazers vs Winter Runners
---(6, 2, 4, 6, 1), -- Hill Climbers vs Snow Striders
+--(4, 2, 1, 3, 1, false, false), -- Speed Demons vs Road Warriors
+--(5, 2, 2, 5, 1, false, false), -- Trail Blazers vs Winter Runners
+--(6, 2, 4, 6, 1, false, false), -- Hill Climbers vs Snow Striders
 --
 ---- Race 3
---(7, 3, 1, 4, 1), -- Speed Demons vs Hill Climbers
---(8, 3, 2, 6, 1), -- Trail Blazers vs Snow Striders
---(9, 3, 3, 5, 1), -- Road Warriors vs Winter Runners
+--(7, 3, 1, 4, 1, false, false), -- Speed Demons vs Hill Climbers
+--(8, 3, 2, 6, 1, false, false), -- Trail Blazers vs Snow Striders
+--(9, 3, 3, 5, 1, false, false), -- Road Warriors vs Winter Runners
 --
 ---- Race 4
---(10, 4, 1, 5, 1), -- Speed Demons vs Winter Runners
---(11, 4, 2, 4, 1), -- Trail Blazers vs Hill Climbers
---(12, 4, 3, 6, 1), -- Road Warriors vs Snow Striders
+--(10, 4, 1, 5, 1, false, false), -- Speed Demons vs Winter Runners
+--(11, 4, 2, 4, 1, false, false), -- Trail Blazers vs Hill Climbers
+--(12, 4, 3, 6, 1, false, false), -- Road Warriors vs Snow Striders
 --
 ---- Race 5
---(13, 5, 1, 6, 1), -- Speed Demons vs Snow Striders
---(14, 5, 2, 3, 1), -- Trail Blazers vs Road Warriors
---(15, 5, 4, 5, 1), -- Hill Climbers vs Winter Runners
+--(13, 5, 1, 6, 1, false, false), -- Speed Demons vs Snow Striders
+--(14, 5, 2, 3, 1, false, false), -- Trail Blazers vs Road Warriors
+--(15, 5, 4, 5, 1, false, false), -- Hill Climbers vs Winter Runners
 --
 ---- Race 6
---(16, 6, 1, 2, 1), -- Speed Demons vs Trail Blazers
---(17, 6, 3, 4, 1), -- Road Warriors vs Hill Climbers
---(18, 6, 5, 6, 1), -- Winter Runners vs Snow Striders
+--(16, 6, 1, 2, 1, false, false), -- Speed Demons vs Trail Blazers
+--(17, 6, 3, 4, 1, false, false), -- Road Warriors vs Hill Climbers
+--(18, 6, 5, 6, 1, false, false), -- Winter Runners vs Snow Striders
 --
 ---- Race 7
---(19, 7, 1, 3, 1), -- Speed Demons vs Road Warriors
---(20, 7, 2, 5, 1), -- Trail Blazers vs Winter Runners
---(21, 7, 4, 6, 1), -- Hill Climbers vs Snow Striders
+--(19, 7, 1, 3, 1, false, false), -- Speed Demons vs Road Warriors
+--(20, 7, 2, 5, 1, false, false), -- Trail Blazers vs Winter Runners
+--(21, 7, 4, 6, 1, false, false), -- Hill Climbers vs Snow Striders
 --
 ---- Race 8
---(22, 8, 1, 4, 1), -- Speed Demons vs Hill Climbers
---(23, 8, 2, 6, 1), -- Trail Blazers vs Snow Striders
---(24, 8, 3, 5, 1); -- Road Warriors vs Winter Runners
+--(22, 8, 1, 4, 1, false, false), -- Speed Demons vs Hill Climbers
+--(23, 8, 2, 6, 1, false, false), -- Trail Blazers vs Snow Striders
+--(24, 8, 3, 5, 1, false, false); -- Road Warriors vs Winter Runners
 
 ---- Race 9
---(25, 9, 1, 5, 1), -- Speed Demons vs Winter Runners
---(26, 9, 2, 4, 1), -- Trail Blazers vs Hill Climbers
---(27, 9, 3, 6, 1), -- Road Warriors vs Snow Striders
+--(25, 9, 1, 5, 1, false, false), -- Speed Demons vs Winter Runners
+--(26, 9, 2, 4, 1, false, false), -- Trail Blazers vs Hill Climbers
+--(27, 9, 3, 6, 1, false, false), -- Road Warriors vs Snow Striders
 --
 ---- Race 10
---(28, 10, 1, 6, 1), -- Speed Demons vs Snow Striders
---(29, 10, 2, 3, 1), -- Trail Blazers vs Road Warriors
---(30, 10, 4, 5, 1); -- Hill Climbers vs Winter Runners
+--(28, 10, 1, 6, 1, false, false), -- Speed Demons vs Snow Striders
+--(29, 10, 2, 3, 1, false, false), -- Trail Blazers vs Road Warriors
+--(30, 10, 4, 5, 1, false, false); -- Hill Climbers vs Winter Runners
 
 -- Insert Matchups for all 4 spring races
---INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id) VALUES
+--INSERT INTO matchups (id, race_id, team1_id, team2_id, draft_id, is_playoff, is_championship) VALUES
 ---- Race 1
---(31, 11, 1, 2, 2), -- Speed Demons vs Trail Blazers
---(32, 11, 3, 4, 2), -- Road Warriors vs Hill Climbers
---(33, 11, 5, 6, 2), -- Winter Runners vs Snow Striders
+--(31, 11, 1, 2, 2, false, false), -- Speed Demons vs Trail Blazers
+--(32, 11, 3, 4, 2, false, false), -- Road Warriors vs Hill Climbers
+--(33, 11, 5, 6, 2, false, false), -- Winter Runners vs Snow Striders
 --
 ---- Race 2
---(34, 12, 1, 3, 2), -- Speed Demons vs Road Warriors
---(35, 12, 2, 5, 2), -- Trail Blazers vs Winter Runners
---(36, 12, 4, 6, 2), -- Hill Climbers vs Snow Striders
+--(34, 12, 1, 3, 2, false, false), -- Speed Demons vs Road Warriors
+--(35, 12, 2, 5, 2, false, false), -- Trail Blazers vs Winter Runners
+--(36, 12, 4, 6, 2, false, false), -- Hill Climbers vs Snow Striders
 --
 ---- Race 3
---(37, 13, 1, 4, 2), -- Speed Demons vs Hill Climbers
---(38, 13, 2, 6, 2), -- Trail Blazers vs Snow Striders
---(39, 13, 3, 5, 2), -- Road Warriors vs Winter Runners
+--(37, 13, 1, 4, 2, false, false), -- Speed Demons vs Hill Climbers
+--(38, 13, 2, 6, 2, false, false), -- Trail Blazers vs Snow Striders
+--(39, 13, 3, 5, 2, false, false), -- Road Warriors vs Winter Runners
 --
 ---- Race 4
---(40, 14, 1, 5, 2), -- Speed Demons vs Winter Runners
---(41, 14, 2, 4, 2), -- Trail Blazers vs Hill Climbers
---(42, 14, 3, 6, 2); -- Road Warriors vs Snow Striders
+--(40, 14, 1, 5, 2, false, false), -- Speed Demons vs Winter Runners
+--(41, 14, 2, 4, 2, false, false), -- Trail Blazers vs Hill Climbers
+--(42, 14, 3, 6, 2, false, false); -- Road Warriors vs Snow Striders
 
 
 -- Reset sequence values

@@ -18,9 +18,7 @@ public class RaceCreateDto {
     @FutureOrPresent(message = "Race date must be in the present or future")
     private LocalDate date;
     
-    @Schema(description = "Whether this is a playoff race", example = "false")
-    private Boolean isPlayoff;
-    
+
     @Schema(description = "ID of the season this race belongs to", example = "1")
     @NotNull(message = "Season ID is required")
     private Long seasonId;
@@ -31,9 +29,6 @@ public class RaceCreateDto {
     
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
-    
-    public Boolean getIsPlayoff() { return isPlayoff; }
-    public void setIsPlayoff(Boolean isPlayoff) { this.isPlayoff = isPlayoff; }
     
     public Long getSeasonId() { return seasonId; }
     public void setSeasonId(Long seasonId) { this.seasonId = seasonId; }

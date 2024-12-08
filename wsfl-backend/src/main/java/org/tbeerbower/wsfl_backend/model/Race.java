@@ -15,7 +15,6 @@ public class Race extends BaseEntity{
     private String name;
     private LocalDate date;
     private Boolean isCanceled;
-    private Boolean isPlayoff;
 
     @ManyToOne
     @JoinColumn(name = "season_id")
@@ -29,12 +28,11 @@ public class Race extends BaseEntity{
     }
     
     // Constructor for DTO conversion
-    public Race(Long id, String name, LocalDate date, Boolean isCancelled, Boolean isPlayoff) {
+    public Race(Long id, String name, LocalDate date, Boolean isCancelled) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.isCanceled = isCancelled;
-        this.isPlayoff = isPlayoff;
     }
     
     // Getters and Setters
@@ -60,14 +58,6 @@ public class Race extends BaseEntity{
 
     public void setDate(LocalDate date) {
         this.date = date;
-    }
-
-    public Boolean isPlayoff() {
-        return isPlayoff;
-    }
-
-    public void setIsPlayoff(Boolean isPlayoff) {
-        this.isPlayoff = isPlayoff;
     }
 
     public Season getSeason() {

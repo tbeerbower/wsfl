@@ -15,18 +15,21 @@ public class UserSeasonDetailsDto {
     @Schema(description = "Is the season complete")
     private boolean isComplete;
 
-    @Schema(description = "List of matchups for the season")
-    private List<UserMatchupDetailsDto> matchups;
+    @Schema(description = "The season status")
+    private String status;
 
 
-    public UserSeasonDetailsDto(Long id, String name, boolean isComplete) {
+
+    public UserSeasonDetailsDto(Long id, String name, boolean isComplete, String status) {
         this.id = id;
         this.name = name;
         this.isComplete = isComplete;
+        this.status = status;
     }
 
     // Getters only for immutability
     public Long getId() { return id; }
     public String getName() { return name; }
     public boolean isComplete() { return isComplete; }
+    public String getStatus() { return status; }
 }
