@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "matchups")
-public class Matchup extends BaseEntity{
+public class Matchup extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -78,6 +78,7 @@ public class Matchup extends BaseEntity{
     public boolean includes(Team team) {
         return team1.equals(team) || team2.equals(team);
     }
+
     public boolean includes(User user) {
         return team1.getOwner().equals(user) || team2.getOwner().equals(user);
     }
@@ -105,7 +106,15 @@ public class Matchup extends BaseEntity{
         return !race.getResults().isEmpty();
     }
 
-
+    @Transient
+    public Team getWinner(boolean includeTies) {
+        return isComplete() ? getTeam1Score() > getTeam2Score() ? team1 :
+                getTeam2Score() > getTeam1Score() ? team2 :
+                        includeTies ? null :
+                                team1.getTotalScore() > team2.getTotalScore() ? team1 :
+                                        team2.getTotalScore() > team1.getTotalScore() ? team2 :
+                                                null : null;
+    }
 
     // TODO: move to service layer
     private Integer getTeamScore(Team team) {

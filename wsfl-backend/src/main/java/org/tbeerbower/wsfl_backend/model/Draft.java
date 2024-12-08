@@ -110,4 +110,8 @@ public class Draft extends BaseEntity{
     public Set<Team> getTeams() { return teams; }
     public void setTeams(Set<Team> teams) { this.teams = teams; }
 
+    public List<Standing> getStandings() {
+        return league.getStandings(this);
+    }
+
 }

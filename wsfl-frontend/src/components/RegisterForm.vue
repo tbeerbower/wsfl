@@ -66,11 +66,6 @@
       >
         {{ loading ? 'Registering...' : 'Register' }}
       </button>
-
-      <div class="login-link">
-        Already have an account? 
-        <router-link to="/login">Login here</router-link>
-      </div>
     </form>
   </div>
 </template>
@@ -224,19 +219,5 @@ h2 {
   color: #dc3545;
   text-align: center;
   font-size: 14px;
-}
-
-.login-link {
-  text-align: center;
-  font-size: 14px;
-}
-
-.login-link a {
-  color: #4CAF50;
-  text-decoration: none;
-}
-
-.login-link a:hover {
-  text-decoration: underline;
 }
 </style>

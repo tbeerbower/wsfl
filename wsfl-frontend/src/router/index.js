@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginForm from '@/components/LoginForm.vue';
-import RegisterForm from '@/components/RegisterForm.vue';
 import store from '@/store';
 import DraftView from '@/views/DraftView.vue';
+import LoginView from '@/views/LoginView.vue';
+import RegisterView from '@/views/RegisterView.vue';
+import DraftPickView from '@/views/DraftPickView.vue';
 
 const routes = [
   {
@@ -12,7 +13,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: LoginForm,
+    component: LoginView,
     meta: { requiresAuth: false },
     beforeEnter: (to, from, next) => {
       if (store.getters['auth/isAuthenticated']) {
@@ -25,7 +26,7 @@ const routes = [
   {
     path: '/register',
     name: 'Register',
-    component: RegisterForm,
+    component: RegisterView,
     meta: { requiresAuth: false },
     beforeEnter: (to, from, next) => {
       if (store.getters['auth/isAuthenticated']) {
@@ -45,6 +46,12 @@ const routes = [
     path: '/draft/:draftId',
     name: 'draft',
     component: DraftView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/draft/:draftId/pick',
+    name: 'draft-pick',
+    component: DraftPickView,
     meta: { requiresAuth: true }
   }
 ];

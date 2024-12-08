@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.tbeerbower.wsfl_backend.assembler.DraftDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.DraftPickDtoAssembler;
+import org.tbeerbower.wsfl_backend.assembler.MatchupDtoAssembler;
 import org.tbeerbower.wsfl_backend.assembler.RunnerDtoAssembler;
 import org.tbeerbower.wsfl_backend.dto.DraftCreateDto;
 import org.tbeerbower.wsfl_backend.dto.DraftPatchDto;
@@ -27,11 +28,14 @@ import org.tbeerbower.wsfl_backend.dto.DraftPickCreateDto;
 import org.tbeerbower.wsfl_backend.dto.DraftPickSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftSummaryDto;
 import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
+import org.tbeerbower.wsfl_backend.dto.MatchupDetailsDto;
 import org.tbeerbower.wsfl_backend.dto.RunnerSummaryDto;
 import org.tbeerbower.wsfl_backend.exception.ResourceNotFoundException;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.DraftPick;
+import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Runner;
+import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.service.DraftService;
 import org.tbeerbower.wsfl_backend.service.LeagueService;
 import org.tbeerbower.wsfl_backend.service.RunnerService;
@@ -53,18 +57,21 @@ public class DraftController  {
     private final DraftDtoAssembler draftDtoAssembler;
     private final DraftPickDtoAssembler draftPickDtoAssembler;
     private final RunnerDtoAssembler runnerDtoAssembler;
+    private final MatchupDtoAssembler matchupDtoAssembler;
+
     
     @Autowired
     public DraftController(DraftService draftService,
                            LeagueService leagueService, RunnerService runnerService,
                            DraftDtoAssembler draftDtoAssembler,
-                           DraftPickDtoAssembler draftPickDtoAssembler, RunnerDtoAssembler runnerDtoAssembler) {
+                           DraftPickDtoAssembler draftPickDtoAssembler, RunnerDtoAssembler runnerDtoAssembler, MatchupDtoAssembler matchupDtoAssembler) {
         this.draftService = draftService;
         this.leagueService = leagueService;
         this.runnerService = runnerService;
         this.draftDtoAssembler = draftDtoAssembler;
         this.draftPickDtoAssembler = draftPickDtoAssembler;
         this.runnerDtoAssembler = runnerDtoAssembler;
+        this.matchupDtoAssembler = matchupDtoAssembler;
     }
 
     @Operation(summary = "Get all drafts", description = "Retrieves a paginated list of all drafts in the system, with optional filtering by league and season")
@@ -271,5 +278,83 @@ public class DraftController  {
                 runnerService.findAllIdIn(draftedRunnerIds, pageable);
 
         return ResponseEntity.ok(runners.map(runnerDtoAssembler::toSummaryDto));
+    }
+
+
+
+
+
+
+
+
+
+    @Operation(summary = "Create draft matchups", description = "Creates the matchups for the given draft")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Matchups created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Invalid input data"))),
+            @ApiResponse(responseCode = "403", description = "Not authorized to create matchups", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Access denied")))
+    })
+    @PostMapping("/{id}/matchups")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<MatchupDetailsDto>> createMatchups(@PathVariable Long id) {
+
+        Draft draft = draftService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft", "id", id));
+
+        List<Matchup> matchups = draftService.createMatchups(draft);
+
+        List<MatchupDetailsDto> matchupDtos = matchups.stream()
+                .map(matchupDtoAssembler::toDetailedModel)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(matchupDtos);
+    }
+
+
+
+    @Operation(summary = "Create draft playoff matchups", description = "Creates the matchups for the given draft playoffs")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Playoff matchups created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Invalid input data"))),
+            @ApiResponse(responseCode = "403", description = "Not authorized to create matchups", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Access denied")))
+    })
+    @PostMapping("/{id}/playoffs")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<MatchupDetailsDto>> createPlayoffMatchup(@PathVariable Long id) {
+
+        Draft draft = draftService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft", "id", id));
+
+        List<Matchup> matchups = draftService.createPlayoffMatchups(draft);
+
+        List<MatchupDetailsDto> matchupDtos = matchups.stream()
+                .map(matchupDtoAssembler::toDetailedModel)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(matchupDtos);
+    }
+
+    @Operation(summary = "Create draft championship matchup", description = "Creates the matchup for the given draft championship")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Championship matchup created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Invalid input data"))),
+            @ApiResponse(responseCode = "403", description = "Not authorized to create matchups", content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = "string", example = "Access denied")))
+    })
+    @PostMapping("/{id}/championship")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MatchupDetailsDto> createChampionshipMatchup(@PathVariable Long id) {
+
+        Draft draft = draftService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Draft", "id", id));
+
+        Matchup matchup = draftService.createChampionshipMatchup(draft);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(matchupDtoAssembler.toDetailedModel(matchup));
     }
 }

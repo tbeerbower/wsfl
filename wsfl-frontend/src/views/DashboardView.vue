@@ -23,12 +23,30 @@
             <div class="draft-header">
               <div class="draft-title">
                 <h4>{{ draft.name }}</h4>
-                <router-link 
-                  :to="{ name: 'draft', params: { draftId: draft.id }}" 
-                  class="draft-button"
-                >
-                  Go to draft
-                </router-link>
+                <div class="draft-actions">
+                  <button 
+                    v-if="draft.status === 'Not Started' && isLeagueAdmin(league)"
+                    @click="startDraft(draft.id)"
+                    class="start-draft-button"
+                    :disabled="startingDraft === draft.id"
+                  >
+                    {{ startingDraft === draft.id ? 'Starting...' : 'Start Draft' }}
+                  </button>
+                  <button 
+                    v-if="draft.status === 'Complete' && !hasMatchups(draft) && isLeagueAdmin(league)"
+                    @click="createMatchups(draft.id)"
+                    class="create-matchups-button"
+                    :disabled="creatingMatchups === draft.id"
+                  >
+                    {{ creatingMatchups === draft.id ? 'Creating...' : 'Create Matchups' }}
+                  </button>
+                  <router-link 
+                    :to="{ name: 'draft', params: { draftId: draft.id }}" 
+                    class="draft-button"
+                  >
+                    Go to draft
+                  </router-link>
+                </div>
               </div>
               <div class="draft-status" :class="{
                 'not-started': draft.status === 'Not Started',
@@ -70,38 +88,59 @@
   </div>
 </template>
 
-<script>
-import { computed, onMounted } from 'vue';
+<script setup>
+import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import axios from 'axios';
 import LeagueStandings from '@/components/LeagueStandings.vue';
 import MatchupCarousel from '@/components/MatchupCarousel.vue';
 
-export default {
-  name: 'DashboardView',
-  
-  components: {
-    LeagueStandings,
-    MatchupCarousel
-  },
+const store = useStore();
+const startingDraft = ref(null);
+const creatingMatchups = ref(null);
 
-  setup() {
-    const store = useStore();
-    
-    const leagues = computed(() => store.getters['leagues/getUserLeagues']);
-    const loading = computed(() => store.getters['leagues/getLeagueLoading']);
-    const error = computed(() => store.getters['leagues/getLeagueError']);
-    
-    onMounted(() => {
-      store.dispatch('leagues/fetchUserLeagues');
+const leagues = computed(() => store.getters['leagues/getUserLeagues']);
+const loading = computed(() => store.getters['leagues/getLeagueLoading']);
+const error = computed(() => store.getters['leagues/getLeagueError']);
+const currentUser = computed(() => store.getters['auth/currentUser']);
+
+const isLeagueAdmin = (league) => {
+  return league.admin?.id === currentUser.value?.id;
+};
+
+const hasMatchups = (draft) => {
+  return draft.teams?.some(team => team.matchups?.length > 0);
+};
+
+const startDraft = async (draftId) => {
+  startingDraft.value = draftId;
+  try {
+    await axios.patch(`/api/drafts/${draftId}`, {
+      started: true
     });
-    
-    return {
-      leagues,
-      loading,
-      error
-    };
+    await store.dispatch('leagues/fetchUserLeagues');
+  } catch (err) {
+    console.error('Error starting draft:', err);
+  } finally {
+    startingDraft.value = null;
   }
 };
+
+const createMatchups = async (draftId) => {
+  creatingMatchups.value = draftId;
+  try {
+    await axios.post(`/api/drafts/${draftId}/matchups`);
+    await store.dispatch('leagues/fetchUserLeagues');
+  } catch (err) {
+    console.error('Error creating matchups:', err);
+  } finally {
+    creatingMatchups.value = null;
+  }
+};
+
+onMounted(() => {
+  store.dispatch('leagues/fetchUserLeagues');
+});
 </script>
 
 <style scoped>
@@ -247,7 +286,54 @@ export default {
 .draft-title {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.draft-actions {
+  display: flex;
   gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.start-draft-button {
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.start-draft-button:hover:not(:disabled) {
+  background-color: #16a34a;
+}
+
+.start-draft-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.create-matchups-button {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-matchups-button:hover:not(:disabled) {
+  background-color: #4f46e5;
+}
+
+.create-matchups-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .draft-status {

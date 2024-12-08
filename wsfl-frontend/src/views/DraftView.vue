@@ -50,6 +50,7 @@
         <button 
           v-if="isCurrentUserTeam(getCurrentTeam())" 
           class="make-pick-button"
+          @click="$router.push({ name: 'draft-pick', params: { draftId: draft.id }})"
         >
           Make Pick
         </button>

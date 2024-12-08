@@ -8,7 +8,9 @@ import org.tbeerbower.wsfl_backend.dto.DraftUpdateDto;
 import org.tbeerbower.wsfl_backend.model.Draft;
 import org.tbeerbower.wsfl_backend.model.DraftPick;
 import org.tbeerbower.wsfl_backend.model.League;
+import org.tbeerbower.wsfl_backend.model.Matchup;
 import org.tbeerbower.wsfl_backend.model.Runner;
+import org.tbeerbower.wsfl_backend.model.Season;
 import org.tbeerbower.wsfl_backend.model.Team;
 
 import java.util.List;
@@ -35,4 +37,8 @@ public interface DraftService {
     Team getCurrentTeam(Draft draft);
     boolean isTeamTurn(Draft draft, Team team);
     Page<DraftPick> findDraftPicksByDraft(Draft draft, Long teamId, Pageable pageable);
+
+    List<Matchup> createMatchups(Draft draft);
+    List<Matchup> createPlayoffMatchups(Draft draft);
+    Matchup createChampionshipMatchup(Draft draft);
 }
