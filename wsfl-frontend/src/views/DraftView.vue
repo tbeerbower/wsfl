@@ -20,16 +20,29 @@
             <span v-if="draft.snakeOrder">(Snake Order)</span>
           </span>
         </div>
-        <div class="draft-time">
+        <div class="draft-time" v-if="draft.startTime">
           Started: {{ new Date(draft.startTime).toLocaleString() }}
         </div>
       </div>
-      <div class="draft-status" :class="{
-        'not-started': draft.status === 'Not Started',
-        'in-progress': draft.status === 'In Progress',
-        'complete': draft.status === 'Complete'
-      }">
-        {{ draft.status }}
+      <div class="draft-status-section">
+        <div class="draft-status" :class="{
+          'not-started': draft.status === 'Not Started',
+          'in-progress': draft.status === 'In Progress',
+          'complete': draft.status === 'Complete'
+        }">
+          {{ draft.status }}
+        </div>
+        <div v-if="draft.draftOrder && teams?.content" class="draft-order">
+          <h4>Draft Order:</h4>
+          <div class="order-list">
+            <div v-for="(teamId, index) in draft.draftOrder" 
+                 :key="teamId" 
+                 class="order-item"
+                 :class="{ 'current': draft.status === 'In Progress' && index === getCurrentPickIndex() }">
+              {{ index + 1 }}. {{ getTeamName(teamId) }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -189,6 +202,23 @@ const isCurrentUserTeam = (team) => {
   return team?.owner?.id === currentUser?.id;
 };
 
+const getTeamName = (teamId) => {
+  const team = teams.value?.content?.find(t => t.id === teamId);
+  return team?.name || `Team ${teamId}`;
+};
+
+const getCurrentPickIndex = () => {
+  if (!draft.value?.status === 'In Progress' || !draft.value?.currentRound || !draft.value?.currentPick) return -1;
+  
+  const teamsCount = draft.value.draftOrder.length;
+  const totalPick = ((draft.value.currentRound - 1) * teamsCount) + draft.value.currentPick;
+  const pickIndex = (totalPick - 1) % teamsCount;
+  
+  return isSnakeRound(draft.value.currentRound) 
+    ? teamsCount - 1 - pickIndex 
+    : pickIndex;
+};
+
 const fetchDraft = async () => {
   try {
     loading.value = true;
@@ -308,6 +338,13 @@ onMounted(fetchDraft);
   color: #d4d4d8;
 }
 
+.draft-status-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: flex-end;
+}
+
 .draft-status {
   display: inline-flex;
   align-items: center;
@@ -335,6 +372,40 @@ onMounted(fetchDraft);
   background-color: #22c55e;
   color: #f4f4f5;
   border: 1px solid #16a34a;
+}
+
+.draft-order {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  min-width: 250px;
+}
+
+.draft-order h4 {
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.order-item {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  padding: 4px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.order-item.current {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .current-pick-section {

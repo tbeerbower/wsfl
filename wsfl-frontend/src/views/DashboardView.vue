@@ -54,6 +54,12 @@
               <LeagueStandings :standings="draft.standings" />
             </div>
             
+            <PlayoffBracket
+              v-if="showPlayoffBracket(draft)"
+              :playoffMatchups="draft.playoffMatchups"
+              :championshipMatchup="draft.championshipMatchup"
+            />
+
             <div class="teams-section">
               <div class="section-header">
                 <h5 class="section-title">My Teams</h5>
@@ -65,6 +71,22 @@
                     :disabled="creatingMatchups === draft.id"
                   >
                     {{ creatingMatchups === draft.id ? 'Starting...' : 'Start Season' }}
+                  </button>
+                  <button 
+                    v-if="draft.season?.status === 'Playoff pending' && isLeagueAdmin(league)"
+                    @click="startPlayoffs(draft.id)"
+                    class="start-playoffs-button"
+                    :disabled="startingPlayoffs === draft.id"
+                  >
+                    {{ startingPlayoffs === draft.id ? 'Starting...' : 'Start Playoffs' }}
+                  </button>
+                  <button 
+                    v-if="draft.season?.status === 'Championship pending' && isLeagueAdmin(league)"
+                    @click="startChampionship(draft.id)"
+                    class="start-championship-button"
+                    :disabled="startingChampionship === draft.id"
+                  >
+                    {{ startingChampionship === draft.id ? 'Starting...' : 'Start Championship' }}
                   </button>
                   <div v-if="draft.season?.status" 
                        class="season-status" 
@@ -103,10 +125,13 @@ import { useStore } from 'vuex';
 import axios from 'axios';
 import LeagueStandings from '@/components/LeagueStandings.vue';
 import MatchupCarousel from '@/components/MatchupCarousel.vue';
+import PlayoffBracket from '@/components/PlayoffBracket.vue';
 
 const store = useStore();
 const startingDraft = ref(null);
 const creatingMatchups = ref(null);
+const startingPlayoffs = ref(null);
+const startingChampionship = ref(null);
 
 const leagues = computed(() => store.getters['leagues/getUserLeagues']);
 const loading = computed(() => store.getters['leagues/getLeagueLoading']);
@@ -141,6 +166,40 @@ const createMatchups = async (draftId) => {
   } finally {
     creatingMatchups.value = null;
   }
+};
+
+const startPlayoffs = async (draftId) => {
+  startingPlayoffs.value = draftId;
+  try {
+    await axios.post(`/api/drafts/${draftId}/playoffs`);
+    await store.dispatch('leagues/fetchUserLeagues');
+  } catch (err) {
+    console.error('Error starting playoffs:', err);
+  } finally {
+    startingPlayoffs.value = null;
+  }
+};
+
+const startChampionship = async (draftId) => {
+  startingChampionship.value = draftId;
+  try {
+    await axios.post(`/api/drafts/${draftId}/championship`);
+    await store.dispatch('leagues/fetchUserLeagues');
+  } catch (err) {
+    console.error('Error starting championship:', err);
+  } finally {
+    startingChampionship.value = null;
+  }
+};
+
+const showPlayoffBracket = (draft) => {
+  const playoffStatuses = [
+    'Playoff active',
+    'Championship pending',
+    'Championship active',
+    'Season complete'
+  ];
+  return playoffStatuses.includes(draft.season?.status);
 };
 
 onMounted(() => {
@@ -341,6 +400,54 @@ onMounted(() => {
 }
 
 .start-season-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.start-playoffs-button {
+  background-color: #f97316;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  height: 24px;
+  border-radius: 9999px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.start-playoffs-button:hover:not(:disabled) {
+  background-color: #ea580c;
+}
+
+.start-playoffs-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.start-championship-button {
+  background-color: #a855f7;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  height: 24px;
+  border-radius: 9999px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.start-championship-button:hover:not(:disabled) {
+  background-color: #9333ea;
+}
+
+.start-championship-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }

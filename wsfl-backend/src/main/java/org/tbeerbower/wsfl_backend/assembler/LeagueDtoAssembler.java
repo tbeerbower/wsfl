@@ -124,7 +124,7 @@ public class LeagueDtoAssembler  {
             if (!matchups.isEmpty()) {
                 boolean matchupsComplete = matchups.stream().allMatch(Matchup::isComplete);
                 boolean hasPlayoffs = matchups.stream().anyMatch(Matchup::isPlayoff);
-                boolean hasChampionship = matchups.stream().anyMatch(Matchup::isPlayoff);
+                boolean hasChampionship = matchups.stream().anyMatch(Matchup::isChampionship);
 
                 if (hasChampionship) {
                     seasonStatus = matchupsComplete ? "Season complete": "Championship active";
@@ -161,7 +161,7 @@ public class LeagueDtoAssembler  {
                     teamStanding.getTies(),
                     teamStanding.getTotalScore(),
                     draft.getMatchups().stream()
-                            .filter(matchup -> matchup.includes(user) && (matchup.includes(team)))
+                            .filter(matchup -> matchup.isRegularSeason() && matchup.includes(user) && (matchup.includes(team)))
                             .map(this::createUserMatchupDetailsDto)
                             .toList()
             ));
@@ -177,6 +177,16 @@ public class LeagueDtoAssembler  {
                 ))
                 .toList();
 
+        List<UserMatchupDetailsDto> playoffMatchups = draft.getMatchups().stream()
+                .filter(Matchup::isPlayoff)
+                .map(this::createUserMatchupDetailsDto)
+                .toList();
+        UserMatchupDetailsDto championshipMatchup = draft.getMatchups().stream()
+                .filter(Matchup::isChampionship)
+                .map(this::createUserMatchupDetailsDto)
+                .findFirst()
+                .orElse(null);
+
         UserDraftDetailsDto dto = new UserDraftDetailsDto(
                 draft.getId(),
                 draft.getName(),
@@ -186,7 +196,9 @@ public class LeagueDtoAssembler  {
                 draft.getCurrentRound(),
                 draft.getCurrentPick(),
                 standings,
-                teamMatchups
+                teamMatchups,
+                playoffMatchups,
+                championshipMatchup
         );
         return dto;
     }

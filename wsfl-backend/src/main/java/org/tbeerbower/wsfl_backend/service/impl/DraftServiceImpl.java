@@ -370,9 +370,10 @@ public class DraftServiceImpl implements DraftService {
         List<Race> races = draft.getSeason().getRaces();
         Race race = races.get(races.size() - 1);
 
-        List<Matchup> matchups = draft.getMatchups();
-        Matchup playoff1 = matchups.get(matchups.size() - 2);
-        Matchup playoff2 = matchups.get(matchups.size() - 1);
+        List<Matchup> matchups = draft.getMatchups().stream().filter(Matchup::isPlayoff).toList();
+        // TODO: There should always be two playoff matchups
+        Matchup playoff1 = matchups.get(0);
+        Matchup playoff2 = matchups.get(1);
 
         Matchup matchup = new Matchup();
         matchup.setDraft(draft);

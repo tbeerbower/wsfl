@@ -88,6 +88,10 @@ public class Matchup extends BaseEntity {
         return team1.getOwner().equals(user) || team2.getOwner().equals(user);
     }
 
+    public boolean isRegularSeason() {
+        return !isPlayoff && !isChampionship;
+    }
+
     @Transient
     public Integer getTeam1Score() {
         return getTeamScore(team1);
@@ -129,12 +133,12 @@ public class Matchup extends BaseEntity {
 
     @Transient
     public Team getWinner(boolean includeTies) {
-        return isComplete() ? getTeam1Score() > getTeam2Score() ? team1 :
-                getTeam2Score() > getTeam1Score() ? team2 :
+        return isComplete() ? getTeam1Score() < getTeam2Score() ? team1 :
+                getTeam2Score() < getTeam1Score() ? team2 :
                         includeTies ? null :
-                                team1.getTotalScore() > team2.getTotalScore() ? team1 :
-                                        team2.getTotalScore() > team1.getTotalScore() ? team2 :
-                                                null : null;
+                                team1.getTotalScore() < team2.getTotalScore() ? team1 :
+                                        team2.getTotalScore() < team1.getTotalScore() ? team2 :
+                                                team1 : null;
     }
 
     // TODO: move to service layer

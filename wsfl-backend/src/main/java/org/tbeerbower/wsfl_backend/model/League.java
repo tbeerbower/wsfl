@@ -95,7 +95,7 @@ public class League extends BaseEntity{
 
         for( Matchup matchup : draft.getMatchups()) {
 
-            if (matchup.isComplete()) {
+            if (matchup.isComplete() && !matchup.isPlayoff() && !matchup.isChampionship()) {
                 Standing team1Standing = teamStandings.computeIfAbsent(matchup.getTeam1(), k -> new Standing(matchup.getTeam1(), 0, 0, 0, 0));
                 Standing team2Standing = teamStandings.computeIfAbsent(matchup.getTeam2(), k -> new Standing(matchup.getTeam2(), 0, 0, 0, 0));
                 team1Standing.setTotalScore(team1Standing.getTotalScore() + matchup.getTeam1Score());

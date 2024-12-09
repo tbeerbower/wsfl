@@ -32,14 +32,22 @@ public class UserDraftDetailsDto {
     @Schema(description = "List of standings for the draft")
     private List<UserStandingDto> standings;
 
-    @Schema(description = "List of matchups for the draft")
+    @Schema(description = "List of matchups for the teams in the draft")
     private List<UserTeamMatchupsDetailsDto> teams;
+
+    @Schema(description = "List of playoff matchups for the draft season")
+    private List<UserMatchupDetailsDto> playoffMatchups;
+
+    @Schema(description = "The championship matchup for the draft season")
+    private UserMatchupDetailsDto championshipMatchup;
 
     public UserDraftDetailsDto(Long id, String name, UserSeasonDetailsDto season,
                                Integer numberOfRounds, String status,
                                Integer currentRound, Integer currentPick,
                                List<UserStandingDto> standings,
-                               List<UserTeamMatchupsDetailsDto> teams) {
+                               List<UserTeamMatchupsDetailsDto> teams,
+                               List<UserMatchupDetailsDto> playoffMatchups,
+                               UserMatchupDetailsDto championshipMatchup) {
         this.id = id;
         this.name = name;
         this.season = season;
@@ -49,6 +57,8 @@ public class UserDraftDetailsDto {
         this.currentPick = currentPick;
         this.standings = standings;
         this.teams = teams;
+        this.playoffMatchups = playoffMatchups;
+        this.championshipMatchup = championshipMatchup;
     }
 
     // Getters
@@ -65,5 +75,11 @@ public class UserDraftDetailsDto {
     }
     public List<UserTeamMatchupsDetailsDto> getTeams() {
         return teams;
+    }
+    public List<UserMatchupDetailsDto> getPlayoffMatchups() {
+        return playoffMatchups;
+    }
+    public UserMatchupDetailsDto getChampionshipMatchup() {
+        return championshipMatchup;
     }
 }
