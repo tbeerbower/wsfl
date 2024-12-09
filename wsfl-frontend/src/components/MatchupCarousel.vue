@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 
 export default {
   name: 'MatchupCarousel',
@@ -102,8 +102,22 @@ export default {
     const handleScroll = () => {
       if (container.value) {
         scrollPosition.value = container.value.scrollLeft;
+        updateMaxScroll();
       }
     };
+
+    // Watch for changes in matchups and update maxScroll
+    watch(() => props.matchups, () => {
+      // Use nextTick to ensure DOM is updated
+      nextTick(() => {
+        updateMaxScroll();
+        // Reset scroll position when matchups change
+        if (container.value) {
+          container.value.scrollTo({ left: 0 });
+          scrollPosition.value = 0;
+        }
+      });
+    }, { deep: true });
 
     onMounted(() => {
       updateMaxScroll();

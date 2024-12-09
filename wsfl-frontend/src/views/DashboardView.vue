@@ -32,14 +32,6 @@
                   >
                     {{ startingDraft === draft.id ? 'Starting...' : 'Start Draft' }}
                   </button>
-                  <button 
-                    v-if="draft.status === 'Complete' && !hasMatchups(draft) && isLeagueAdmin(league)"
-                    @click="createMatchups(draft.id)"
-                    class="create-matchups-button"
-                    :disabled="creatingMatchups === draft.id"
-                  >
-                    {{ creatingMatchups === draft.id ? 'Creating...' : 'Create Matchups' }}
-                  </button>
                   <router-link 
                     :to="{ name: 'draft', params: { draftId: draft.id }}" 
                     class="draft-button"
@@ -65,10 +57,20 @@
             <div class="teams-section">
               <div class="section-header">
                 <h5 class="section-title">My Teams</h5>
-                <div v-if="draft.season?.status" 
-                     class="season-status" 
-                     :class="draft.season.status.toLowerCase().replace(' ', '-')">
-                  {{ draft.season.status }}
+                <div class="section-actions">
+                  <button 
+                    v-if="draft.season?.status === 'Season pending' && isLeagueAdmin(league)"
+                    @click="createMatchups(draft.id)"
+                    class="start-season-button"
+                    :disabled="creatingMatchups === draft.id"
+                  >
+                    {{ creatingMatchups === draft.id ? 'Starting...' : 'Start Season' }}
+                  </button>
+                  <div v-if="draft.season?.status" 
+                       class="season-status" 
+                       :class="draft.season.status.toLowerCase().replace(' ', '-')">
+                    {{ draft.season.status }}
+                  </div>
                 </div>
               </div>
               <div class="teams-container">
@@ -113,10 +115,6 @@ const currentUser = computed(() => store.getters['auth/currentUser']);
 
 const isLeagueAdmin = (league) => {
   return league.admin?.id === currentUser.value?.id;
-};
-
-const hasMatchups = (draft) => {
-  return draft.teams?.some(team => team.matchups?.length > 0);
 };
 
 const startDraft = async (draftId) => {
@@ -323,22 +321,26 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.create-matchups-button {
-  background-color: #6366f1;
+.start-season-button {
+  background-color: #22c55e;
   color: white;
   border: none;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-md);
+  padding: 4px 12px;
+  height: 24px;
+  border-radius: 9999px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
 }
 
-.create-matchups-button:hover:not(:disabled) {
-  background-color: #4f46e5;
+.start-season-button:hover:not(:disabled) {
+  background-color: #16a34a;
 }
 
-.create-matchups-button:disabled {
+.start-season-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -409,8 +411,15 @@ h5.section-title {
 .section-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .season-status {
