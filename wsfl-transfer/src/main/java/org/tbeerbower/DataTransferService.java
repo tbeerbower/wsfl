@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.DataAccessException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -31,13 +33,24 @@ public class DataTransferService {
     private Map<Integer, Long> raceIdMapping = new HashMap<>();
     private Map<Integer, Long> runnerIdMapping = new HashMap<>();
     private Map<Integer, Long> teamIdMapping = new HashMap<>();
+    private Map<Integer, Long> userIdMapping = new HashMap<>();
 
     private Map<Integer, String> seasonNameMapping = new HashMap<>();
     private Map<Integer, Integer> seasonRoundsMapping = new HashMap<>();
+    private Map<Integer, Integer> seasonSupplementalRoundsMapping = new HashMap<>();
 
 
     @Transactional
     public void transferData() {
+
+        try {
+            transferUsers();
+        } catch (DataAccessException e) {
+            System.out.println("Skipping users table - not found in source database");
+            // Use default mapping for leagues
+            userIdMapping.put(1, 1L);
+        }
+
         try {
             transferLeagues();
         } catch (DataAccessException e) {
@@ -114,23 +127,64 @@ public class DataTransferService {
         }
     }
 
+    private void transferUsers() {
+        try {
+            List<Map<String, Object>> leagues = sourceJdbc.queryForList("SELECT * FROM usr");
+            for (Map<String, Object> league : leagues) {
+                try {
+                    int sourceId = (Integer) league.get("id");
+                    String name = (String) league.get("name");
+                    Boolean active = (Boolean) league.get("active");
+                    String email = (String) league.get("email");
+                    String picture = (String) league.get("picture");
+                    String roles = (String) league.get("roles");
+
+
+                    targetJdbc.update(
+                        "INSERT INTO users (name, active, email, picture, password) VALUES (?, ?, ?, ?, ?)",
+                        name, active, email, picture, "$2a$10$TXkorQjx0GhjdjgJ2A84.OQ5W3Q5OWWu.SXXCKjyDt.vXD2WdzxyS"
+                    );
+                    
+                    Long targetId = targetJdbc.queryForObject(
+                        "SELECT id FROM users WHERE email = ?",
+                        Long.class, 
+                        email
+                    );
+                    userIdMapping.put(sourceId, targetId);
+                    String[] rolesArray = roles.split(",");
+                    for (String role : rolesArray) {
+                        targetJdbc.update(
+                            "INSERT INTO user_roles (user_id, role) VALUES (?, ?)",
+                            targetId, role.trim()
+                        );
+                    }
+                } catch (DataAccessException e) {
+                    System.out.println("Failed to transfer user: " + league.get("name"));
+                }
+            }
+        } catch (DataAccessException e) {
+            System.out.println("Skipping usr table - not found in source database");
+            userIdMapping.put(1, 1L);
+        }
+    }
+
     private void transferLeagues() {
         try {
-            List<Map<String, Object>> leagues = sourceJdbc.queryForList("SELECT * FROM league");  
+            List<Map<String, Object>> leagues = sourceJdbc.queryForList("SELECT * FROM league");
             for (Map<String, Object> league : leagues) {
                 try {
                     int sourceId = (Integer) league.get("id");
                     String name = (String) league.get("name");
 
                     targetJdbc.update(
-                        "INSERT INTO leagues (name, max_teams, admin_id) VALUES (?, ?, ?)",  
-                        name, 10, 1
+                            "INSERT INTO leagues (name, max_teams, admin_id) VALUES (?, ?, ?)",
+                            name, 10, 1
                     );
-                    
+
                     Long targetId = targetJdbc.queryForObject(
-                        "SELECT id FROM leagues WHERE name = ?", 
-                        Long.class, 
-                        name
+                            "SELECT id FROM leagues WHERE name = ?",
+                            Long.class,
+                            name
                     );
                     leagueIdMapping.put(sourceId, targetId);
 
@@ -164,7 +218,8 @@ public class DataTransferService {
                     );
                     seasonIdMapping.put(sourceId, targetId);
                     seasonNameMapping.put(sourceId, name);
-                    seasonRoundsMapping.put(sourceId, (Integer) season.get("draft_rounds") + (Integer) season.get("supplemental_rounds"));
+                    seasonRoundsMapping.put(sourceId, (Integer) season.get("draft_rounds"));
+                    seasonSupplementalRoundsMapping.put(sourceId, (Integer) season.get("supplemental_rounds"));
                 } catch (DataAccessException e) {
                     System.out.println("Failed to transfer season: " + season.get("name"));
                 }
@@ -208,23 +263,32 @@ public class DataTransferService {
 
                         targetJdbc.update(
                                 "INSERT INTO draft_order (position, draft_id, team_id) VALUES (?, ? , ?)",
-                                order,
+                                order - 1,
                                 targetId,
                                 teamIdMapping.get(teamId)
                         );
                         List<Map<String, Object>> draftPicks = sourceJdbc.queryForList("SELECT * FROM team_runner WHERE team_season_id = ? order by draft_order", id);
+                        int round = 0;
                         for (Map<String, Object> draftPick : draftPicks) {
                             int runnerId = (Integer) draftPick.get("runner_id");
-                            int round = 0;
                             int teamsInDraft = draftOrders.size();
+                            boolean isSupplemental = round >= seasonRoundsMapping.get(seasonId) - seasonSupplementalRoundsMapping.get(seasonId);
+                            int pickNumber = round % 2 == 0 ? round * teamsInDraft + order : (round + 1) * teamsInDraft - order + 1;
+
+                            String yearRange = seasonNameMapping.get(seasonId);
+                            String firstYear = yearRange.split("-")[0];
+                            int year = Integer.parseInt(firstYear);
+                            LocalDateTime baseDateTime = LocalDateTime.of(year, 12, isSupplemental ? 16 : 10, 12, 0);
+                            LocalDateTime pickTime = baseDateTime.plusMinutes(15L * (pickNumber - 1));
 
                             targetJdbc.update(
-                                    "INSERT INTO draft_picks (pick_number, round, draft_id, runner_id, team_id) VALUES (?, ?, ?, ?, ?)",
-                                    round * teamsInDraft + order,
+                                    "INSERT INTO draft_picks (pick_number, round, draft_id, runner_id, team_id, pick_time) VALUES (?, ?, ?, ?, ?, ?)",
+                                    pickNumber,
                                     ++round,
                                     targetId,
                                     runnerIdMapping.get(runnerId),
-                                    teamIdMapping.get(teamId)
+                                    teamIdMapping.get(teamId),
+                                    pickTime  // estimate pick time
                             );
                         }
                     }
@@ -301,11 +365,21 @@ public class DataTransferService {
                     String name = (String) race.get("name");
                     boolean cancelled = (Boolean) race.get("cancelled");
                     int seasonId = (Integer) race.get("season_id");
+                    int week = (Integer) race.get("week");
                     name += " " + seasonNameMapping.get(seasonId);
-                    
+
+                    String yearRange = seasonNameMapping.get(seasonId);
+
+                    // Extract the first year
+                    String firstYear = yearRange.split("-")[0];
+                    int year = Integer.parseInt(firstYear);
+                    // Create a LocalDate instance for December 15th of the extracted year
+                    LocalDate baseDate = LocalDate.of(year, 12, 15);
+
                     targetJdbc.update(
-                        "INSERT INTO races (name, season_id, is_canceled) VALUES (?, ?, ?)",
-                        name, seasonIdMapping.get(seasonId), cancelled
+                        "INSERT INTO races (name, season_id, is_canceled, date) VALUES (?, ?, ?, ?)",
+                        name, seasonIdMapping.get(seasonId), cancelled,
+                            baseDate.plusWeeks(week - 1) // estimated date
                     );
 
 
@@ -332,11 +406,11 @@ public class DataTransferService {
                 try {
                     int sourceId = (Integer) team.get("id");
                     String name = (String) team.get("name");
-                    Integer leagueId = (Integer) team.get("league_id");
+                    Integer ownerId = (Integer) team.get("owner_id");
                     
                     targetJdbc.update(
-                        "INSERT INTO teams (name, owner_id, league_id) VALUES (?, ?, ?)",
-                        name, 1 , leagueIdMapping.get(leagueId)
+                        "INSERT INTO teams (name, owner_id) VALUES (?, ?)",
+                        name, userIdMapping.get(ownerId)
                     );
                     
                     Long targetId = targetJdbc.queryForObject(

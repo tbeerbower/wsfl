@@ -256,8 +256,8 @@ public class DraftServiceImpl implements DraftService {
 
     @Override
     public Page<DraftPick> findDraftPicksByDraft(Draft draft, Long teamId, Pageable pageable) {
-        return teamId == null ? draftPickRepository.findDraftPicksByDraft(draft, pageable) :
-                draftPickRepository.findDraftPicksByDraftAndTeamId(draft, teamId, pageable);
+        return teamId == null ? draftPickRepository.findDraftPicksByDraftOrderByPickNumber(draft, pageable) :
+                draftPickRepository.findDraftPicksByDraftAndTeamIdOrderByPickNumber(draft, teamId, pageable);
     }
 
     private int calculatePickNumber(Draft draft) {

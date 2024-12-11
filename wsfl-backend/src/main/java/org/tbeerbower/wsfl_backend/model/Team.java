@@ -21,7 +21,7 @@ public class Team extends BaseEntity{
     private User owner;
 
     @ManyToOne
-    @JoinColumn(name = "league_id")
+    @JoinColumn(name = "league_id", nullable = true)
     private League league;
 
     @ManyToMany

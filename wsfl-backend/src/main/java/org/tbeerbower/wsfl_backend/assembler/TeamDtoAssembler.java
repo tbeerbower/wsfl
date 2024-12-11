@@ -30,7 +30,7 @@ public class TeamDtoAssembler {
     public TeamDetailsDto toDetailedModel(Team team) {
 
         League league = team.getLeague();
-        LeagueSummaryDto leagueDto = new LeagueSummaryDto(
+        LeagueSummaryDto leagueDto = league == null ? null : new LeagueSummaryDto(
                 league.getId(),
                 league.getName()
         );
